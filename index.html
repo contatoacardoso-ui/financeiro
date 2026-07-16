@@ -28,6 +28,7 @@
             --income: #00b37e;
             --expense: #f75a68;
             --border: #29292e;
+            --warning: #ffb86c;
         }
         * {
             box-sizing: border-box;
@@ -379,6 +380,18 @@
         .item-details span {
             font-size: 0.7rem;
             color: var(--text-secondary);
+            display: block;
+        }
+        .item-details .delay-warning {
+            color: var(--expense);
+            font-weight: 600;
+            font-size: 0.7rem;
+            margin-top: 2px;
+        }
+        .item-details .original-value {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 1px;
         }
         .item-right {
             text-align: right;
@@ -460,7 +473,7 @@
             background-color: rgba(255, 255, 255, 0.02);
         }
         .security-panel-content {
-            display: none; /* Controlado via JS após digitação da senha */
+            display: none; /* Controlado via JS */
             flex-direction: column;
         }
         .security-panel-content button {
@@ -521,7 +534,7 @@
             <h1>Controle Financeiro</h1>
         </header>
 
-        <!-- Dashboard GLOBAL -->
+        <!-- Dashboard GLOBAL (Exibe juros calculados acumulados automaticamente) -->
         <div class="dashboard">
             <div class="balance-card">
                 <div class="balance-sub-card">
@@ -599,12 +612,9 @@
         <!-- MENU DE SEGURANÇA SEGURO NO RODAPÉ -->
         <div class="security-footer">
             <div class="security-accordion">
-                <!-- Botão de Cabeçalho Inteligente que exige validação antes de abrir -->
                 <button class="security-header-btn" id="security-toggle-btn" onclick="tentarAbrirConfiguracoes()">
                     <span>⚙️</span> Configurações de Segurança
                 </button>
-                
-                <!-- Painel de ações trancado -->
                 <div class="security-panel-content" id="security-panel-content">
                     <button onclick="fazerBackup()">
                         <span>📥</span> Exportar Dados (Backup)
@@ -644,15 +654,11 @@
 
         // --- VALIDAÇÃO RESTRITA DAS CONFIGURAÇÕES ---
         window.tentarAbrirConfiguracoes = function() {
-            // Se as configurações já estiverem abertas, basta fechar
             if (securityPanelContent.style.display === 'flex') {
                 fecharPainelDeSeguranca();
                 return;
             }
-
-            // Pede a senha do sistema para autorizar a abertura do painel
             const senhaDigitada = prompt("Insira a Senha do App para gerenciar as Configurações de Segurança:");
-            
             if (senhaDigitada === obterSenhaAtual()) {
                 abrirPainelDeSeguranca();
             } else if (senhaDigitada !== null) {
@@ -692,10 +698,8 @@
 
         window.limparBancoDeDados = function() {
             const confirmacao1 = confirm("⚠️ ATENÇÃO: Esta ação irá APAGAR permanentemente todos os lançamentos do seu banco de dados.\n\nDeseja mesmo prosseguir?");
-            
             if (confirmacao1) {
                 const senhaDigitada = prompt("Por segurança, digite a sua SENHA de acesso ao aplicativo para autorizar a limpeza:");
-                
                 if (senhaDigitada === obterSenhaAtual()) {
                     if (db) {
                         loadingEl.style.display = 'flex';
@@ -870,6 +874,59 @@
             renderList();
         }
 
+        // --- SISTEMA MATEMÁTICO DE JUROS E MULTAS EM ATRASO ---
+        // Multa de 2% no primeiro dia + Juros de 0,033% ao dia para pagamentos em atraso
+        function calcularValorAtualizado(t) {
+            if (t.type !== 'pagar' || !t.date) return t.amount;
+
+            // Define as datas do vencimento e do dia de hoje (em formato UTC Puro para evitar fuso horário)
+            const partesVencimento = t.date.split('-');
+            const dataVencimento = new Date(Date.UTC(partesVencimento[0], partesVencimento[1] - 1, partesVencimento[2]));
+            
+            // Se já foi pago, calcula o juro correspondente à data em que foi pago (salvo no banco de dados)
+            // Caso contrário, calcula com base na data de hoje
+            let dataPagamento;
+            if (t.done) {
+                if (t.paymentDate) {
+                    const partesPgto = t.paymentDate.split('-');
+                    dataPagamento = new Date(Date.UTC(partesPgto[0], partesPgto[1] - 1, partesPgto[2]));
+                } else {
+                    return t.amount; // Sem histórico de atraso no banco antigo, mantém valor original
+                }
+            } else {
+                const hojeLocal = new Date();
+                dataPagamento = new Date(Date.UTC(hojeLocal.getFullYear(), hojeLocal.getMonth(), hojeLocal.getDate()));
+            }
+
+            // Calcula a diferença real de dias
+            const diferencaTempo = dataPagamento.getTime() - dataVencimento.getTime();
+            const diasAtraso = Math.floor(diferencaTempo / (1000 * 60 * 60 * 24));
+
+            if (diasAtraso <= 0) return t.amount;
+
+            // Aplica as taxas financeiras
+            const taxaMulta = 0.02;          // 2% de multa fixa
+            const taxaJurosDiaria = 0.00033; // 0.033% ao dia de juros de mora
+            
+            const valorMulta = t.amount * taxaMulta;
+            const valorJuros = t.amount * taxaJurosDiaria * diasAtraso;
+
+            return parseFloat((t.amount + valorMulta + valorJuros).toFixed(2));
+        }
+
+        // Retorna a quantidade de dias de atraso se aplicável
+        function obterDiasDeAtraso(t) {
+            if (t.type !== 'pagar' || !t.date || t.done) return 0;
+            const partesVencimento = t.date.split('-');
+            const dataVencimento = new Date(Date.UTC(partesVencimento[0], partesVencimento[1] - 1, partesVencimento[2]));
+            const hojeLocal = new Date();
+            const hoje = new Date(Date.UTC(hojeLocal.getFullYear(), hojeLocal.getMonth(), hojeLocal.getDate()));
+            
+            const diferencaTempo = hoje.getTime() - dataVencimento.getTime();
+            return Math.floor(diferencaTempo / (1000 * 60 * 60 * 24));
+        }
+
+        // --- REGRAS DE INTERFACE ---
         amountInput.addEventListener('input', (e) => {
             let value = e.target.value.replace(/\D/g, '');
             if (!value) { e.target.value = ''; return; }
@@ -900,8 +957,20 @@
             renderList();
         }
 
+        // Ao pagar, salva o valor final com juros e a data do pagamento para histórico imutável
         window.confirmTransaction = function(id) {
-            if (db) db.child(id).update({ done: true });
+            const t = transactions.find(item => item.id === id);
+            if (t && db) {
+                const valorFinal = calcularValorAtualizado(t);
+                const hojeLocal = new Date();
+                const paymentDate = `${hojeLocal.getFullYear()}-${String(hojeLocal.getMonth() + 1).padStart(2, '0')}-${String(hojeLocal.getDate()).padStart(2, '0')}`;
+                
+                db.child(id).update({ 
+                    done: true,
+                    amount: valorFinal, // Atualiza o valor original no banco para o valor de pagamento com juros inclusos
+                    paymentDate: paymentDate // Salva a data do pagamento no banco
+                });
+            }
         }
 
         window.deleteTransaction = function(id) {
@@ -910,16 +979,18 @@
             }
         }
 
+        // CÁLCULO UNIFICADO GLOBAL COM JUROS E MULTAS INCLUSOS
         function updateDashboard() {
             let pendingIncome = 0, pendingExpense = 0, realIncome = 0, realExpense = 0;
 
             transactions.forEach(t => {
+                const valorCalculado = calcularValorAtualizado(t);
                 if (t.done) {
-                    if (t.type === 'receber') realIncome += t.amount;
-                    else realExpense += t.amount;
+                    if (t.type === 'receber') realIncome += valorCalculado;
+                    else realExpense += valorCalculado;
                 } else {
-                    if (t.type === 'receber') pendingIncome += t.amount;
-                    else pendingExpense += t.amount;
+                    if (t.type === 'receber') pendingIncome += valorCalculado;
+                    else pendingExpense += valorCalculado;
                 }
             });
 
@@ -956,6 +1027,18 @@
                 item.className = 'transaction-item';
                 const isRec = t.type === 'receber';
                 
+                const valorAtualizado = calcularValorAtualizado(t);
+                const diasAtraso = obterDiasDeAtraso(t);
+                
+                let atrasoMarkup = "";
+                let originalValueMarkup = "";
+
+                // Exibe avisos visuais se a conta estiver pendente e em atraso
+                if (diasAtraso > 0) {
+                    atrasoMarkup = `<span class="delay-warning">⚠️ Atrasado: ${diasAtraso} ${diasAtraso === 1 ? 'dia' : 'dias'} (+2% Multa + 0,033%/dia)</span>`;
+                    originalValueMarkup = `<span class="original-value">Original: ${formatCurrency(t.amount)}</span>`;
+                }
+
                 let actionMarkup = !t.done 
                     ? `<button class="action-btn confirm-btn" onclick="confirmTransaction('${t.id}')">✓</button>`
                     : `<button class="action-btn delete-btn" onclick="deleteTransaction('${t.id}')">×</button>`;
@@ -964,9 +1047,11 @@
                     <div class="item-details">
                         <h4>${t.description}</h4>
                         <span>${t.done ? 'Realizado em' : 'Vence em'}: ${formatDate(t.date)}</span>
+                        ${atrasoMarkup}
+                        ${originalValueMarkup}
                     </div>
                     <div class="item-right">
-                        <span class="item-value ${isRec ? 'income-text' : 'expense-text'}">${isRec ? '+' : '-'} ${formatCurrency(t.amount)}</span>
+                        <span class="item-value ${isRec ? 'income-text' : 'expense-text'}">${isRec ? '+' : '-'} ${formatCurrency(valorAtualizado)}</span>
                         ${actionMarkup}
                     </div>
                 `;
