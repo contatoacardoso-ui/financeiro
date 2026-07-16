@@ -189,40 +189,6 @@
         .income-text { color: var(--income); }
         .expense-text { color: var(--expense); }
 
-        /* Filtro de Meses Deslizável */
-        .month-selector {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding-bottom: 8px;
-            margin-bottom: 16px;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-        }
-        .month-selector::-webkit-scrollbar {
-            height: 4px;
-        }
-        .month-selector::-webkit-scrollbar-thumb {
-            background-color: var(--border);
-            border-radius: 4px;
-        }
-        .month-btn {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            color: var(--text-secondary);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            white-space: nowrap;
-            cursor: pointer;
-        }
-        .month-btn.active {
-            background-color: var(--primary);
-            color: #fff;
-            border-color: var(--primary);
-        }
-
         /* Cadastro de Lançamento */
         .form-card {
             background-color: var(--card-bg);
@@ -306,6 +272,40 @@
         }
         button:active {
             opacity: 0.8;
+        }
+
+        /* Filtro de Meses Deslizável */
+        .month-selector {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+        .month-selector::-webkit-scrollbar {
+            height: 4px;
+        }
+        .month-selector::-webkit-scrollbar-thumb {
+            background-color: var(--border);
+            border-radius: 4px;
+        }
+        .month-btn {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        .month-btn.active {
+            background-color: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
         }
 
         /* Abas de Navegação (Pendentes vs Realizados) */
@@ -453,7 +453,7 @@
             <h1>Controle Financeiro</h1>
         </header>
 
-        <!-- Dashboard GLOBAL (Soma todos os lançamentos independente do mês) -->
+        <!-- Dashboard GLOBAL (Soma todos os lançamentos) -->
         <div class="dashboard">
             <div class="balance-card">
                 <div class="balance-sub-card">
@@ -474,11 +474,6 @@
                 <h4>A Pagar Geral (Pendentes)</h4>
                 <p class="expense-text" id="total-expense">R$ 0,00</p>
             </div>
-        </div>
-
-        <!-- Filtro de Meses Deslizável (Apenas para filtrar a visualização da lista) -->
-        <div class="month-selector" id="month-selector">
-            <!-- Gerado Dinamicamente -->
         </div>
 
         <!-- Cadastro -->
@@ -515,7 +510,12 @@
             </form>
         </div>
 
-        <!-- Abas -->
+        <!-- FILTROS DE VISUALIZAÇÃO (Posicionados estrategicamente logo acima da Lista) -->
+        <div class="month-selector" id="month-selector">
+            <!-- Abas deslizantes dos meses (Geradas Dinamicamente via JS) -->
+        </div>
+
+        <!-- Abas Pendentes / Realizados -->
         <div class="tabs">
             <button class="tab-btn active" id="tab-pending" onclick="switchTab('pending')">Pendentes</button>
             <button class="tab-btn" id="tab-done" onclick="switchTab('done')">Realizados</button>
@@ -534,9 +534,9 @@
     </div>
 
     <script>
-        // --- CONSTANTES DE SEGURANÇA E RECUPERAÇÃO ---
+        // --- CONSTANTES DE SEGURANÇA ---
         const SENHA_PADRAO = "Touchrio@8512@";
-        const CHAVE_DE_RECUPERACAO = "uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM"; // Sua chave secreta do Firebase
+        const CHAVE_DE_RECUPERACAO = "uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM"; // Database Secret
         
         const loginScreen = document.getElementById('login-screen');
         const loginForm = document.getElementById('login-form');
@@ -647,8 +647,8 @@
                 loadingEl.style.display = 'none';
                 
                 gerarFiltroDeMeses();
-                updateDashboard(); // Sempre calcula os saldos globais
-                renderList();      // Filtra apenas a visualização da lista pelo mês selecionado
+                updateDashboard(); // Sempre calcula os saldos globais unificados
+                renderList();      // Filtra apenas a visualização da lista abaixo pelo mês ativo
             }, (error) => {
                 alert("Erro de conexão com o Firebase.");
             });
@@ -748,7 +748,7 @@
             }
         }
 
-        // CÁLCULO UNIFICADO GLOBAL: Soma todas as transações do banco, independente da data
+        // CÁLCULO UNIFICADO GLOBAL: Soma todas as transações de todos os meses de forma histórica
         function updateDashboard() {
             let pendingIncome = 0, pendingExpense = 0, realIncome = 0, realExpense = 0;
 
