@@ -453,30 +453,30 @@
             <h1>Controle Financeiro</h1>
         </header>
 
-        <!-- Dashboard -->
+        <!-- Dashboard GLOBAL (Soma todos os lançamentos independente do mês) -->
         <div class="dashboard">
             <div class="balance-card">
                 <div class="balance-sub-card">
-                    <h3>Saldo Real</h3>
+                    <h3>Saldo Real Geral</h3>
                     <div class="balance-value income-text" id="real-balance">R$ 0,00</div>
                 </div>
                 <div style="border-left: 1px solid var(--border)"></div>
                 <div class="balance-sub-card">
-                    <h3>Saldo Previsto</h3>
+                    <h3>Saldo Previsto Geral</h3>
                     <div class="balance-value" id="total-balance">R$ 0,00</div>
                 </div>
             </div>
             <div class="mini-card">
-                <h4>A Receber (Pendentes)</h4>
+                <h4>A Receber Geral (Pendentes)</h4>
                 <p class="income-text" id="total-income">R$ 0,00</p>
             </div>
             <div class="mini-card">
-                <h4>A Pagar (Pendentes)</h4>
+                <h4>A Pagar Geral (Pendentes)</h4>
                 <p class="expense-text" id="total-expense">R$ 0,00</p>
             </div>
         </div>
 
-        <!-- Filtro de Meses Deslizável -->
+        <!-- Filtro de Meses Deslizável (Apenas para filtrar a visualização da lista) -->
         <div class="month-selector" id="month-selector">
             <!-- Gerado Dinamicamente -->
         </div>
@@ -550,7 +550,7 @@
         }
 
         window.alterarSenhaDoSistema = function() {
-            const chave = prompt("Insira a Chave de Recuperação (Database Secret) para liberar a alteration:");
+            const chave = prompt("Insira a Chave de Recuperação (Database Secret) para liberar a alteração:");
             if (!chave) return;
             
             if (chave.trim() === CHAVE_DE_RECUPERACAO) {
@@ -616,7 +616,7 @@
         let db;
         let transactions = [];
         let currentTab = 'pending';
-        let selectedMonthKey = ''; // Chave do mês selecionado (ex: "2026-07")
+        let selectedMonthKey = ''; // Chave do mês selecionado para a lista (ex: "2026-07")
 
         const form = document.getElementById('finance-form');
         const descInput = document.getElementById('description');
@@ -647,29 +647,25 @@
                 loadingEl.style.display = 'none';
                 
                 gerarFiltroDeMeses();
-                updateDashboard();
-                renderList();
+                updateDashboard(); // Sempre calcula os saldos globais
+                renderList();      // Filtra apenas a visualização da lista pelo mês selecionado
             }, (error) => {
                 alert("Erro de conexão com o Firebase.");
             });
         }
 
-        // Mapeamento dos nomes dos meses em português
         const NOME_MESES = [
             "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
             "Jul", "Ago", "Set", "Out", "Nov", "Dez"
         ];
 
-        // Gera e atualiza a barra deslizante dos meses com base nos dados reais salvos no Firebase
         function gerarFiltroDeMeses() {
             const mesesSet = new Set();
             
-            // Adiciona o mês atual por padrão caso o banco esteja limpo
             const hoje = new Date();
             const mesAtualKey = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
             mesesSet.add(mesAtualKey);
 
-            // Coleta todos os anos/meses existentes nos lançamentos
             transactions.forEach(t => {
                 if (t.date) {
                     const [ano, mes] = t.date.split('-');
@@ -677,10 +673,8 @@
                 }
             });
 
-            // Ordena os meses cronologicamente (do mais antigo para o mais recente)
             const mesesOrdenados = Array.from(mesesSet).sort();
 
-            // Define o mês selecionado inicial se ainda não houver nenhum selecionado
             if (!selectedMonthKey || !mesesSet.has(selectedMonthKey)) {
                 selectedMonthKey = mesesSet.has(mesAtualKey) ? mesAtualKey : mesesOrdenados[mesesOrdenados.length - 1];
             }
@@ -696,7 +690,6 @@
                 monthSelector.appendChild(btn);
             });
 
-            // Auto-scroll para manter o mês ativo visível
             const activeBtn = monthSelector.querySelector('.active');
             if (activeBtn) {
                 monthSelector.scrollLeft = activeBtn.offsetLeft - monthSelector.offsetWidth / 2 + activeBtn.offsetWidth / 2;
@@ -711,8 +704,7 @@
                 const nomeMes = NOME_MESES[parseInt(mes) - 1];
                 btn.classList.toggle('active', btn.textContent === `${nomeMes}/${ano}`);
             });
-            updateDashboard();
-            renderList();
+            renderList(); // Atualiza apenas a lista exibida abaixo
         }
 
         // Máscara dinâmica de valor
@@ -756,19 +748,17 @@
             }
         }
 
-        // O painel calcula apenas as finanças do mês selecionado!
+        // CÁLCULO UNIFICADO GLOBAL: Soma todas as transações do banco, independente da data
         function updateDashboard() {
             let pendingIncome = 0, pendingExpense = 0, realIncome = 0, realExpense = 0;
 
             transactions.forEach(t => {
-                if (t.date && t.date.startsWith(selectedMonthKey)) {
-                    if (t.done) {
-                        if (t.type === 'receber') realIncome += t.amount;
-                        else realExpense += t.amount;
-                    } else {
-                        if (t.type === 'receber') pendingIncome += t.amount;
-                        else pendingExpense += t.amount;
-                    }
+                if (t.done) {
+                    if (t.type === 'receber') realIncome += t.amount;
+                    else realExpense += t.amount;
+                } else {
+                    if (t.type === 'receber') pendingIncome += t.amount;
+                    else pendingExpense += t.amount;
                 }
             });
 
@@ -843,7 +833,6 @@
                 });
             }
 
-            // Após cadastrar, seleciona automaticamente o mês da conta cadastrada para exibi-la na tela
             const [ano, mes] = date.split('-');
             selectedMonthKey = `${ano}-${mes}`;
 
