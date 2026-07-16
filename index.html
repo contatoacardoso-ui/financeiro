@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-title" content="Financeiro">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2489/2489756.png">
 
-    <!-- Manifesto embutido para criar o ícone de instalação -->
+    <!-- Manifesto embutido para criar o ícone de instalação em Tela Cheia (standalone) -->
     <link rel="manifest" href='data:application/json,{"name":"Controle Financeiro","short_name":"Financeiro","start_url":".","display":"standalone","background_color":"#121214","theme_color":"#121214","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2489/2489756.png","sizes":"512x512","type":"image/png"}]}' />
 
     <!-- Firebase SDKs compatíveis para rodar direto no navegador -->
@@ -40,8 +40,89 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             padding: 16px;
-            padding-bottom: 40px;
+            padding-bottom: 60px;
         }
+        
+        /* Botão Flutuante de Instalação no Topo */
+        .install-banner {
+            display: none;
+            background-color: rgba(78, 168, 222, 0.15);
+            border: 1px solid var(--primary);
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            text-align: center;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .install-banner p {
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .install-banner button {
+            background-color: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        /* Tela de Login */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            padding: 24px;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 320px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 30px 24px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        .login-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+        .login-card h2 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+        .login-card p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+        .login-card input {
+            text-align: center;
+            font-size: 1.1rem;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+        .login-error {
+            color: var(--expense);
+            font-size: 0.8rem;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        /* Container do Aplicativo Principal */
+        #app-container {
+            display: none; /* Escondido por padrão até logar */
+        }
+
         header {
             margin-bottom: 20px;
             text-align: center;
@@ -55,7 +136,7 @@
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(18, 18, 20, 0.95);
-            display: flex;
+            display: none; /* Só aparece depois do login, enquanto carrega o Firebase */
             justify-content: center;
             align-items: center;
             z-index: 9999;
@@ -193,7 +274,7 @@
             opacity: 0.8;
         }
 
-        /* Abas de Navegação (Pendentes vs Realizados) */
+        /* Abas de Navegação */
         .tabs {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -283,86 +364,186 @@
             padding: 20px 0;
             font-size: 0.85rem;
         }
+
+        /* Rodapé de Configuração de Segurança */
+        .security-footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+        .security-footer button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .security-footer button:active {
+            color: var(--primary);
+        }
     </style>
 </head>
 <body>
 
+    <!-- Tela de Login -->
+    <div id="login-screen">
+        <div class="login-card">
+            <div class="login-icon">🔒</div>
+            <h2>Acesso Restrito</h2>
+            <p>Insira a senha para acessar o Financeiro</p>
+            <form id="login-form">
+                <input type="password" id="login-password" placeholder="Senha do App" required>
+                <div class="login-error" id="login-error">Senha incorreta. Tente novamente.</div>
+                <button type="submit" class="submit-btn">Entrar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Overlay de carregamento pós-login -->
     <div id="loading">Conectando ao banco de dados...</div>
 
-    <header>
-        <h1>Controle Financeiro</h1>
-    </header>
+    <!-- Aplicativo Principal -->
+    <div id="app-container">
+        
+        <!-- Banner de Instalação de Aplicativo -->
+        <div id="install-banner" class="install-banner">
+            <p>📲 Use como aplicativo em tela cheia!</p>
+            <button id="install-btn">Instalar</button>
+        </div>
 
-    <!-- Dashboard -->
-    <div class="dashboard">
-        <div class="balance-card">
-            <div class="balance-sub-card">
-                <h3>Saldo Real</h3>
-                <div class="balance-value income-text" id="real-balance">R$ 0,00</div>
-            </div>
-            <div style="border-left: 1px solid var(--border)"></div>
-            <div class="balance-sub-card">
-                <h3>Saldo Previsto</h3>
-                <div class="balance-value" id="total-balance">R$ 0,00</div>
-            </div>
-        </div>
-        <div class="mini-card">
-            <h4>A Receber (Pendentes)</h4>
-            <p class="income-text" id="total-income">R$ 0,00</p>
-        </div>
-        <div class="mini-card">
-            <h4>A Pagar (Pendentes)</h4>
-            <p class="expense-text" id="total-expense">R$ 0,00</p>
-        </div>
-    </div>
+        <header>
+            <h1>Controle Financeiro</h1>
+        </header>
 
-    <!-- Cadastro -->
-    <div class="form-card">
-        <h2>Novo Lançamento</h2>
-        <form id="finance-form">
-            <div class="radio-group">
-                <div class="radio-btn">
-                    <input type="radio" id="type-receber" name="type" value="receber" checked>
-                    <label for="type-receber" class="radio-label lbl-receber">A Receber</label>
+        <!-- Dashboard -->
+        <div class="dashboard">
+            <div class="balance-card">
+                <div class="balance-sub-card">
+                    <h3>Saldo Real</h3>
+                    <div class="balance-value income-text" id="real-balance">R$ 0,00</div>
                 </div>
-                <div class="radio-btn">
-                    <input type="radio" id="type-pagar" name="type" value="pagar">
-                    <label for="type-pagar" class="radio-label lbl-pagar">A Pagar</label>
+                <div style="border-left: 1px solid var(--border)"></div>
+                <div class="balance-sub-card">
+                    <h3>Saldo Previsto</h3>
+                    <div class="balance-value" id="total-balance">R$ 0,00</div>
                 </div>
             </div>
-
-            <div class="form-group">
-                <label for="description">Descrição</label>
-                <input type="text" id="description" placeholder="Ex: Aluguel, Internet" required autocomplete="off">
+            <div class="mini-card">
+                <h4>A Receber (Pendentes)</h4>
+                <p class="income-text" id="total-income">R$ 0,00</p>
             </div>
-
-            <div class="form-group">
-                <label for="amount">Valor (R$)</label>
-                <input type="text" id="amount" placeholder="0,00" required inputmode="numeric">
+            <div class="mini-card">
+                <h4>A Pagar (Pendentes)</h4>
+                <p class="expense-text" id="total-expense">R$ 0,00</p>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label for="due-date">Data de Vencimento</label>
-                <input type="date" id="due-date" required>
-            </div>
+        <!-- Cadastro -->
+        <div class="form-card">
+            <h2>Novo Lançamento</h2>
+            <form id="finance-form">
+                <div class="radio-group">
+                    <div class="radio-btn">
+                        <input type="radio" id="type-receber" name="type" value="receber" checked>
+                        <label for="type-receber" class="radio-label lbl-receber">A Receber</label>
+                    </div>
+                    <div class="radio-btn">
+                        <input type="radio" id="type-pagar" name="type" value="pagar">
+                        <label for="type-pagar" class="radio-label lbl-pagar">A Pagar</label>
+                    </div>
+                </div>
 
-            <button type="submit" class="submit-btn">Adicionar Lançamento</button>
-        </form>
-    </div>
+                <div class="form-group">
+                    <label for="description">Descrição</label>
+                    <input type="text" id="description" placeholder="Ex: Aluguel, Internet" required autocomplete="off">
+                </div>
 
-    <!-- Abas -->
-    <div class="tabs">
-        <button class="tab-btn active" id="tab-pending" onclick="switchTab('pending')">Pendentes</button>
-        <button class="tab-btn" id="tab-done" onclick="switchTab('done')">Realizados</button>
-    </div>
+                <div class="form-group">
+                    <label for="amount">Valor (R$)</label>
+                    <input type="text" id="amount" placeholder="0,00" required inputmode="numeric">
+                </div>
 
-    <!-- Lista de Lançamentos -->
-    <div>
-        <div class="transaction-list" id="transaction-list"></div>
+                <div class="form-group">
+                    <label for="due-date">Data de Vencimento</label>
+                    <input type="date" id="due-date" required>
+                </div>
+
+                <button type="submit" class="submit-btn">Adicionar Lançamento</button>
+            </form>
+        </div>
+
+        <!-- Abas -->
+        <div class="tabs">
+            <button class="tab-btn active" id="tab-pending" onclick="switchTab('pending')">Pendentes</button>
+            <button class="tab-btn" id="tab-done" onclick="switchTab('done')">Realizados</button>
+        </div>
+
+        <!-- Lista de Lançamentos -->
+        <div>
+            <div class="transaction-list" id="transaction-list"></div>
+        </div>
+
+        <!-- Configurações de Segurança no Rodapé -->
+        <div class="security-footer">
+            <button onclick="alterarSenhaDoSistema()">Alterar Senha do App</button>
+        </div>
     </div>
 
     <script>
-        // Credenciais do Firebase apontando para a pasta segura
+        // --- CONSTANTES DE SEGURANÇA E RECUPERAÇÃO ---
+        const SENHA_PADRAO = "Touchrio@8512@";
+        const CHAVE_DE_RECUPERACAO = "uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM"; // Sua chave secreta do Firebase
+        
+        const loginScreen = document.getElementById('login-screen');
+        const loginForm = document.getElementById('login-form');
+        const loginPassword = document.getElementById('login-password');
+        const loginError = document.getElementById('login-error');
+        const appContainer = document.getElementById('app-container');
+        const loadingEl = document.getElementById('loading');
+
+        // Retorna a senha cadastrada no aparelho ou a senha padrão
+        function obterSenhaAtual() {
+            return localStorage.getItem('finance_app_pwd') || SENHA_PADRAO;
+        }
+
+        // Função segura para alterar a senha
+        window.alterarSenhaDoSistema = function() {
+            const chave = prompt("Insira a Chave de Recuperação (Database Secret) para liberar a alteração:");
+            
+            if (!chave) return;
+            
+            if (chave.trim() === CHAVE_DE_RECUPERACAO) {
+                const novaSenha = prompt("Acesso autorizado! Digite a sua NOVA senha de login:");
+                if (novaSenha && novaSenha.trim().length >= 4) {
+                    localStorage.setItem('finance_app_pwd', novaSenha.trim());
+                    alert("Senha alterada com sucesso! O aplicativo será reiniciado.");
+                    window.location.reload();
+                } else if (novaSenha) {
+                    alert("Erro: A senha precisa ter pelo menos 4 caracteres.");
+                }
+            } else {
+                alert("Erro: Chave de recuperação inválida. Acesso negado.");
+            }
+        }
+
+        // Gerenciador de Login
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (loginPassword.value === obterSenhaAtual()) {
+                loginScreen.style.display = 'none';
+                appContainer.style.display = 'block';
+                loadingEl.style.display = 'flex';
+                inicializarFirebase();
+            } else {
+                loginError.style.display = 'block';
+                loginPassword.value = '';
+                loginPassword.focus();
+            }
+        });
+
+        // Credenciais do Firebase apontando para a sua pasta segura
         const firebaseConfig = {
             apiKey: "AIzaSyDLlTOuVyPLLYXTEAX__8Sys2RMSV-UX54",
             authDomain: "financeiro-3fe98.firebaseapp.com",
@@ -373,26 +554,43 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        // Inicializando o app apontando para a pasta privada gerada pela sua chave
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database().ref("lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM");
+        let db;
+        let transactions = [];
+        let currentTab = 'pending';
 
         const form = document.getElementById('finance-form');
         const descInput = document.getElementById('description');
         const amountInput = document.getElementById('amount');
         const dateInput = document.getElementById('due-date');
         const listContainer = document.getElementById('transaction-list');
-        const loadingEl = document.getElementById('loading');
         
         const realBalanceEl = document.getElementById('real-balance');
         const balanceEl = document.getElementById('total-balance');
         const incomeEl = document.getElementById('total-income');
         const expenseEl = document.getElementById('total-expense');
 
-        let transactions = [];
-        let currentTab = 'pending';
-
         dateInput.value = new Date().toISOString().split('T')[0];
+
+        // Inicialização do Firebase após autenticação
+        function inicializarFirebase() {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database().ref("lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM");
+
+            db.on('value', (snapshot) => {
+                const data = snapshot.val();
+                transactions = [];
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        transactions.push({ id: key, ...data[key] });
+                    });
+                }
+                loadingEl.style.display = 'none';
+                updateDashboard();
+                renderList();
+            }, (error) => {
+                alert("Erro de conexão com o Firebase. Verifique se as regras no Firebase Console estão ativas.");
+            });
+        }
 
         // Máscara dinâmica de valor (centavos automáticos)
         amountInput.addEventListener('input', (e) => {
@@ -425,29 +623,13 @@
             renderList();
         }
 
-        // Sincronização em Tempo Real com o Database do Firebase
-        db.on('value', (snapshot) => {
-            const data = snapshot.val();
-            transactions = [];
-            if (data) {
-                Object.keys(data).forEach(key => {
-                    transactions.push({ id: key, ...data[key] });
-                });
-            }
-            loadingEl.style.display = 'none'; // Esconde a tela de loading
-            updateDashboard();
-            renderList();
-        }, (error) => {
-            alert("Erro de conexão com o Firebase. Verifique se as regras no Firebase Console estão ativas.");
-        });
-
         window.confirmTransaction = function(id) {
-            db.child(id).update({ done: true });
+            if (db) db.child(id).update({ done: true });
         }
 
         window.deleteTransaction = function(id) {
             if(confirm("Deseja apagar permanentemente este lançamento?")) {
-                db.child(id).remove();
+                if (db) db.child(id).remove();
             }
         }
 
@@ -522,13 +704,15 @@
 
             if (!description || amount <= 0 || !date) return;
 
-            db.push({
-                type: selectedType,
-                description,
-                amount,
-                date,
-                done: false
-            });
+            if (db) {
+                db.push({
+                    type: selectedType,
+                    description,
+                    amount,
+                    date,
+                    done: false
+                });
+            }
 
             descInput.value = '';
             amountInput.value = '';
@@ -536,7 +720,45 @@
             switchTab('pending');
         });
 
-        // Registro simplificado de Service Worker para habilitar a instalação nativa do PWA
+        // --- SISTEMA INTELIGENTE DE INSTALAÇÃO (PWA) ---
+        let deferredPrompt;
+        const installBanner = document.getElementById('install-banner');
+        const installBtn = document.getElementById('install-btn');
+
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isRunningStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+        if (!isRunningStandalone) {
+            if (isIOS) {
+                installBanner.style.display = 'flex';
+                installBtn.addEventListener('click', () => {
+                    alert("Para instalar no iPhone:\n\n1. Toque no botão de 'Compartilhar' (ícone do quadrado com a seta para cima no rodapé do Safari)\n2. Escolha 'Adicionar à Tela de Início'.");
+                });
+            } else {
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    deferredPrompt = e;
+                    installBanner.style.display = 'flex';
+                });
+
+                installBtn.addEventListener('click', async () => {
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        if (outcome === 'accepted') {
+                            installBanner.style.display = 'none';
+                        }
+                        deferredPrompt = null;
+                    }
+                });
+            }
+        }
+
+        window.addEventListener('appinstalled', () => {
+            installBanner.style.display = 'none';
+        });
+
+        // Service Worker
         if ('serviceWorker' in navigator) {
             const swCode = `
                 self.addEventListener('install', e => self.skipWaiting());
