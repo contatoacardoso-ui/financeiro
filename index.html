@@ -362,20 +362,20 @@
     </div>
 
     <script>
-        // Suas credenciais do Firebase configuradas corretamente com a chave secreta de segurança
+        // Credenciais do Firebase apontando para a pasta segura
         const firebaseConfig = {
             apiKey: "AIzaSyDLlTOuVyPLLYXTEAX__8Sys2RMSV-UX54",
             authDomain: "financeiro-3fe98.firebaseapp.com",
-            databaseURL: "https://financeiro-3fe98-default-rtdb.firebaseio.com?auth=uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM",
+            databaseURL: "https://financeiro-3fe98-default-rtdb.firebaseio.com",
             projectId: "financeiro-3fe98",
             storageBucket: "financeiro-3fe98.firebasestorage.app",
             messagingSenderId: "727786772341",
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        // Inicializando o app e apontando para a coleção de "lancamentos"
+        // Inicializando o app apontando para a pasta privada gerada pela sua chave
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.database().ref("lancamentos");
+        const db = firebase.database().ref("lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM");
 
         const form = document.getElementById('finance-form');
         const descInput = document.getElementById('description');
