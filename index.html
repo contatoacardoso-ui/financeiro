@@ -189,7 +189,7 @@
         .income-text { color: var(--income); }
         .expense-text { color: var(--expense); }
 
-        /* --- Acordeão de Cadastro (Novo Lançamento Expansível) --- */
+        /* Acordeão de Cadastro (Novo Lançamento Expansível) */
         .form-accordion {
             background-color: var(--card-bg);
             border: 1px solid var(--border);
@@ -436,31 +436,34 @@
             border-radius: 12px;
             overflow: hidden;
         }
-        .security-accordion summary {
-            padding: 14px;
+        .security-header-btn {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 16px;
             font-size: 0.9rem;
             font-weight: bold;
             color: var(--text-secondary);
             cursor: pointer;
-            list-style: none;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 8px;
+            outline: none;
         }
-        .security-accordion summary::-webkit-details-marker {
-            display: none;
+        .security-header-btn:active {
+            background-color: rgba(255, 255, 255, 0.02);
         }
-        .security-accordion[open] summary {
+        .security-header-btn.is-open {
             border-bottom: 1px solid var(--border);
             color: var(--text-color);
             background-color: rgba(255, 255, 255, 0.02);
         }
-        .security-actions {
-            display: flex;
+        .security-panel-content {
+            display: none; /* Controlado via JS após digitação da senha */
             flex-direction: column;
         }
-        .security-actions button {
+        .security-panel-content button {
             background: none;
             border: none;
             border-bottom: 1px solid var(--border);
@@ -472,14 +475,16 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            width: 100%;
+            outline: none;
         }
-        .security-actions button:last-child {
+        .security-panel-content button:last-child {
             border-bottom: none;
         }
-        .security-actions button:active {
+        .security-panel-content button:active {
             background-color: rgba(255,255,255,0.05);
         }
-        .security-actions button.danger-btn {
+        .security-panel-content button.danger-btn {
             color: var(--expense);
         }
     </style>
@@ -539,7 +544,7 @@
             </div>
         </div>
 
-        <!-- ACORDEÃO DE CADASTRO (Novo Lançamento Expansível) -->
+        <!-- ACORDEÃO DE CADASTRO -->
         <details class="form-accordion" id="form-accordion">
             <summary>➕ Novo Lançamento</summary>
             <div class="form-content">
@@ -591,11 +596,16 @@
             <div class="transaction-list" id="transaction-list"></div>
         </div>
 
-        <!-- MENU: Configurações de Segurança no Rodapé -->
+        <!-- MENU DE SEGURANÇA SEGURO NO RODAPÉ -->
         <div class="security-footer">
-            <details class="security-accordion">
-                <summary>⚙️ Configurações de Segurança</summary>
-                <div class="security-actions">
+            <div class="security-accordion">
+                <!-- Botão de Cabeçalho Inteligente que exige validação antes de abrir -->
+                <button class="security-header-btn" id="security-toggle-btn" onclick="tentarAbrirConfiguracoes()">
+                    <span>⚙️</span> Configurações de Segurança
+                </button>
+                
+                <!-- Painel de ações trancado -->
+                <div class="security-panel-content" id="security-panel-content">
                     <button onclick="fazerBackup()">
                         <span>📥</span> Exportar Dados (Backup)
                     </button>
@@ -609,7 +619,7 @@
                         <span>🗑️</span> Zerar Banco de Dados
                     </button>
                 </div>
-            </details>
+            </div>
         </div>
     </div>
 
@@ -624,9 +634,41 @@
         const loginError = document.getElementById('login-error');
         const appContainer = document.getElementById('app-container');
         const loadingEl = document.getElementById('loading');
+        
+        const securityToggleBtn = document.getElementById('security-toggle-btn');
+        const securityPanelContent = document.getElementById('security-panel-content');
 
         function obterSenhaAtual() {
             return localStorage.getItem('finance_app_pwd') || SENHA_PADRAO;
+        }
+
+        // --- VALIDAÇÃO RESTRITA DAS CONFIGURAÇÕES ---
+        window.tentarAbrirConfiguracoes = function() {
+            // Se as configurações já estiverem abertas, basta fechar
+            if (securityPanelContent.style.display === 'flex') {
+                fecharPainelDeSeguranca();
+                return;
+            }
+
+            // Pede a senha do sistema para autorizar a abertura do painel
+            const senhaDigitada = prompt("Insira a Senha do App para gerenciar as Configurações de Segurança:");
+            
+            if (senhaDigitada === obterSenhaAtual()) {
+                abrirPainelDeSeguranca();
+            } else if (senhaDigitada !== null) {
+                alert("Erro: Senha incorreta. Acesso negado.");
+                fecharPainelDeSeguranca();
+            }
+        }
+
+        function abrirPainelDeSeguranca() {
+            securityPanelContent.style.display = 'flex';
+            securityToggleBtn.classList.add('is-open');
+        }
+
+        function fecharPainelDeSeguranca() {
+            securityPanelContent.style.display = 'none';
+            securityToggleBtn.classList.remove('is-open');
         }
 
         // --- FUNÇÕES DE SEGURANÇA E ADMINISTRAÇÃO ---
@@ -957,14 +999,13 @@
             descInput.value = '';
             amountInput.value = '';
             
-            // Fecha a gaveta de cadastro automaticamente após salvar o novo lançamento
             formAccordion.removeAttribute('open');
             
             descInput.focus();
             switchTab('pending');
         });
 
-        // --- SISTEMA COMPATÍVEL DE INSTALAÇÃO (PWA) ---
+        // --- PWA INSTALLATION BANNER ---
         let deferredPrompt;
         const installBanner = document.getElementById('install-banner');
         const installBtn = document.getElementById('install-btn');
