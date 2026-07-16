@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Financeiro Mobile</title>
+    
+    <!-- Configurações PWA (Ícone na Tela Inicial) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Financeiro">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2489/2489756.png">
+
+    <!-- Manifesto embutido -->
+    <link rel="manifest" href='data:application/json,{"name":"Controle Financeiro","short_name":"Financeiro","start_url":".","display":"standalone","background_color":"#121214","theme_color":"#121214","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2489/2489756.png","sizes":"512x512","type":"image/png"}]}' />
+
+    <!-- Firebase SDKs (Compatíveis com o estilo usado na Portaria) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #121214;
+            --card-bg: #1d1d22;
+            --text-color: #e1e1e6;
+            --text-secondary: #a8a8b3;
+            --primary: #4ea8de;
+            --income: #00b37e;
+            --expense: #f75a68;
+            --border: #29292e;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 16px;
+            padding-bottom: 40px;
+        }
+        header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        header h1 {
+            font-size: 1.4rem;
+        }
+        
+        /* Loading overlay para quando estiver sincronizando com o Firebase */
+        #loading {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(18, 18, 20, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            font-weight: bold;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .balance-card {
+            grid-column: span 2;
+            background: linear-gradient(135deg, #202024 0%, #121214 100%);
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            display: flex;
+            justify-content: space-around;
+        }
+        .balance-sub-card h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        .balance-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        .mini-card {
+            background-color: var(--card-bg);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .mini-card h4 {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        .mini-card p {
+            font-size: 1rem;
+            font-weight: bold;
+        }
+        .income-text { color: var(--income); }
+        .expense-text { color: var(--expense); }
+
+        /* Cadastro */
+        .form-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .form-card h2 {
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            background-color: #121214;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-size: 0.95rem;
+            outline: none;
+        }
+        input:focus {
+            border-color: var(--primary);
+        }
+        .radio-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .radio-btn {
+            position: relative;
+        }
+        .radio-btn input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .radio-label {
+            display: block;
+            text-align: center;
+            padding: 10px;
+            background-color: #121214;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .radio-btn input:checked + .radio-label.lbl-receber {
+            border-color: var(--income);
+            background-color: rgba(0, 179, 126, 0.1);
+            color: var(--income);
+        }
+        .radio-btn input:checked + .radio-label.lbl-pagar {
+            border-color: var(--expense);
+            background-color: rgba(247, 90, 104, 0.1);
+            color: var(--expense);
+        }
+        button.submit-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:active {
+            opacity: 0.8;
+        }
+
+        /* Abas */
+        .tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .tab-btn {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        .tab-btn.active {
+            border-color: var(--primary);
+            color: var(--primary);
+            background-color: rgba(78, 168, 222, 0.1);
+        }
+
+        /* Lista de Lançamentos */
+        .transaction-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .transaction-item {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .item-details h4 {
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+        }
+        .item-details span {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        .item-right {
+            text-align: right;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .item-value {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        /* Botões */
+        .action-btn {
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .confirm-btn {
+            color: var(--income);
+            border: 1px solid rgba(0, 179, 126, 0.3);
+        }
+        .delete-btn {
+            color: var(--text-secondary);
+            font-size: 1.3rem;
+        }
+        .empty-state {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 20px 0;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading">Conectando ao banco de dados...</div>
+
+    <header>
+        <h1>Controle Financeiro</h1>
+    </header>
+
+    <!-- Dashboard -->
+    <div class="dashboard">
+        <div class="balance-card">
+            <div class="balance-sub-card">
+                <h3>Saldo Real</h3>
+                <div class="balance-value income-text" id="real-balance">R$ 0,00</div>
+            </div>
+            <div style="border-left: 1px solid var(--border)"></div>
+            <div class="balance-sub-card">
+                <h3>Saldo Previsto</h3>
+                <div class="balance-value" id="total-balance">R$ 0,00</div>
+            </div>
+        </div>
+        <div class="mini-card">
+            <h4>A Receber (Pendentes)</h4>
+            <p class="income-text" id="total-income">R$ 0,00</p>
+        </div>
+        <div class="mini-card">
+            <h4>A Pagar (Pendentes)</h4>
+            <p class="expense-text" id="total-expense">R$ 0,00</p>
+        </div>
+    </div>
+
+    <!-- Cadastro -->
+    <div class="form-card">
+        <h2>Novo Lançamento</h2>
+        <form id="finance-form">
+            <div class="radio-group">
+                <div class="radio-btn">
+                    <input type="radio" id="type-receber" name="type" value="receber" checked>
+                    <label for="type-receber" class="radio-label lbl-receber">A Receber</label>
+                </div>
+                <div class="radio-btn">
+                    <input type="radio" id="type-pagar" name="type" value="pagar">
+                    <label for="type-pagar" class="radio-label lbl-pagar">A Pagar</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Descrição</label>
+                <input type="text" id="description" placeholder="Ex: Aluguel, Internet" required autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label for="amount">Valor (R$)</label>
+                <input type="text" id="amount" placeholder="0,00" required inputmode="numeric">
+            </div>
+
+            <div class="form-group">
+                <label for="due-date">Data de Vencimento</label>
+                <input type="date" id="due-date" required>
+            </div>
+
+            <button type="submit" class="submit-btn">Adicionar Lançamento</button>
+        </form>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" id="tab-pending" onclick="switchTab('pending')">Pendentes</button>
+        <button class="tab-btn" id="tab-done" onclick="switchTab('done')">Realizados</button>
+    </div>
+
+    <div>
+        <div class="transaction-list" id="transaction-list"></div>
+    </div>
+
+    <script>
+        // ================= CONFIRA E INSIRA SUAS CREDENCIAIS DO FIREBASE AQUI =================
+        const firebaseConfig = {
+            apiKey: "SUA_API_KEY",
+            authDomain: "SEU_AUTH_DOMAIN",
+            databaseURL: "SUA_DATABASE_URL",
+            projectId: "SEU_PROJECT_ID",
+            storageBucket: "SEU_STORAGE_BUCKET",
+            messagingSenderId: "SEU_SENDER_ID",
+            appId: "SEU_APP_ID"
+        };
+        // =====================================================================================
+
+        // Inicializa o Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database().ref("lancamentos");
+
+        const form = document.getElementById('finance-form');
+        const descInput = document.getElementById('description');
+        const amountInput = document.getElementById('amount');
+        const dateInput = document.getElementById('due-date');
+        const listContainer = document.getElementById('transaction-list');
+        const loadingEl = document.getElementById('loading');
+        
+        const realBalanceEl = document.getElementById('real-balance');
+        const balanceEl = document.getElementById('total-balance');
+        const incomeEl = document.getElementById('total-income');
+        const expenseEl = document.getElementById('total-expense');
+
+        let transactions = [];
+        let currentTab = 'pending';
+
+        dateInput.value = new Date().toISOString().split('T')[0];
+
+        // Máscara dinâmica de moeda em tempo real
+        amountInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (!value) { e.target.value = ''; return; }
+            let numValue = (parseFloat(value) / 100).toFixed(2);
+            let parts = numValue.split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            e.target.value = parts.join(',');
+        });
+
+        function parseFormattedValue(value) {
+            if (!value) return 0;
+            return parseFloat(value.replace(/\./g, '').replace(',', '.')) || 0;
+        }
+
+        function formatCurrency(value) {
+            return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function formatDate(dateString) {
+            const [year, month, day] = dateString.split('-');
+            return `${day}/${month}/${year}`;
+        }
+
+        window.switchTab = function(tab) {
+            currentTab = tab;
+            document.getElementById('tab-pending').classList.toggle('active', tab === 'pending');
+            document.getElementById('tab-done').classList.toggle('active', tab === 'done');
+            renderList();
+        }
+
+        // SINCRONIZAÇÃO COM O FIREBASE (Igual à Portaria)
+        // Ouve modificações em tempo real
+        db.on('value', (snapshot) => {
+            const data = snapshot.val();
+            transactions = [];
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    transactions.push({ id: key, ...data[key] });
+                });
+            }
+            loadingEl.style.display = 'none'; // Esconde o carregamento
+            updateDashboard();
+            renderList();
+        }, (error) => {
+            alert("Erro ao conectar ao Firebase: " + error.message);
+        });
+
+        window.confirmTransaction = function(id) {
+            db.child(id).update({ done: true });
+        }
+
+        window.deleteTransaction = function(id) {
+            if(confirm("Deseja apagar permanentemente este lançamento?")) {
+                db.child(id).remove();
+            }
+        }
+
+        function updateDashboard() {
+            let pendingIncome = 0, pendingExpense = 0, realIncome = 0, realExpense = 0;
+
+            transactions.forEach(t => {
+                if (t.done) {
+                    if (t.type === 'receber') realIncome += t.amount;
+                    else realExpense += t.amount;
+                } else {
+                    if (t.type === 'receber') pendingIncome += t.amount;
+                    else pendingExpense += t.amount;
+                }
+            });
+
+            const totalIncome = realIncome + pendingIncome;
+            const totalExpense = realExpense + pendingExpense;
+            const predictedBalance = totalIncome - totalExpense;
+            const realBalance = realIncome - realExpense;
+
+            incomeEl.textContent = formatCurrency(pendingIncome);
+            expenseEl.textContent = formatCurrency(pendingExpense);
+            
+            balanceEl.textContent = formatCurrency(predictedBalance);
+            balanceEl.style.color = predictedBalance < 0 ? 'var(--expense)' : 'var(--text-color)';
+
+            realBalanceEl.textContent = formatCurrency(realBalance);
+            realBalanceEl.style.color = realBalance < 0 ? 'var(--expense)' : 'var(--income)';
+        }
+
+        function renderList() {
+            listContainer.innerHTML = '';
+            const filtered = transactions.filter(t => currentTab === 'done' ? t.done : !t.done);
+
+            if (filtered.length === 0) {
+                listContainer.innerHTML = `<div class="empty-state">Nenhum lançamento ${currentTab === 'done' ? 'realizado' : 'pendente'}.</div>`;
+                return;
+            }
+
+            const sorted = [...filtered].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            sorted.forEach(t => {
+                const item = document.createElement('div');
+                item.className = 'transaction-item';
+                const isRec = t.type === 'receber';
+                
+                let actionMarkup = !t.done 
+                    ? `<button class="action-btn confirm-btn" onclick="confirmTransaction('${t.id}')">✓</button>`
+                    : `<button class="action-btn delete-btn" onclick="deleteTransaction('${t.id}')">×</button>`;
+
+                item.innerHTML = `
+                    <div class="item-details">
+                        <h4>${t.description}</h4>
+                        <span>${t.done ? 'Realizado em' : 'Vence em'}: ${formatDate(t.date)}</span>
+                    </div>
+                    <div class="item-right">
+                        <span class="item-value ${isRec ? 'income-text' : 'expense-text'}">${isRec ? '+' : '-'} ${formatCurrency(t.amount)}</span>
+                        ${actionMarkup}
+                    </div>
+                `;
+                listContainer.appendChild(item);
+            });
+        }
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const selectedType = document.querySelector('input[name="type"]:checked').value;
+            const description = descInput.value.trim();
+            const amount = parseFormattedValue(amountInput.value);
+            const date = dateInput.value;
+
+            if (!description || amount <= 0 || !date) return;
+
+            // Envia diretamente para o banco de dados do Firebase
+            db.push({
+                type: selectedType,
+                description,
+                amount,
+                date,
+                done: false
+            });
+
+            descInput.value = '';
+            amountInput.value = '';
+            descInput.focus();
+            switchTab('pending');
+        });
+
+        // Registrar Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                self.addEventListener('install', e => self.skipWaiting());
+                self.addEventListener('fetch', e => e.respondWith(fetch(e.request)));
+            `;
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            navigator.serviceWorker.register(URL.createObjectURL(blob));
+        }
+    </script>
+</body>
+</html>
