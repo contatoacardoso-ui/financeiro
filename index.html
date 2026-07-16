@@ -75,7 +75,7 @@
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background-color: var(--bg-color);
-            display: none; /* Controlado dinamicamente via JS */
+            display: none; /* Controlado via JS */
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -189,6 +189,40 @@
         .income-text { color: var(--income); }
         .expense-text { color: var(--expense); }
 
+        /* Filtro de Meses Deslizável */
+        .month-selector {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+        .month-selector::-webkit-scrollbar {
+            height: 4px;
+        }
+        .month-selector::-webkit-scrollbar-thumb {
+            background-color: var(--border);
+            border-radius: 4px;
+        }
+        .month-btn {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        .month-btn.active {
+            background-color: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
         /* Cadastro de Lançamento */
         .form-card {
             background-color: var(--card-bg);
@@ -274,7 +308,7 @@
             opacity: 0.8;
         }
 
-        /* Abas de Navegação */
+        /* Abas de Navegação (Pendentes vs Realizados) */
         .tabs {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -442,6 +476,11 @@
             </div>
         </div>
 
+        <!-- Filtro de Meses Deslizável -->
+        <div class="month-selector" id="month-selector">
+            <!-- Gerado Dinamicamente -->
+        </div>
+
         <!-- Cadastro -->
         <div class="form-card">
             <h2>Novo Lançamento</h2>
@@ -506,14 +545,12 @@
         const appContainer = document.getElementById('app-container');
         const loadingEl = document.getElementById('loading');
 
-        // Retorna a senha cadastrada no aparelho ou a senha padrão
         function obterSenhaAtual() {
             return localStorage.getItem('finance_app_pwd') || SENHA_PADRAO;
         }
 
-        // Função segura para alterar a senha
         window.alterarSenhaDoSistema = function() {
-            const chave = prompt("Insira a Chave de Recuperação (Database Secret) para liberar a alteração:");
+            const chave = prompt("Insira a Chave de Recuperação (Database Secret) para liberar a alteration:");
             if (!chave) return;
             
             if (chave.trim() === CHAVE_DE_RECUPERACAO) {
@@ -530,7 +567,6 @@
             }
         }
 
-        // Função para deslogar manualmente (exigir senha novamente)
         window.fazerLogout = function() {
             if (confirm("Deseja realmente sair e bloquear o aplicativo?")) {
                 localStorage.removeItem('user_authenticated');
@@ -538,27 +574,22 @@
             }
         }
 
-        // --- SISTEMA DE PERSISTÊNCIA DE LOGIN ---
+        // Persistência de Login
         window.addEventListener('DOMContentLoaded', () => {
             const jaLogado = localStorage.getItem('user_authenticated') === 'true';
-            
             if (jaLogado) {
-                // Se já estiver autenticado anteriormente, pula a tela de login direto
                 loginScreen.style.display = 'none';
                 appContainer.style.display = 'block';
                 loadingEl.style.display = 'flex';
                 inicializarFirebase();
             } else {
-                // Caso contrário, mostra a tela de login
                 loginScreen.style.display = 'flex';
             }
         });
 
-        // Gerenciador de Login
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
             if (loginPassword.value === obterSenhaAtual()) {
-                // Salva que o usuário se autenticou com sucesso neste navegador
                 localStorage.setItem('user_authenticated', 'true');
                 loginScreen.style.display = 'none';
                 appContainer.style.display = 'block';
@@ -571,7 +602,7 @@
             }
         });
 
-        // Credenciais do Firebase apontando para a sua pasta segura
+        // Credenciais do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDLlTOuVyPLLYXTEAX__8Sys2RMSV-UX54",
             authDomain: "financeiro-3fe98.firebaseapp.com",
@@ -585,12 +616,14 @@
         let db;
         let transactions = [];
         let currentTab = 'pending';
+        let selectedMonthKey = ''; // Chave do mês selecionado (ex: "2026-07")
 
         const form = document.getElementById('finance-form');
         const descInput = document.getElementById('description');
         const amountInput = document.getElementById('amount');
         const dateInput = document.getElementById('due-date');
         const listContainer = document.getElementById('transaction-list');
+        const monthSelector = document.getElementById('month-selector');
         
         const realBalanceEl = document.getElementById('real-balance');
         const balanceEl = document.getElementById('total-balance');
@@ -599,7 +632,6 @@
 
         dateInput.value = new Date().toISOString().split('T')[0];
 
-        // Inicialização do Firebase após autenticação
         function inicializarFirebase() {
             firebase.initializeApp(firebaseConfig);
             db = firebase.database().ref("lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM");
@@ -613,14 +645,77 @@
                     });
                 }
                 loadingEl.style.display = 'none';
+                
+                gerarFiltroDeMeses();
                 updateDashboard();
                 renderList();
             }, (error) => {
-                alert("Erro de conexão com o Firebase. Verifique se as regras no Firebase Console estão ativas.");
+                alert("Erro de conexão com o Firebase.");
             });
         }
 
-        // Máscara dinâmica de valor (centavos automáticos)
+        // Mapeamento dos nomes dos meses em português
+        const NOME_MESES = [
+            "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+            "Jul", "Ago", "Set", "Out", "Nov", "Dez"
+        ];
+
+        // Gera e atualiza a barra deslizante dos meses com base nos dados reais salvos no Firebase
+        function gerarFiltroDeMeses() {
+            const mesesSet = new Set();
+            
+            // Adiciona o mês atual por padrão caso o banco esteja limpo
+            const hoje = new Date();
+            const mesAtualKey = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+            mesesSet.add(mesAtualKey);
+
+            // Coleta todos os anos/meses existentes nos lançamentos
+            transactions.forEach(t => {
+                if (t.date) {
+                    const [ano, mes] = t.date.split('-');
+                    mesesSet.add(`${ano}-${mes}`);
+                }
+            });
+
+            // Ordena os meses cronologicamente (do mais antigo para o mais recente)
+            const mesesOrdenados = Array.from(mesesSet).sort();
+
+            // Define o mês selecionado inicial se ainda não houver nenhum selecionado
+            if (!selectedMonthKey || !mesesSet.has(selectedMonthKey)) {
+                selectedMonthKey = mesesSet.has(mesAtualKey) ? mesAtualKey : mesesOrdenados[mesesOrdenados.length - 1];
+            }
+
+            monthSelector.innerHTML = '';
+            mesesOrdenados.forEach(key => {
+                const [ano, mes] = key.split('-');
+                const nomeMes = NOME_MESES[parseInt(mes) - 1];
+                const btn = document.createElement('button');
+                btn.className = `month-btn ${key === selectedMonthKey ? 'active' : ''}`;
+                btn.textContent = `${nomeMes}/${ano}`;
+                btn.onclick = () => selectMonth(key);
+                monthSelector.appendChild(btn);
+            });
+
+            // Auto-scroll para manter o mês ativo visível
+            const activeBtn = monthSelector.querySelector('.active');
+            if (activeBtn) {
+                monthSelector.scrollLeft = activeBtn.offsetLeft - monthSelector.offsetWidth / 2 + activeBtn.offsetWidth / 2;
+            }
+        }
+
+        function selectMonth(key) {
+            selectedMonthKey = key;
+            const buttons = monthSelector.querySelectorAll('.month-btn');
+            buttons.forEach(btn => {
+                const [ano, mes] = key.split('-');
+                const nomeMes = NOME_MESES[parseInt(mes) - 1];
+                btn.classList.toggle('active', btn.textContent === `${nomeMes}/${ano}`);
+            });
+            updateDashboard();
+            renderList();
+        }
+
+        // Máscara dinâmica de valor
         amountInput.addEventListener('input', (e) => {
             let value = e.target.value.replace(/\D/g, '');
             if (!value) { e.target.value = ''; return; }
@@ -661,16 +756,19 @@
             }
         }
 
+        // O painel calcula apenas as finanças do mês selecionado!
         function updateDashboard() {
             let pendingIncome = 0, pendingExpense = 0, realIncome = 0, realExpense = 0;
 
             transactions.forEach(t => {
-                if (t.done) {
-                    if (t.type === 'receber') realIncome += t.amount;
-                    else realExpense += t.amount;
-                } else {
-                    if (t.type === 'receber') pendingIncome += t.amount;
-                    else pendingExpense += t.amount;
+                if (t.date && t.date.startsWith(selectedMonthKey)) {
+                    if (t.done) {
+                        if (t.type === 'receber') realIncome += t.amount;
+                        else realExpense += t.amount;
+                    } else {
+                        if (t.type === 'receber') pendingIncome += t.amount;
+                        else pendingExpense += t.amount;
+                    }
                 }
             });
 
@@ -691,10 +789,13 @@
 
         function renderList() {
             listContainer.innerHTML = '';
-            const filtered = transactions.filter(t => currentTab === 'done' ? t.done : !t.done);
+            
+            // Filtra primeiro pelo mês selecionado e depois pela aba (pendente/realizado)
+            const filteredByMonth = transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey));
+            const filtered = filteredByMonth.filter(t => currentTab === 'done' ? t.done : !t.done);
 
             if (filtered.length === 0) {
-                listContainer.innerHTML = `<div class="empty-state">Nenhum lançamento ${currentTab === 'done' ? 'realizado' : 'pendente'}.</div>`;
+                listContainer.innerHTML = `<div class="empty-state">Nenhum lançamento ${currentTab === 'done' ? 'realizado' : 'pendente'} neste mês.</div>`;
                 return;
             }
 
@@ -742,6 +843,10 @@
                 });
             }
 
+            // Após cadastrar, seleciona automaticamente o mês da conta cadastrada para exibi-la na tela
+            const [ano, mes] = date.split('-');
+            selectedMonthKey = `${ano}-${mes}`;
+
             descInput.value = '';
             amountInput.value = '';
             descInput.focus();
@@ -786,7 +891,7 @@
             installBanner.style.display = 'none';
         });
 
-        // Service Worker robusto (compatível com GitHub Pages e PWA install requirements)
+        // Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const swCode = `
