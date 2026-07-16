@@ -399,25 +399,62 @@
             font-size: 0.85rem;
         }
 
-        /* Rodapé de Configuração de Segurança */
+        /* --- Configurações de Segurança no Rodapé --- */
         .security-footer {
-            margin-top: 30px;
-            padding-top: 15px;
-            border-top: 1px solid var(--border);
-            text-align: center;
-            display: flex;
-            justify-content: space-around;
+            margin-top: 40px;
+            margin-bottom: 20px;
         }
-        .security-footer button {
+        .security-accordion {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .security-accordion summary {
+            padding: 14px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--text-secondary);
+            cursor: pointer;
+            list-style: none; /* Remove a setinha em navegadores compatíveis */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .security-accordion summary::-webkit-details-marker {
+            display: none; /* Remove a setinha no Safari/Chrome antigo */
+        }
+        .security-accordion[open] summary {
+            border-bottom: 1px solid var(--border);
+            color: var(--text-color);
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+        .security-actions {
+            display: flex;
+            flex-direction: column;
+        }
+        .security-actions button {
             background: none;
             border: none;
-            color: var(--text-secondary);
-            font-size: 0.75rem;
-            text-decoration: underline;
+            border-bottom: 1px solid var(--border);
+            padding: 14px 20px;
+            color: var(--text-color);
+            font-size: 0.85rem;
             cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        .security-footer button:active {
-            color: var(--primary);
+        .security-actions button:last-child {
+            border-bottom: none;
+        }
+        .security-actions button:active {
+            background-color: rgba(255,255,255,0.05);
+        }
+        .security-actions button.danger-btn {
+            color: var(--expense);
         }
     </style>
 </head>
@@ -453,7 +490,7 @@
             <h1>Controle Financeiro</h1>
         </header>
 
-        <!-- Dashboard GLOBAL (Soma todos os lançamentos) -->
+        <!-- Dashboard GLOBAL -->
         <div class="dashboard">
             <div class="balance-card">
                 <div class="balance-sub-card">
@@ -510,7 +547,7 @@
             </form>
         </div>
 
-        <!-- FILTROS DE VISUALIZAÇÃO (Posicionados estrategicamente logo acima da Lista) -->
+        <!-- FILTROS DE VISUALIZAÇÃO -->
         <div class="month-selector" id="month-selector">
             <!-- Abas deslizantes dos meses (Geradas Dinamicamente via JS) -->
         </div>
@@ -526,10 +563,29 @@
             <div class="transaction-list" id="transaction-list"></div>
         </div>
 
-        <!-- Configurações de Segurança no Rodapé -->
+        <!-- MENU: Configurações de Segurança no Rodapé -->
         <div class="security-footer">
-            <button onclick="alterarSenhaDoSistema()">Alterar Senha do App</button>
-            <button onclick="fazerLogout()">Sair do App</button>
+            <details class="security-accordion">
+                <summary>⚙️ Configurações de Segurança</summary>
+                
+                <div class="security-actions">
+                    <button onclick="fazerBackup()">
+                        <span>📥</span> Exportar Dados (Backup)
+                    </button>
+                    
+                    <button onclick="alterarSenhaDoSistema()">
+                        <span>🔑</span> Alterar Senha
+                    </button>
+                    
+                    <button onclick="fazerLogout()">
+                        <span>🔒</span> Bloquear App
+                    </button>
+                    
+                    <button class="danger-btn" onclick="limparBancoDeDados()">
+                        <span>🗑️</span> Zerar Banco de Dados
+                    </button>
+                </div>
+            </details>
         </div>
     </div>
 
@@ -549,6 +605,7 @@
             return localStorage.getItem('finance_app_pwd') || SENHA_PADRAO;
         }
 
+        // --- FUNÇÕES DE SEGURANÇA E ADMINISTRAÇÃO ---
         window.alterarSenhaDoSistema = function() {
             const chave = prompt("Insira a Chave de Recuperação (Database Secret) para liberar a alteração:");
             if (!chave) return;
@@ -567,6 +624,31 @@
             }
         }
 
+        window.limparBancoDeDados = function() {
+            const confirmacao1 = confirm("⚠️ ATENÇÃO: Esta ação irá APAGAR permanentemente todos os lançamentos do seu banco de dados.\n\nDeseja mesmo prosseguir?");
+            
+            if (confirmacao1) {
+                const senhaDigitada = prompt("Por segurança, digite a sua SENHA de acesso ao aplicativo para autorizar a limpeza:");
+                
+                if (senhaDigitada === obterSenhaAtual()) {
+                    if (db) {
+                        loadingEl.style.display = 'flex';
+                        db.remove()
+                            .then(() => {
+                                alert("Banco de dados reiniciado com sucesso!");
+                                window.location.reload();
+                            })
+                            .catch((error) => {
+                                alert("Erro ao tentar limpar o banco de dados: " + error.message);
+                                loadingEl.style.display = 'none';
+                            });
+                    }
+                } else if (senhaDigitada !== null) {
+                    alert("Erro: Senha incorreta. Ação cancelada.");
+                }
+            }
+        }
+
         window.fazerLogout = function() {
             if (confirm("Deseja realmente sair e bloquear o aplicativo?")) {
                 localStorage.removeItem('user_authenticated');
@@ -574,7 +656,26 @@
             }
         }
 
-        // Persistência de Login
+        window.fazerBackup = function() {
+            if (transactions.length === 0) {
+                alert("O seu banco de dados está vazio. Não há o que exportar.");
+                return;
+            }
+            
+            // Converte os dados salvos em um texto de arquivo JSON formatado
+            const dadosJSON = JSON.stringify(transactions, null, 2);
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(dadosJSON);
+            
+            // Cria um link temporário para forçar o download no celular/computador
+            const linkDownload = document.createElement('a');
+            linkDownload.setAttribute("href", dataStr);
+            linkDownload.setAttribute("download", "meu_backup_financeiro.json");
+            document.body.appendChild(linkDownload);
+            linkDownload.click();
+            linkDownload.remove();
+        }
+
+        // --- AUTENTICAÇÃO E LOGIN ---
         window.addEventListener('DOMContentLoaded', () => {
             const jaLogado = localStorage.getItem('user_authenticated') === 'true';
             if (jaLogado) {
@@ -602,7 +703,7 @@
             }
         });
 
-        // Credenciais do Firebase
+        // --- FIREBASE E CONFIGURAÇÕES PRINCIPAIS ---
         const firebaseConfig = {
             apiKey: "AIzaSyDLlTOuVyPLLYXTEAX__8Sys2RMSV-UX54",
             authDomain: "financeiro-3fe98.firebaseapp.com",
@@ -616,7 +717,7 @@
         let db;
         let transactions = [];
         let currentTab = 'pending';
-        let selectedMonthKey = ''; // Chave do mês selecionado para a lista (ex: "2026-07")
+        let selectedMonthKey = '';
 
         const form = document.getElementById('finance-form');
         const descInput = document.getElementById('description');
@@ -647,8 +748,8 @@
                 loadingEl.style.display = 'none';
                 
                 gerarFiltroDeMeses();
-                updateDashboard(); // Sempre calcula os saldos globais unificados
-                renderList();      // Filtra apenas a visualização da lista abaixo pelo mês ativo
+                updateDashboard();
+                renderList();
             }, (error) => {
                 alert("Erro de conexão com o Firebase.");
             });
@@ -661,7 +762,6 @@
 
         function gerarFiltroDeMeses() {
             const mesesSet = new Set();
-            
             const hoje = new Date();
             const mesAtualKey = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
             mesesSet.add(mesAtualKey);
@@ -704,10 +804,9 @@
                 const nomeMes = NOME_MESES[parseInt(mes) - 1];
                 btn.classList.toggle('active', btn.textContent === `${nomeMes}/${ano}`);
             });
-            renderList(); // Atualiza apenas a lista exibida abaixo
+            renderList();
         }
 
-        // Máscara dinâmica de valor
         amountInput.addEventListener('input', (e) => {
             let value = e.target.value.replace(/\D/g, '');
             if (!value) { e.target.value = ''; return; }
@@ -748,7 +847,6 @@
             }
         }
 
-        // CÁLCULO UNIFICADO GLOBAL: Soma todas as transações de todos os meses de forma histórica
         function updateDashboard() {
             let pendingIncome = 0, pendingExpense = 0, realIncome = 0, realExpense = 0;
 
@@ -780,7 +878,6 @@
         function renderList() {
             listContainer.innerHTML = '';
             
-            // Filtra primeiro pelo mês selecionado e depois pela aba (pendente/realizado)
             const filteredByMonth = transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey));
             const filtered = filteredByMonth.filter(t => currentTab === 'done' ? t.done : !t.done);
 
