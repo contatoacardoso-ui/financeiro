@@ -189,17 +189,43 @@
         .income-text { color: var(--income); }
         .expense-text { color: var(--expense); }
 
-        /* Cadastro de Lançamento */
-        .form-card {
+        /* --- Acordeão de Cadastro (Novo Lançamento Expansível) --- */
+        .form-accordion {
             background-color: var(--card-bg);
             border: 1px solid var(--border);
-            padding: 16px;
             border-radius: 12px;
             margin-bottom: 20px;
+            overflow: hidden;
         }
-        .form-card h2 {
+        .form-accordion summary {
+            padding: 16px;
             font-size: 1rem;
-            margin-bottom: 12px;
+            font-weight: bold;
+            color: var(--text-color);
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .form-accordion summary::-webkit-details-marker {
+            display: none;
+        }
+        .form-accordion summary::after {
+            content: "➕";
+            font-size: 0.85rem;
+            color: var(--primary);
+            transition: transform 0.2s;
+        }
+        .form-accordion[open] summary {
+            border-bottom: 1px solid var(--border);
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+        .form-accordion[open] summary::after {
+            content: "➖";
+        }
+        .form-content {
+            padding: 16px;
         }
         .form-group {
             margin-bottom: 12px;
@@ -416,14 +442,14 @@
             font-weight: bold;
             color: var(--text-secondary);
             cursor: pointer;
-            list-style: none; /* Remove a setinha em navegadores compatíveis */
+            list-style: none;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 8px;
         }
         .security-accordion summary::-webkit-details-marker {
-            display: none; /* Remove a setinha no Safari/Chrome antigo */
+            display: none;
         }
         .security-accordion[open] summary {
             border-bottom: 1px solid var(--border);
@@ -513,39 +539,41 @@
             </div>
         </div>
 
-        <!-- Cadastro -->
-        <div class="form-card">
-            <h2>Novo Lançamento</h2>
-            <form id="finance-form">
-                <div class="radio-group">
-                    <div class="radio-btn">
-                        <input type="radio" id="type-receber" name="type" value="receber" checked>
-                        <label for="type-receber" class="radio-label lbl-receber">A Receber</label>
+        <!-- ACORDEÃO DE CADASTRO (Novo Lançamento Expansível) -->
+        <details class="form-accordion" id="form-accordion">
+            <summary>➕ Novo Lançamento</summary>
+            <div class="form-content">
+                <form id="finance-form">
+                    <div class="radio-group">
+                        <div class="radio-btn">
+                            <input type="radio" id="type-receber" name="type" value="receber" checked>
+                            <label for="type-receber" class="radio-label lbl-receber">A Receber</label>
+                        </div>
+                        <div class="radio-btn">
+                            <input type="radio" id="type-pagar" name="type" value="pagar">
+                            <label for="type-pagar" class="radio-label lbl-pagar">A Pagar</label>
+                        </div>
                     </div>
-                    <div class="radio-btn">
-                        <input type="radio" id="type-pagar" name="type" value="pagar">
-                        <label for="type-pagar" class="radio-label lbl-pagar">A Pagar</label>
+
+                    <div class="form-group">
+                        <label for="description">Descrição</label>
+                        <input type="text" id="description" placeholder="Ex: Aluguel, Internet" required autocomplete="off">
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label for="description">Descrição</label>
-                    <input type="text" id="description" placeholder="Ex: Aluguel, Internet" required autocomplete="off">
-                </div>
+                    <div class="form-group">
+                        <label for="amount">Valor (R$)</label>
+                        <input type="text" id="amount" placeholder="0,00" required inputmode="numeric">
+                    </div>
 
-                <div class="form-group">
-                    <label for="amount">Valor (R$)</label>
-                    <input type="text" id="amount" placeholder="0,00" required inputmode="numeric">
-                </div>
+                    <div class="form-group">
+                        <label for="due-date">Data de Vencimento</label>
+                        <input type="date" id="due-date" required>
+                    </div>
 
-                <div class="form-group">
-                    <label for="due-date">Data de Vencimento</label>
-                    <input type="date" id="due-date" required>
-                </div>
-
-                <button type="submit" class="submit-btn">Adicionar Lançamento</button>
-            </form>
-        </div>
+                    <button type="submit" class="submit-btn">Adicionar Lançamento</button>
+                </form>
+            </div>
+        </details>
 
         <!-- FILTROS DE VISUALIZAÇÃO -->
         <div class="month-selector" id="month-selector">
@@ -567,20 +595,16 @@
         <div class="security-footer">
             <details class="security-accordion">
                 <summary>⚙️ Configurações de Segurança</summary>
-                
                 <div class="security-actions">
                     <button onclick="fazerBackup()">
                         <span>📥</span> Exportar Dados (Backup)
                     </button>
-                    
                     <button onclick="alterarSenhaDoSistema()">
                         <span>🔑</span> Alterar Senha
                     </button>
-                    
                     <button onclick="fazerLogout()">
                         <span>🔒</span> Bloquear App
                     </button>
-                    
                     <button class="danger-btn" onclick="limparBancoDeDados()">
                         <span>🗑️</span> Zerar Banco de Dados
                     </button>
@@ -661,12 +685,8 @@
                 alert("O seu banco de dados está vazio. Não há o que exportar.");
                 return;
             }
-            
-            // Converte os dados salvos em um texto de arquivo JSON formatado
             const dadosJSON = JSON.stringify(transactions, null, 2);
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(dadosJSON);
-            
-            // Cria um link temporário para forçar o download no celular/computador
             const linkDownload = document.createElement('a');
             linkDownload.setAttribute("href", dataStr);
             linkDownload.setAttribute("download", "meu_backup_financeiro.json");
@@ -719,6 +739,7 @@
         let currentTab = 'pending';
         let selectedMonthKey = '';
 
+        const formAccordion = document.getElementById('form-accordion');
         const form = document.getElementById('finance-form');
         const descInput = document.getElementById('description');
         const amountInput = document.getElementById('amount');
@@ -935,6 +956,10 @@
 
             descInput.value = '';
             amountInput.value = '';
+            
+            // Fecha a gaveta de cadastro automaticamente após salvar o novo lançamento
+            formAccordion.removeAttribute('open');
+            
             descInput.focus();
             switchTab('pending');
         });
