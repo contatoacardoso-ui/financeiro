@@ -11,10 +11,10 @@
     <meta name="apple-mobile-web-app-title" content="Financeiro">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2489/2489756.png">
 
-    <!-- Manifesto embutido -->
+    <!-- Manifesto embutido para criar o ícone de instalação -->
     <link rel="manifest" href='data:application/json,{"name":"Controle Financeiro","short_name":"Financeiro","start_url":".","display":"standalone","background_color":"#121214","theme_color":"#121214","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2489/2489756.png","sizes":"512x512","type":"image/png"}]}' />
 
-    <!-- Firebase SDKs (Compatíveis com o estilo usado na Portaria) -->
+    <!-- Firebase SDKs compatíveis para rodar direto no navegador -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
@@ -50,16 +50,17 @@
             font-size: 1.4rem;
         }
         
-        /* Loading overlay para quando estiver sincronizando com o Firebase */
+        /* Overlay de carregamento inicial */
         #loading {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(18, 18, 20, 0.8);
+            background: rgba(18, 18, 20, 0.95);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 9999;
             font-weight: bold;
+            font-size: 1.1rem;
         }
 
         /* Dashboard */
@@ -107,7 +108,7 @@
         .income-text { color: var(--income); }
         .expense-text { color: var(--expense); }
 
-        /* Cadastro */
+        /* Cadastro de Lançamento */
         .form-card {
             background-color: var(--card-bg);
             border: 1px solid var(--border);
@@ -192,7 +193,7 @@
             opacity: 0.8;
         }
 
-        /* Abas */
+        /* Abas de Navegação (Pendentes vs Realizados) */
         .tabs {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -266,9 +267,15 @@
             color: var(--income);
             border: 1px solid rgba(0, 179, 126, 0.3);
         }
+        .confirm-btn:active {
+            background-color: rgba(0, 179, 126, 0.2);
+        }
         .delete-btn {
             color: var(--text-secondary);
             font-size: 1.3rem;
+        }
+        .delete-btn:active {
+            color: var(--expense);
         }
         .empty-state {
             text-align: center;
@@ -343,29 +350,30 @@
         </form>
     </div>
 
+    <!-- Abas -->
     <div class="tabs">
         <button class="tab-btn active" id="tab-pending" onclick="switchTab('pending')">Pendentes</button>
         <button class="tab-btn" id="tab-done" onclick="switchTab('done')">Realizados</button>
     </div>
 
+    <!-- Lista de Lançamentos -->
     <div>
         <div class="transaction-list" id="transaction-list"></div>
     </div>
 
     <script>
-        // ================= CONFIRA E INSIRA SUAS CREDENCIAIS DO FIREBASE AQUI =================
+        // Suas credenciais do Firebase configuradas corretamente
         const firebaseConfig = {
-            apiKey: "SUA_API_KEY",
-            authDomain: "SEU_AUTH_DOMAIN",
-            databaseURL: "SUA_DATABASE_URL",
-            projectId: "SEU_PROJECT_ID",
-            storageBucket: "SEU_STORAGE_BUCKET",
-            messagingSenderId: "SEU_SENDER_ID",
-            appId: "SEU_APP_ID"
+            apiKey: "AIzaSyDLlTOuVyPLLYXTEAX__8Sys2RMSV-UX54",
+            authDomain: "financeiro-3fe98.firebaseapp.com",
+            databaseURL: "https://financeiro-3fe98-default-rtdb.firebaseio.com",
+            projectId: "financeiro-3fe98",
+            storageBucket: "financeiro-3fe98.firebasestorage.app",
+            messagingSenderId: "727786772341",
+            appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
-        // =====================================================================================
 
-        // Inicializa o Firebase
+        // Inicializando o app e apontando para a coleção de "lancamentos"
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database().ref("lancamentos");
 
@@ -386,7 +394,7 @@
 
         dateInput.value = new Date().toISOString().split('T')[0];
 
-        // Máscara dinâmica de moeda em tempo real
+        // Máscara dinâmica de valor (centavos automáticos)
         amountInput.addEventListener('input', (e) => {
             let value = e.target.value.replace(/\D/g, '');
             if (!value) { e.target.value = ''; return; }
@@ -417,8 +425,7 @@
             renderList();
         }
 
-        // SINCRONIZAÇÃO COM O FIREBASE (Igual à Portaria)
-        // Ouve modificações em tempo real
+        // Sincronização em Tempo Real com o Database do Firebase
         db.on('value', (snapshot) => {
             const data = snapshot.val();
             transactions = [];
@@ -427,11 +434,11 @@
                     transactions.push({ id: key, ...data[key] });
                 });
             }
-            loadingEl.style.display = 'none'; // Esconde o carregamento
+            loadingEl.style.display = 'none'; // Esconde a tela de loading
             updateDashboard();
             renderList();
         }, (error) => {
-            alert("Erro ao conectar ao Firebase: " + error.message);
+            alert("Erro de conexão com o Firebase. Verifique se as regras no Firebase Console estão ativas.");
         });
 
         window.confirmTransaction = function(id) {
@@ -515,7 +522,6 @@
 
             if (!description || amount <= 0 || !date) return;
 
-            // Envia diretamente para o banco de dados do Firebase
             db.push({
                 type: selectedType,
                 description,
@@ -530,7 +536,7 @@
             switchTab('pending');
         });
 
-        // Registrar Service Worker para PWA
+        // Registro simplificado de Service Worker para habilitar a instalação nativa do PWA
         if ('serviceWorker' in navigator) {
             const swCode = `
                 self.addEventListener('install', e => self.skipWaiting());
