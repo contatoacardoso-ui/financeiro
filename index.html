@@ -28,7 +28,6 @@
             --income: #00b37e;
             --expense: #f75a68;
             --border: #29292e;
-            --warning: #ffb86c;
         }
         * {
             box-sizing: border-box;
@@ -286,19 +285,24 @@
             background-color: rgba(247, 90, 104, 0.1);
             color: var(--expense);
         }
-        button.submit-btn {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--primary);
-            border: none;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 0.95rem;
-            font-weight: bold;
-            cursor: pointer;
+        .radio-btn input:checked + .radio-label.lbl-debito {
+            border-color: var(--primary);
+            background-color: rgba(78, 168, 222, 0.1);
+            color: var(--primary);
         }
-        button:active {
-            opacity: 0.8;
+        .radio-btn input:checked + .radio-label.lbl-credito {
+            border-color: var(--warning, #ffb86c);
+            background-color: rgba(255, 184, 108, 0.1);
+            color: var(--warning, #ffb86c);
+        }
+
+        /* Campos Condicionais do Parcelamento */
+        #credit-fields {
+            display: none;
+            border-left: 2px solid var(--border);
+            padding-left: 12px;
+            margin-top: 10px;
+            margin-bottom: 12px;
         }
 
         /* Filtro de Meses Deslizável */
@@ -382,16 +386,21 @@
             color: var(--text-secondary);
             display: block;
         }
-        .item-details .delay-warning {
+        .item-details .method-badge {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            background-color: rgba(255,255,255,0.05);
+            padding: 1px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 4px;
+        }
+        .item-details .delay-tag {
             color: var(--expense);
             font-weight: 600;
             font-size: 0.7rem;
-            margin-top: 2px;
-        }
-        .item-details .original-value {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            margin-top: 1px;
+            display: inline-block;
+            margin-left: 6px;
         }
         .item-right {
             text-align: right;
@@ -534,7 +543,7 @@
             <h1>Controle Financeiro</h1>
         </header>
 
-        <!-- Dashboard GLOBAL (Exibe juros calculados acumulados automaticamente) -->
+        <!-- Dashboard GLOBAL -->
         <div class="dashboard">
             <div class="balance-card">
                 <div class="balance-sub-card">
@@ -562,29 +571,53 @@
             <summary>➕ Novo Lançamento</summary>
             <div class="form-content">
                 <form id="finance-form">
+                    <!-- Tipo de Transação -->
                     <div class="radio-group">
                         <div class="radio-btn">
-                            <input type="radio" id="type-receber" name="type" value="receber" checked>
+                            <input type="radio" id="type-receber" name="type" value="receber" checked onclick="toggleMethodFields()">
                             <label for="type-receber" class="radio-label lbl-receber">A Receber</label>
                         </div>
                         <div class="radio-btn">
-                            <input type="radio" id="type-pagar" name="type" value="pagar">
+                            <input type="radio" id="type-pagar" name="type" value="pagar" onclick="toggleMethodFields()">
                             <label for="type-pagar" class="radio-label lbl-pagar">A Pagar</label>
+                        </div>
+                    </div>
+
+                    <!-- Método de Pagamento (Apenas para despesas) -->
+                    <div class="form-group" id="method-group" style="margin-bottom: 16px;">
+                        <label>Forma de Lançamento</label>
+                        <div class="radio-group">
+                            <div class="radio-btn">
+                                <input type="radio" id="method-debito" name="method" value="debito" checked onclick="toggleCreditFields(false)">
+                                <label for="method-debito" class="radio-label lbl-debito">Dinheiro/Débito</label>
+                            </div>
+                            <div class="radio-btn">
+                                <input type="radio" id="method-credito" name="method" value="credito" onclick="toggleCreditFields(true)">
+                                <label for="method-credito" class="radio-label lbl-credito">Cartão de Crédito</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionais de Parcelamento -->
+                    <div id="credit-fields">
+                        <div class="form-group">
+                            <label for="installments">Quantidade de Parcelas</label>
+                            <input type="number" id="installments" value="1" min="1" max="72">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="description">Descrição</label>
-                        <input type="text" id="description" placeholder="Ex: Aluguel, Internet" required autocomplete="off">
+                        <input type="text" id="description" placeholder="Ex: Aluguel, Supermercado" required autocomplete="off">
                     </div>
 
                     <div class="form-group">
-                        <label for="amount">Valor (R$)</label>
+                        <label for="amount">Valor Total (R$)</label>
                         <input type="text" id="amount" placeholder="0,00" required inputmode="numeric">
                     </div>
 
                     <div class="form-group">
-                        <label for="due-date">Data de Vencimento</label>
+                        <label for="due-date" id="date-label">Data de Vencimento</label>
                         <input type="date" id="due-date" required>
                     </div>
 
@@ -595,7 +628,7 @@
 
         <!-- FILTROS DE VISUALIZAÇÃO -->
         <div class="month-selector" id="month-selector">
-            <!-- Abas deslizantes dos meses (Geradas Dinamicamente via JS) -->
+            <!-- Abas deslizantes dos meses -->
         </div>
 
         <!-- Abas Pendentes / Realizados -->
@@ -636,7 +669,7 @@
     <script>
         // --- CONSTANTES DE SEGURANÇA ---
         const SENHA_PADRAO = "Touchrio@8512@";
-        const CHAVE_DE_RECUPERACAO = "uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM"; // Database Secret
+        const CHAVE_DE_RECUPERACAO = "uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
         const loginScreen = document.getElementById('login-screen');
         const loginForm = document.getElementById('login-form');
@@ -652,7 +685,24 @@
             return localStorage.getItem('finance_app_pwd') || SENHA_PADRAO;
         }
 
-        // --- VALIDAÇÃO RESTRITA DAS CONFIGURAÇÕES ---
+        // --- CONTROLE DOS CAMPOS EXPANSIBLES ---
+        window.toggleMethodFields = function() {
+            const isPagar = document.querySelector('input[name="type"]:checked').value === 'pagar';
+            document.getElementById('method-group').style.display = isPagar ? 'block' : 'none';
+            document.getElementById('date-label').textContent = isPagar ? 'Data de Vencimento' : 'Data de Recebimento';
+            if (!isPagar) {
+                toggleCreditFields(false);
+            } else {
+                const isCredito = document.getElementById('method-credito').checked;
+                toggleCreditFields(isCredito);
+            }
+        }
+
+        window.toggleCreditFields = function(show) {
+            document.getElementById('credit-fields').style.display = show ? 'block' : 'none';
+            document.getElementById('date-label').textContent = show ? 'Mês da 1ª Cobrança / Vencimento' : (document.querySelector('input[name="type"]:checked').value === 'pagar' ? 'Data de Vencimento' : 'Data de Recebimento');
+        }
+
         window.tentarAbrirConfiguracoes = function() {
             if (securityPanelContent.style.display === 'flex') {
                 fecharPainelDeSeguranca();
@@ -677,18 +727,17 @@
             securityToggleBtn.classList.remove('is-open');
         }
 
-        // --- FUNÇÕES DE SEGURANÇA E ADMINISTRAÇÃO ---
+        // --- SEGURANÇA E ADMINISTRAÇÃO ---
         window.alterarSenhaDoSistema = function() {
             const chave = prompt("Insira a Chave de Recuperação (Database Secret) para liberar a alteração:");
             if (!chave) return;
-            
             if (chave.trim() === CHAVE_DE_RECUPERACAO) {
                 const novaSenha = prompt("Acesso autorizado! Digite a sua NOVA senha de login:");
                 if (novaSenha && novaSenha.trim().length >= 4) {
                     localStorage.setItem('finance_app_pwd', novaSenha.trim());
                     alert("Senha alterada com sucesso! O aplicativo será reiniciado.");
                     window.location.reload();
-                } else if (novaSenha) {
+                } else {
                     alert("Erro: A senha precisa ter pelo menos 4 caracteres.");
                 }
             } else {
@@ -697,30 +746,24 @@
         }
 
         window.limparBancoDeDados = function() {
-            const confirmacao1 = confirm("⚠️ ATENÇÃO: Esta ação irá APAGAR permanentemente todos os lançamentos do seu banco de dados.\n\nDeseja mesmo prosseguir?");
-            if (confirmacao1) {
-                const senhaDigitada = prompt("Por segurança, digite a sua SENHA de acesso ao aplicativo para autorizar a limpeza:");
+            if (confirm("⚠️ ATENÇÃO: Esta ação irá APAGAR todos os lançamentos do seu banco de dados.\n\nDeseja prosseguir?")) {
+                const senhaDigitada = prompt("Digite a sua SENHA de acesso para autorizar a limpeza:");
                 if (senhaDigitada === obterSenhaAtual()) {
                     if (db) {
                         loadingEl.style.display = 'flex';
-                        db.remove()
-                            .then(() => {
-                                alert("Banco de dados reiniciado com sucesso!");
-                                window.location.reload();
-                            })
-                            .catch((error) => {
-                                alert("Erro ao tentar limpar o banco de dados: " + error.message);
-                                loadingEl.style.display = 'none';
-                            });
+                        db.remove().then(() => {
+                            alert("Banco de dados reiniciado com sucesso!");
+                            window.location.reload();
+                        });
                     }
                 } else if (senhaDigitada !== null) {
-                    alert("Erro: Senha incorreta. Ação cancelada.");
+                    alert("Erro: Senha incorreta.");
                 }
             }
         }
 
         window.fazerLogout = function() {
-            if (confirm("Deseja realmente sair e bloquear o aplicativo?")) {
+            if (confirm("Deseja bloquear o aplicativo?")) {
                 localStorage.removeItem('user_authenticated');
                 window.location.reload();
             }
@@ -728,7 +771,7 @@
 
         window.fazerBackup = function() {
             if (transactions.length === 0) {
-                alert("O seu banco de dados está vazio. Não há o que exportar.");
+                alert("O seu banco de dados está vazio.");
                 return;
             }
             const dadosJSON = JSON.stringify(transactions, null, 2);
@@ -741,8 +784,9 @@
             linkDownload.remove();
         }
 
-        // --- AUTENTICAÇÃO E LOGIN ---
+        // --- AUTENTICAÇÃO ---
         window.addEventListener('DOMContentLoaded', () => {
+            toggleMethodFields();
             const jaLogado = localStorage.getItem('user_authenticated') === 'true';
             if (jaLogado) {
                 loginScreen.style.display = 'none';
@@ -769,7 +813,7 @@
             }
         });
 
-        // --- FIREBASE E CONFIGURAÇÕES PRINCIPAIS ---
+        // --- CONFIGURAÇÃO DO FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyDLlTOuVyPLLYXTEAX__8Sys2RMSV-UX54",
             authDomain: "financeiro-3fe98.firebaseapp.com",
@@ -874,49 +918,9 @@
             renderList();
         }
 
-        // --- SISTEMA MATEMÁTICO DE JUROS E MULTAS EM ATRASO ---
-        // Multa de 2% no primeiro dia + Juros de 0,033% ao dia para pagamentos em atraso
-        function calcularValorAtualizado(t) {
-            if (t.type !== 'pagar' || !t.date) return t.amount;
-
-            // Define as datas do vencimento e do dia de hoje (em formato UTC Puro para evitar fuso horário)
-            const partesVencimento = t.date.split('-');
-            const dataVencimento = new Date(Date.UTC(partesVencimento[0], partesVencimento[1] - 1, partesVencimento[2]));
-            
-            // Se já foi pago, calcula o juro correspondente à data em que foi pago (salvo no banco de dados)
-            // Caso contrário, calcula com base na data de hoje
-            let dataPagamento;
-            if (t.done) {
-                if (t.paymentDate) {
-                    const partesPgto = t.paymentDate.split('-');
-                    dataPagamento = new Date(Date.UTC(partesPgto[0], partesPgto[1] - 1, partesPgto[2]));
-                } else {
-                    return t.amount; // Sem histórico de atraso no banco antigo, mantém valor original
-                }
-            } else {
-                const hojeLocal = new Date();
-                dataPagamento = new Date(Date.UTC(hojeLocal.getFullYear(), hojeLocal.getMonth(), hojeLocal.getDate()));
-            }
-
-            // Calcula a diferença real de dias
-            const diferencaTempo = dataPagamento.getTime() - dataVencimento.getTime();
-            const diasAtraso = Math.floor(diferencaTempo / (1000 * 60 * 60 * 24));
-
-            if (diasAtraso <= 0) return t.amount;
-
-            // Aplica as taxas financeiras
-            const taxaMulta = 0.02;          // 2% de multa fixa
-            const taxaJurosDiaria = 0.00033; // 0.033% ao dia de juros de mora
-            
-            const valorMulta = t.amount * taxaMulta;
-            const valorJuros = t.amount * taxaJurosDiaria * diasAtraso;
-
-            return parseFloat((t.amount + valorMulta + valorJuros).toFixed(2));
-        }
-
-        // Retorna a quantidade de dias de atraso se aplicável
+        // Alerta dinâmico de dias em atraso puro (sem juros automáticos)
         function obterDiasDeAtraso(t) {
-            if (t.type !== 'pagar' || !t.date || t.done) return 0;
+            if (t.done || !t.date) return 0;
             const partesVencimento = t.date.split('-');
             const dataVencimento = new Date(Date.UTC(partesVencimento[0], partesVencimento[1] - 1, partesVencimento[2]));
             const hojeLocal = new Date();
@@ -926,7 +930,6 @@
             return Math.floor(diferencaTempo / (1000 * 60 * 60 * 24));
         }
 
-        // --- REGRAS DE INTERFACE ---
         amountInput.addEventListener('input', (e) => {
             let value = e.target.value.replace(/\D/g, '');
             if (!value) { e.target.value = ''; return; }
@@ -957,18 +960,22 @@
             renderList();
         }
 
-        // Ao pagar, salva o valor final com juros e a data do pagamento para histórico imutável
+        // Confirmação com opção de alterar valor se houver juros ou mudanças no pagamento real
         window.confirmTransaction = function(id) {
             const t = transactions.find(item => item.id === id);
             if (t && db) {
-                const valorFinal = calcularValorAtualizado(t);
-                const hojeLocal = new Date();
-                const paymentDate = `${hojeLocal.getFullYear()}-${String(hojeLocal.getMonth() + 1).padStart(2, '0')}-${String(hojeLocal.getDate()).padStart(2, '0')}`;
+                const valorDigitado = prompt(`Confirmar realização do pagamento?\nValor Original: ${formatCurrency(t.amount)}\n\nSe houver alteração por juros ou multas, digite o novo valor abaixo (Ex: 150,50):`, t.amount.toString().replace('.', ','));
                 
+                if (valorDigitado === null) return; // Cancelou a operação
+
+                let valorFinal = t.amount;
+                if (valorDigitado.trim() !== "") {
+                    valorFinal = parseFormattedValue(valorDigitado);
+                }
+
                 db.child(id).update({ 
                     done: true,
-                    amount: valorFinal, // Atualiza o valor original no banco para o valor de pagamento com juros inclusos
-                    paymentDate: paymentDate // Salva a data do pagamento no banco
+                    amount: valorFinal
                 });
             }
         }
@@ -979,18 +986,16 @@
             }
         }
 
-        // CÁLCULO UNIFICADO GLOBAL COM JUROS E MULTAS INCLUSOS
         function updateDashboard() {
             let pendingIncome = 0, pendingExpense = 0, realIncome = 0, realExpense = 0;
 
             transactions.forEach(t => {
-                const valorCalculado = calcularValorAtualizado(t);
                 if (t.done) {
-                    if (t.type === 'receber') realIncome += valorCalculado;
-                    else realExpense += valorCalculado;
+                    if (t.type === 'receber') realIncome += t.amount;
+                    else realExpense += t.amount;
                 } else {
-                    if (t.type === 'receber') pendingIncome += valorCalculado;
-                    else pendingExpense += valorCalculado;
+                    if (t.type === 'receber') pendingIncome += t.amount;
+                    else pendingExpense += t.amount;
                 }
             });
 
@@ -1027,16 +1032,14 @@
                 item.className = 'transaction-item';
                 const isRec = t.type === 'receber';
                 
-                const valorAtualizado = calcularValorAtualizado(t);
                 const diasAtraso = obterDiasDeAtraso(t);
+                let atrasoMarkup = (diasAtraso > 0 && t.type === 'pagar') ? `<span class="delay-tag">⚠️ Atrasado ${diasAtraso}d</span>` : '';
                 
-                let atrasoMarkup = "";
-                let originalValueMarkup = "";
-
-                // Exibe avisos visuais se a conta estiver pendente e em atraso
-                if (diasAtraso > 0) {
-                    atrasoMarkup = `<span class="delay-warning">⚠️ Atrasado: ${diasAtraso} ${diasAtraso === 1 ? 'dia' : 'dias'} (+2% Multa + 0,033%/dia)</span>`;
-                    originalValueMarkup = `<span class="original-value">Original: ${formatCurrency(t.amount)}</span>`;
+                let métodoText = "";
+                if (t.type === 'pagar') {
+                    métdodoText = t.method === 'credito' ? `Crédito ${t.installmentText || ''}` : 'Débito/Dinheiro';
+                } else {
+                    métdodoText = 'Recebimento';
                 }
 
                 let actionMarkup = !t.done 
@@ -1045,13 +1048,12 @@
 
                 item.innerHTML = `
                     <div class="item-details">
-                        <h4>${t.description}</h4>
+                        <h4>${t.description} ${atrasoMarkup}</h4>
                         <span>${t.done ? 'Realizado em' : 'Vence em'}: ${formatDate(t.date)}</span>
-                        ${atrasoMarkup}
-                        ${originalValueMarkup}
+                        <span class="method-badge">${métdodoText}</span>
                     </div>
                     <div class="item-right">
-                        <span class="item-value ${isRec ? 'income-text' : 'expense-text'}">${isRec ? '+' : '-'} ${formatCurrency(valorAtualizado)}</span>
+                        <span class="item-value ${isRec ? 'income-text' : 'expense-text'}">${isRec ? '+' : '-'} ${formatCurrency(t.amount)}</span>
                         ${actionMarkup}
                     </div>
                 `;
@@ -1063,38 +1065,95 @@
             e.preventDefault();
             const selectedType = document.querySelector('input[name="type"]:checked').value;
             const description = descInput.value.trim();
-            const amount = parseFormattedValue(amountInput.value);
-            const date = dateInput.value;
+            const totalAmount = parseFormattedValue(amountInput.value);
+            const baseDate = dateInput.value;
 
-            if (!description || amount <= 0 || !date) return;
+            if (!description || totalAmount <= 0 || !baseDate) return;
 
             if (db) {
-                db.push({
-                    type: selectedType,
-                    description,
-                    amount,
-                    date,
-                    done: false
-                });
+                if (selectedType === 'receber') {
+                    // Lançamento comum de entrada
+                    db.push({
+                        type: 'receber',
+                        description,
+                        amount: totalAmount,
+                        date: baseDate,
+                        done: false
+                    });
+                } else {
+                    // Lançamento de despesa (Pagar)
+                    const method = document.querySelector('input[name="method"]:checked').value;
+                    
+                    if (method === 'debito') {
+                        // Se for DÉBITO: Lança direto nos Realizados (done: true)
+                        db.push({
+                            type: 'pagar',
+                            method: 'debito',
+                            description,
+                            amount: totalAmount,
+                            date: baseDate,
+                            done: true
+                        });
+                    } else {
+                        // Se for CRÉDITO: Cria os parcelamentos automáticos
+                        const numInstallments = parseInt(document.getElementById('installments').value) || 1;
+                        const valorParcela = parseFloat((totalAmount / numInstallments).toFixed(2));
+                        
+                        const [year, month, day] = baseDate.split('-').map(Number);
+
+                        for (let i = 0; i < numInstallments; i++) {
+                            // Calcula o mês subsequente para cada parcela da cobrança
+                            let currentMonth = month + i;
+                            let currentYear = year;
+                            
+                            while (currentMonth > 12) {
+                                currentMonth -= 12;
+                                currentYear += 1;
+                            }
+
+                            const formattedMonth = String(currentMonth).padStart(2, '0');
+                            const formattedDay = String(day).padStart(2, '0');
+                            const dateParcela = `${currentYear}-${formattedMonth}-${formattedDay}`;
+
+                            db.push({
+                                type: 'pagar',
+                                method: 'credito',
+                                description: `${description} (${i + 1}/${numInstallments})`,
+                                amount: valorParcela,
+                                date: dateParcela,
+                                installmentText: `(${i + 1}/${numInstallments})`,
+                                done: false
+                            });
+                        }
+                    }
+                }
             }
 
-            const [ano, mes] = date.split('-');
+            // Seleciona na interface o mês da data enviada no formulário
+            const [ano, mes] = baseDate.split('-');
             selectedMonthKey = `${ano}-${mes}`;
 
             descInput.value = '';
             amountInput.value = '';
+            document.getElementById('installments').value = '1';
             
             formAccordion.removeAttribute('open');
+            fecharPainelDeSeguranca();
             
             descInput.focus();
-            switchTab('pending');
+            
+            // Se foi débito, joga a visualização na aba realizados para conferir
+            if (selectedType === 'pagar' && document.querySelector('input[name="method"]:checked').value === 'debito') {
+                switchTab('done');
+            } else {
+                switchTab('pending');
+            }
         });
 
-        // --- PWA INSTALLATION BANNER ---
+        // --- PWA ---
         let deferredPrompt;
         const installBanner = document.getElementById('install-banner');
         const installBtn = document.getElementById('install-btn');
-
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         const isRunningStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
@@ -1102,7 +1161,7 @@
             if (isIOS) {
                 installBanner.style.display = 'flex';
                 installBtn.addEventListener('click', () => {
-                    alert("Para instalar no iPhone:\n\n1. Toque no botão de 'Compartilhar' (ícone do quadrado com a seta para cima no rodapé do Safari)\n2. Escolha 'Adicionar à Tela de Início'.");
+                    alert("Para instalar no iPhone:\n\n1. Toque no botão de 'Compartilhar' no Safari\n2. Escolha 'Adicionar à Tela de Início'.");
                 });
             } else {
                 window.addEventListener('beforeinstallprompt', (e) => {
@@ -1110,42 +1169,27 @@
                     deferredPrompt = e;
                     installBanner.style.display = 'flex';
                 });
-
                 installBtn.addEventListener('click', async () => {
                     if (deferredPrompt) {
                         deferredPrompt.prompt();
                         const { outcome } = await deferredPrompt.userChoice;
-                        if (outcome === 'accepted') {
-                            installBanner.style.display = 'none';
-                        }
+                        if (outcome === 'accepted') installBanner.style.display = 'none';
                         deferredPrompt = null;
                     }
                 });
             }
         }
+        window.addEventListener('appinstalled', () => { installBanner.style.display = 'none'; });
 
-        window.addEventListener('appinstalled', () => {
-            installBanner.style.display = 'none';
-        });
-
-        // Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const swCode = `
-                    const CACHE_NAME = 'finance-v1';
-                    self.addEventListener('install', e => {
-                        self.skipWaiting();
-                    });
-                    self.addEventListener('activate', e => {
-                        e.waitUntil(clients.claim());
-                    });
-                    self.addEventListener('fetch', e => {
-                        e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
-                    });
+                    self.addEventListener('install', e => self.skipWaiting());
+                    self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+                    self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
                 `;
                 const blob = new Blob([swCode], { type: 'application/javascript' });
-                const swUrl = URL.createObjectURL(blob);
-                navigator.serviceWorker.register(swUrl).catch(err => console.log("SW erro:", err));
+                navigator.serviceWorker.register(URL.createObjectURL(blob));
             });
         }
     </script>
