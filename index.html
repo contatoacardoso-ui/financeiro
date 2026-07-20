@@ -25,6 +25,7 @@
             --text-color: #e1e1e6;
             --text-secondary: #a8a8b3;
             --primary: #4ea8de;
+            --primary-hover: #3a8fc2;
             --income: #00b37e;
             --expense: #f75a68;
             --border: #29292e;
@@ -297,6 +298,32 @@
             color: var(--warning);
         }
 
+        /* Botão Lindo de Lançamento */
+        button.submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary) 0%, #3a9ec2 100%);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(78, 168, 222, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+        }
+        button.submit-btn:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 6px rgba(78, 168, 222, 0.1);
+            opacity: 0.9;
+        }
+
         /* Campos Condicionais do Parcelamento */
         #credit-fields {
             display: none;
@@ -436,7 +463,12 @@
             font-size: 0.9rem;
         }
         
-        /* Botões */
+        /* Botões de Ação */
+        .item-actions-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
         .action-btn {
             background: none;
             border: none;
@@ -459,9 +491,12 @@
         .delete-btn {
             color: var(--text-secondary);
             font-size: 1.3rem;
+            border: 1px solid rgba(168, 168, 179, 0.15);
         }
         .delete-btn:active {
             color: var(--expense);
+            border-color: rgba(247, 90, 104, 0.3);
+            background-color: rgba(247, 90, 104, 0.1);
         }
         .empty-state {
             text-align: center;
@@ -649,7 +684,9 @@
                         <input type="date" id="due-date" required>
                     </div>
 
-                    <button type="submit" class="submit-btn" id="btn-salvar-lancamento">Adicionar Lançamento</button>
+                    <button type="submit" class="submit-btn" id="btn-salvar-lancamento">
+                        <span>✨</span> Salvar Lançamento
+                    </button>
                 </form>
             </div>
         </details>
@@ -768,7 +805,7 @@
                 const novaSenha = prompt("Acesso autorizado! Digite a sua NOVA senha de login:");
                 if (novaSenha && novaSenha.trim().length >= 4) {
                     localStorage.setItem('finance_app_pwd', novaSenha.trim());
-                    alert("Senha altered com sucesso! O aplicativo será reiniciado.");
+                    alert("Senha alterada com sucesso! O aplicativo será reiniciado.");
                     window.location.reload();
                 } else if (novaSenha) {
                     alert("Erro: A senha precisa ter pelo menos 4 caracteres.");
@@ -989,20 +1026,18 @@
             renderList();
         }
 
-        // CONFIRMAÇÃO AUTOMÁTICA DIRETA (Sem o pop-up informativo de valor)
         window.confirmTransaction = function(id) {
             if (db) {
                 db.child(id).update({ done: true });
             }
         }
 
-        // CORREÇÃO EXCLUSIVA DE VALOR VIA ÍCONE DE LÁPIS
         window.editTransactionAmount = function(id) {
             const t = transactions.find(item => item.id === id);
             if (t && db) {
                 const valorDigitado = prompt(`Corrigir valor do lançamento "${t.description}":\nValor Atual: ${formatCurrency(t.amount)}\n\nDigite o novo valor correto (Ex: 145,90):`, t.amount.toString().replace('.', ','));
                 
-                if (valorDigitado === null) return; // Cancelou
+                if (valorDigitado === null) return;
 
                 if (valorDigitado.trim() !== "") {
                     const valorFinal = parseFormattedValue(valorDigitado);
@@ -1072,9 +1107,21 @@
                     métodoText = 'Recebimento';
                 }
 
-                let actionMarkup = !t.done 
-                    ? `<button class="action-btn confirm-btn" onclick="confirmTransaction('${t.id}')">✓</button>`
-                    : `<button class="action-btn delete-btn" onclick="deleteTransaction('${t.id}')">×</button>`;
+                let actionMarkup = "";
+                if (!t.done) {
+                    actionMarkup = `
+                        <div class="item-actions-group">
+                            <button class="action-btn delete-btn" onclick="deleteTransaction('${t.id}')" title="Excluir item">×</button>
+                            <button class="action-btn confirm-btn" onclick="confirmTransaction('${t.id}')" title="Confirmar pagamento">✓</button>
+                        </div>
+                    `;
+                } else {
+                    actionMarkup = `
+                        <div class="item-actions-group">
+                            <button class="action-btn delete-btn" onclick="deleteTransaction('${t.id}')" title="Excluir item">×</button>
+                        </div>
+                    `;
+                }
 
                 item.innerHTML = `
                     <div class="item-details">
