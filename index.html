@@ -28,6 +28,7 @@
             --income: #00b37e;
             --expense: #f75a68;
             --border: #29292e;
+            --warning: #ffb86c;
         }
         * {
             box-sizing: border-box;
@@ -75,7 +76,7 @@
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background-color: var(--bg-color);
-            display: none; /* Controlado via JS */
+            display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -120,7 +121,7 @@
 
         /* Container do Aplicativo Principal */
         #app-container {
-            display: none; /* Escondido por padrão até logar */
+            display: none;
         }
 
         header {
@@ -291,9 +292,9 @@
             color: var(--primary);
         }
         .radio-btn input:checked + .radio-label.lbl-credito {
-            border-color: var(--warning, #ffb86c);
+            border-color: var(--warning);
             background-color: rgba(255, 184, 108, 0.1);
-            color: var(--warning, #ffb86c);
+            color: var(--warning);
         }
 
         /* Campos Condicionais do Parcelamento */
@@ -447,7 +448,7 @@
             font-size: 0.85rem;
         }
 
-        /* --- Configurações de Segurança no Rodapé --- */
+        /* Configurações de Segurança no Rodapé */
         .security-footer {
             margin-top: 40px;
             margin-bottom: 20px;
@@ -482,7 +483,7 @@
             background-color: rgba(255, 255, 255, 0.02);
         }
         .security-panel-content {
-            display: none; /* Controlado via JS */
+            display: none;
             flex-direction: column;
         }
         .security-panel-content button {
@@ -571,19 +572,23 @@
             <summary>➕ Novo Lançamento</summary>
             <div class="form-content">
                 <form id="finance-form">
-                    <!-- Tipo de Transação -->
-                    <div class="radio-group">
-                        <div class="radio-btn">
-                            <input type="radio" id="type-receber" name="type" value="receber" checked onclick="toggleMethodFields()">
-                            <label for="type-receber" class="radio-label lbl-receber">A Receber</label>
-                        </div>
-                        <div class="radio-btn">
-                            <input type="radio" id="type-pagar" name="type" value="pagar" onclick="toggleMethodFields()">
-                            <label for="type-pagar" class="radio-label lbl-pagar">A Pagar</label>
+                    
+                    <!-- Passo 1: Seleção de Tipo -->
+                    <div class="form-group">
+                        <label>Tipo de Transação</label>
+                        <div class="radio-group">
+                            <div class="radio-btn">
+                                <input type="radio" id="type-receber" name="type" value="receber" checked onclick="toggleMethodFields()">
+                                <label for="type-receber" class="radio-label lbl-receber">A Receber</label>
+                            </div>
+                            <div class="radio-btn">
+                                <input type="radio" id="type-pagar" name="type" value="pagar" onclick="toggleMethodFields()">
+                                <label for="type-pagar" class="radio-label lbl-pagar">A Pagar</label>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Método de Pagamento (Apenas para despesas) -->
+                    <!-- Passo 2: Seleção de Forma de Lançamento (Apenas se for A Pagar) -->
                     <div class="form-group" id="method-group" style="margin-bottom: 16px;">
                         <label>Forma de Lançamento</label>
                         <div class="radio-group">
@@ -598,7 +603,7 @@
                         </div>
                     </div>
 
-                    <!-- Campos Condicionais de Parcelamento -->
+                    <!-- Passo 3: Parcelas Condicionais (Se Crédito) -->
                     <div id="credit-fields">
                         <div class="form-group">
                             <label for="installments">Quantidade de Parcelas</label>
@@ -606,6 +611,7 @@
                         </div>
                     </div>
 
+                    <!-- Passo 4: Detalhes do Lançamento -->
                     <div class="form-group">
                         <label for="description">Descrição</label>
                         <input type="text" id="description" placeholder="Ex: Aluguel, Supermercado" required autocomplete="off">
@@ -617,19 +623,17 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="due-date" id="date-label">Data de Vencimento</label>
+                        <label for="due-date" id="date-label">Data de Recebimento</label>
                         <input type="date" id="due-date" required>
                     </div>
 
-                    <button type="submit" class="submit-btn">Adicionar Lançamento</button>
+                    <button type="submit" class="submit-btn" id="btn-salvar-lancamento">Adicionar Lançamento</button>
                 </form>
             </div>
         </details>
 
         <!-- FILTROS DE VISUALIZAÇÃO -->
-        <div class="month-selector" id="month-selector">
-            <!-- Abas deslizantes dos meses -->
-        </div>
+        <div class="month-selector" id="month-selector"></div>
 
         <!-- Abas Pendentes / Realizados -->
         <div class="tabs">
@@ -685,13 +689,14 @@
             return localStorage.getItem('finance_app_pwd') || SENHA_PADRAO;
         }
 
-        // --- CONTROLE DOS CAMPOS EXPANSIBLES ---
+        // --- CONTROLE DINÂMICO DOS CAMPOS ---
         window.toggleMethodFields = function() {
             const isPagar = document.querySelector('input[name="type"]:checked').value === 'pagar';
             document.getElementById('method-group').style.display = isPagar ? 'block' : 'none';
-            document.getElementById('date-label').textContent = isPagar ? 'Data de Vencimento' : 'Data de Recebimento';
+            
             if (!isPagar) {
                 toggleCreditFields(false);
+                document.getElementById('date-label').textContent = 'Data de Recebimento';
             } else {
                 const isCredito = document.getElementById('method-credito').checked;
                 toggleCreditFields(isCredito);
@@ -699,8 +704,14 @@
         }
 
         window.toggleCreditFields = function(show) {
+            const isPagar = document.querySelector('input[name="type"]:checked').value === 'pagar';
             document.getElementById('credit-fields').style.display = show ? 'block' : 'none';
-            document.getElementById('date-label').textContent = show ? 'Mês da 1ª Cobrança / Vencimento' : (document.querySelector('input[name="type"]:checked').value === 'pagar' ? 'Data de Vencimento' : 'Data de Recebimento');
+            
+            if (isPagar) {
+                document.getElementById('date-label').textContent = show ? 'Mês da 1ª Cobrança / Vencimento' : 'Data do Pagamento';
+            } else {
+                document.getElementById('date-label').textContent = 'Data de Recebimento';
+            }
         }
 
         window.tentarAbrirConfiguracoes = function() {
@@ -737,7 +748,7 @@
                     localStorage.setItem('finance_app_pwd', novaSenha.trim());
                     alert("Senha alterada com sucesso! O aplicativo será reiniciado.");
                     window.location.reload();
-                } else {
+                } else if (novaSenha) {
                     alert("Erro: A senha precisa ter pelo menos 4 caracteres.");
                 }
             } else {
@@ -866,10 +877,7 @@
             });
         }
 
-        const NOME_MESES = [
-            "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
-            "Jul", "Ago", "Set", "Out", "Nov", "Dez"
-        ];
+        const NOME_MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
         function gerarFiltroDeMeses() {
             const mesesSet = new Set();
@@ -918,7 +926,6 @@
             renderList();
         }
 
-        // Alerta dinâmico de dias em atraso puro (sem juros automáticos)
         function obterDiasDeAtraso(t) {
             if (t.done || !t.date) return 0;
             const partesVencimento = t.date.split('-');
@@ -960,13 +967,11 @@
             renderList();
         }
 
-        // Confirmação com opção de alterar valor se houver juros ou mudanças no pagamento real
         window.confirmTransaction = function(id) {
             const t = transactions.find(item => item.id === id);
             if (t && db) {
                 const valorDigitado = prompt(`Confirmar realização do pagamento?\nValor Original: ${formatCurrency(t.amount)}\n\nSe houver alteração por juros ou multas, digite o novo valor abaixo (Ex: 150,50):`, t.amount.toString().replace('.', ','));
-                
-                if (valorDigitado === null) return; // Cancelou a operação
+                if (valorDigitado === null) return;
 
                 let valorFinal = t.amount;
                 if (valorDigitado.trim() !== "") {
@@ -1016,7 +1021,6 @@
 
         function renderList() {
             listContainer.innerHTML = '';
-            
             const filteredByMonth = transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey));
             const filtered = filteredByMonth.filter(t => currentTab === 'done' ? t.done : !t.done);
 
@@ -1037,9 +1041,9 @@
                 
                 let métodoText = "";
                 if (t.type === 'pagar') {
-                    métdodoText = t.method === 'credito' ? `Crédito ${t.installmentText || ''}` : 'Débito/Dinheiro';
+                    métodoText = t.method === 'credito' ? `Crédito ${t.installmentText || ''}` : 'Débito/Dinheiro';
                 } else {
-                    métdodoText = 'Recebimento';
+                    métodoText = 'Recebimento';
                 }
 
                 let actionMarkup = !t.done 
@@ -1050,7 +1054,7 @@
                     <div class="item-details">
                         <h4>${t.description} ${atrasoMarkup}</h4>
                         <span>${t.done ? 'Realizado em' : 'Vence em'}: ${formatDate(t.date)}</span>
-                        <span class="method-badge">${métdodoText}</span>
+                        <span class="method-badge">${métodoText}</span>
                     </div>
                     <div class="item-right">
                         <span class="item-value ${isRec ? 'income-text' : 'expense-text'}">${isRec ? '+' : '-'} ${formatCurrency(t.amount)}</span>
@@ -1072,7 +1076,6 @@
 
             if (db) {
                 if (selectedType === 'receber') {
-                    // Lançamento comum de entrada
                     db.push({
                         type: 'receber',
                         description,
@@ -1081,11 +1084,9 @@
                         done: false
                     });
                 } else {
-                    // Lançamento de despesa (Pagar)
                     const method = document.querySelector('input[name="method"]:checked').value;
                     
                     if (method === 'debito') {
-                        // Se for DÉBITO: Lança direto nos Realizados (done: true)
                         db.push({
                             type: 'pagar',
                             method: 'debito',
@@ -1095,14 +1096,11 @@
                             done: true
                         });
                     } else {
-                        // Se for CRÉDITO: Cria os parcelamentos automáticos
                         const numInstallments = parseInt(document.getElementById('installments').value) || 1;
                         const valorParcela = parseFloat((totalAmount / numInstallments).toFixed(2));
-                        
                         const [year, month, day] = baseDate.split('-').map(Number);
 
                         for (let i = 0; i < numInstallments; i++) {
-                            // Calcula o mês subsequente para cada parcela da cobrança
                             let currentMonth = month + i;
                             let currentYear = year;
                             
@@ -1129,7 +1127,6 @@
                 }
             }
 
-            // Seleciona na interface o mês da data enviada no formulário
             const [ano, mes] = baseDate.split('-');
             selectedMonthKey = `${ano}-${mes}`;
 
@@ -1142,7 +1139,6 @@
             
             descInput.focus();
             
-            // Se foi débito, joga a visualização na aba realizados para conferir
             if (selectedType === 'pagar' && document.querySelector('input[name="method"]:checked').value === 'debito') {
                 switchTab('done');
             } else {
