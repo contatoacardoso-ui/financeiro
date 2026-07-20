@@ -605,21 +605,21 @@
         <div class="dashboard">
             <div class="balance-card">
                 <div class="balance-sub-card">
-                    <h3>Saldo Real Geral</h3>
+                    <h3>Saldo Real</h3>
                     <div class="balance-value income-text" id="real-balance">R$ 0,00</div>
                 </div>
                 <div style="border-left: 1px solid var(--border)"></div>
                 <div class="balance-sub-card">
-                    <h3>Saldo Previsto Geral</h3>
+                    <h3>Saldo Previsto</h3>
                     <div class="balance-value" id="total-balance">R$ 0,00</div>
                 </div>
             </div>
             <div class="mini-card">
-                <h4>A Receber Geral (Pendentes)</h4>
+                <h4>A Receber</h4>
                 <p class="income-text" id="total-income">R$ 0,00</p>
             </div>
             <div class="mini-card">
-                <h4>A Pagar Geral (Pendentes)</h4>
+                <h4>A Pagar</h4>
                 <p class="expense-text" id="total-expense">R$ 0,00</p>
             </div>
         </div>
@@ -968,6 +968,10 @@
                 monthSelector.appendChild(btn);
             });
 
+            rolarParaMesAtivo();
+        }
+
+        function rolarParaMesAtivo() {
             const activeBtn = monthSelector.querySelector('.active');
             if (activeBtn) {
                 monthSelector.scrollLeft = activeBtn.offsetLeft - monthSelector.offsetWidth / 2 + activeBtn.offsetWidth / 2;
@@ -1152,6 +1156,10 @@
 
             if (!description || totalAmount <= 0 || !baseDate) return;
 
+            const [ano, mes] = baseDate.split('-');
+            let mesAlvoKey = `${ano}-${mes}`;
+            let abaAlvo = 'pending';
+
             if (db) {
                 if (selectedType === 'receber') {
                     db.push({
@@ -1173,6 +1181,7 @@
                             date: baseDate,
                             done: true
                         });
+                        abaAlvo = 'done';
                     } else {
                         const numInstallments = parseInt(document.getElementById('installments').value) || 1;
                         const valorParcela = parseFloat((totalAmount / numInstallments).toFixed(2));
@@ -1191,6 +1200,10 @@
                             const formattedDay = String(day).padStart(2, '0');
                             const dateParcela = `${currentYear}-${formattedMonth}-${formattedDay}`;
 
+                            if (i === 0) {
+                                mesAlvoKey = `${currentYear}-${formattedMonth}`;
+                            }
+
                             db.push({
                                 type: 'pagar',
                                 method: 'credito',
@@ -1205,8 +1218,7 @@
                 }
             }
 
-            const [ano, mes] = baseDate.split('-');
-            selectedMonthKey = `${ano}-${mes}`;
+            selectedMonthKey = mesAlvoKey;
 
             descInput.value = '';
             amountInput.value = '';
@@ -1217,11 +1229,8 @@
             
             descInput.focus();
             
-            if (selectedType === 'pagar' && document.querySelector('input[name="method"]:checked').value === 'debito') {
-                switchTab('done');
-            } else {
-                switchTab('pending');
-            }
+            gerarFiltroDeMeses();
+            switchTab(abaAlvo);
         });
 
         // --- PWA ---
