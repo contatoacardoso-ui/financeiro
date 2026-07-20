@@ -1029,7 +1029,8 @@
         }
 
         function formatCurrency(value) {
-            return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            // Garante que o valor exibido seja sempre absoluto (sem o sinal de menos nativo do toLocaleString)
+            return Math.abs(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
 
         function formatDate(dateString) {
@@ -1144,6 +1145,7 @@
                     `;
                 }
 
+                // Removido os caracteres '+' e '-' antes do valor, confiando 100% na cor definida pelas classes de estilo
                 item.innerHTML = `
                     <div class="item-details">
                         <h4>${t.description} ${atrasoMarkup}</h4>
@@ -1154,7 +1156,7 @@
                         <div class="value-wrapper">
                             <div class="value-container">
                                 <button class="edit-value-btn" onclick="editTransactionAmount('${t.id}')" title="Corrigir valor">✏️</button>
-                                <span class="item-value ${isRec ? 'income-text' : 'expense-text'}">${isRec ? '+' : '-'} ${formatCurrency(t.amount)}</span>
+                                <span class="item-value ${isRec ? 'income-text' : 'expense-text'}">${formatCurrency(t.amount)}</span>
                             </div>
                         </div>
                         ${actionMarkup}
