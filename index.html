@@ -407,7 +407,29 @@
             text-align: right;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
+        }
+        .value-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .value-container {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .edit-value-btn {
+            background: none;
+            border: none;
+            font-size: 0.8rem;
+            cursor: pointer;
+            opacity: 0.6;
+            padding: 4px;
+        }
+        .edit-value-btn:active {
+            opacity: 1;
         }
         .item-value {
             font-weight: bold;
@@ -746,7 +768,7 @@
                 const novaSenha = prompt("Acesso autorizado! Digite a sua NOVA senha de login:");
                 if (novaSenha && novaSenha.trim().length >= 4) {
                     localStorage.setItem('finance_app_pwd', novaSenha.trim());
-                    alert("Senha alterada com sucesso! O aplicativo será reiniciado.");
+                    alert("Senha altered com sucesso! O aplicativo será reiniciado.");
                     window.location.reload();
                 } else if (novaSenha) {
                     alert("Erro: A senha precisa ter pelo menos 4 caracteres.");
@@ -967,21 +989,25 @@
             renderList();
         }
 
+        // CONFIRMAÇÃO AUTOMÁTICA DIRETA (Sem o pop-up informativo de valor)
         window.confirmTransaction = function(id) {
+            if (db) {
+                db.child(id).update({ done: true });
+            }
+        }
+
+        // CORREÇÃO EXCLUSIVA DE VALOR VIA ÍCONE DE LÁPIS
+        window.editTransactionAmount = function(id) {
             const t = transactions.find(item => item.id === id);
             if (t && db) {
-                const valorDigitado = prompt(`Confirmar realização do pagamento?\nValor Original: ${formatCurrency(t.amount)}\n\nSe houver alteração por juros ou multas, digite o novo valor abaixo (Ex: 150,50):`, t.amount.toString().replace('.', ','));
-                if (valorDigitado === null) return;
+                const valorDigitado = prompt(`Corrigir valor do lançamento "${t.description}":\nValor Atual: ${formatCurrency(t.amount)}\n\nDigite o novo valor correto (Ex: 145,90):`, t.amount.toString().replace('.', ','));
+                
+                if (valorDigitado === null) return; // Cancelou
 
-                let valorFinal = t.amount;
                 if (valorDigitado.trim() !== "") {
-                    valorFinal = parseFormattedValue(valorDigitado);
+                    const valorFinal = parseFormattedValue(valorDigitado);
+                    db.child(id).update({ amount: valorFinal });
                 }
-
-                db.child(id).update({ 
-                    done: true,
-                    amount: valorFinal
-                });
             }
         }
 
@@ -1057,7 +1083,12 @@
                         <span class="method-badge">${métodoText}</span>
                     </div>
                     <div class="item-right">
-                        <span class="item-value ${isRec ? 'income-text' : 'expense-text'}">${isRec ? '+' : '-'} ${formatCurrency(t.amount)}</span>
+                        <div class="value-wrapper">
+                            <div class="value-container">
+                                <button class="edit-value-btn" onclick="editTransactionAmount('${t.id}')" title="Corrigir valor">✏️</button>
+                                <span class="item-value ${isRec ? 'income-text' : 'expense-text'}">${isRec ? '+' : '-'} ${formatCurrency(t.amount)}</span>
+                            </div>
+                        </div>
                         ${actionMarkup}
                     </div>
                 `;
