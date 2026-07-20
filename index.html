@@ -324,13 +324,17 @@
             opacity: 0.9;
         }
 
-        /* Campos Condicionais do Parcelamento */
-        #credit-fields {
+        /* Campos Condicionais das Despesas */
+        #expense-conditional-fields {
             display: none;
             border-left: 2px solid var(--border);
             padding-left: 12px;
             margin-top: 10px;
             margin-bottom: 12px;
+        }
+        #credit-fields {
+            display: none;
+            margin-top: 10px;
         }
 
         /* Filtro de Meses Deslizável */
@@ -645,26 +649,35 @@
                         </div>
                     </div>
 
-                    <!-- Passo 2: Seleção de Forma de Lançamento (Apenas se for A Pagar) -->
-                    <div class="form-group" id="method-group" style="margin-bottom: 16px;">
-                        <label>Forma de Lançamento</label>
-                        <div class="radio-group">
-                            <div class="radio-btn">
-                                <input type="radio" id="method-debito" name="method" value="debito" checked onclick="toggleCreditFields(false)">
-                                <label for="method-debito" class="radio-label lbl-debito">Dinheiro/Débito</label>
-                            </div>
-                            <div class="radio-btn">
-                                <input type="radio" id="method-credito" name="method" value="credito" onclick="toggleCreditFields(true)">
-                                <label for="method-credito" class="radio-label lbl-credito">Cartão de Crédito</label>
+                    <!-- Bloco Condicional se for A Pagar -->
+                    <div id="expense-conditional-fields">
+                        <!-- Passo 2: Seleção de Forma de Lançamento -->
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label>Forma de Lançamento</label>
+                            <div class="radio-group">
+                                <div class="radio-btn">
+                                    <input type="radio" id="method-debito" name="method" value="debito" checked onclick="toggleCreditFields(false)">
+                                    <label for="method-debito" class="radio-label lbl-debito">Dinheiro/Débito</label>
+                                </div>
+                                <div class="radio-btn">
+                                    <input type="radio" id="method-credito" name="method" value="credito" onclick="toggleCreditFields(true)">
+                                    <label for="method-credito" class="radio-label lbl-credito">Cartão de Crédito</label>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Passo 3: Parcelas Condicionais (Se Crédito) -->
-                    <div id="credit-fields">
+                        <!-- Novo Campo Comum: Origem / Cartão Informado -->
                         <div class="form-group">
-                            <label for="installments">Quantidade de Parcelas</label>
-                            <input type="number" id="installments" value="1" min="1" max="72">
+                            <label for="card-origin">Origem / Cartão</label>
+                            <input type="text" id="card-origin" placeholder="Ex: Nubank, Itaú, Dinheiro" autocomplete="off">
+                        </div>
+
+                        <!-- Passo 3: Parcelas Condicionais (Se Crédito) -->
+                        <div id="credit-fields">
+                            <div class="form-group">
+                                <label for="installments">Quantidade de Parcelas</label>
+                                <input type="number" id="installments" value="1" min="1" max="72">
+                            </div>
                         </div>
                     </div>
 
@@ -751,7 +764,7 @@
         // --- CONTROLE DINÂMICO DOS CAMPOS ---
         window.toggleMethodFields = function() {
             const isPagar = document.querySelector('input[name="type"]:checked').value === 'pagar';
-            document.getElementById('method-group').style.display = isPagar ? 'block' : 'none';
+            document.getElementById('expense-conditional-fields').style.display = isPagar ? 'block' : 'none';
             
             if (!isPagar) {
                 toggleCreditFields(false);
@@ -904,6 +917,7 @@
         const descInput = document.getElementById('description');
         const amountInput = document.getElementById('amount');
         const dateInput = document.getElementById('due-date');
+        const cardOriginInput = document.getElementById('card-origin');
         const listContainer = document.getElementById('transaction-list');
         const monthSelector = document.getElementById('month-selector');
         
@@ -1106,7 +1120,10 @@
                 
                 let métodoText = "";
                 if (t.type === 'pagar') {
-                    métodoText = t.method === 'credito' ? `Crédito ${t.installmentText || ''}` : 'Débito/Dinheiro';
+                    const complementoOrigem = t.cardOrigin ? ` (${t.cardOrigin})` : "";
+                    métodoText = t.method === 'credito' 
+                        ? `Crédito${complementoOrigem} ${t.installmentText || ''}` 
+                        : `Débito/Dinheiro${complementoOrigem}`;
                 } else {
                     métodoText = 'Recebimento';
                 }
@@ -1171,11 +1188,13 @@
                     });
                 } else {
                     const method = document.querySelector('input[name="method"]:checked').value;
+                    const cardOrigin = cardOriginInput.value.trim();
                     
                     if (method === 'debito') {
                         db.push({
                             type: 'pagar',
                             method: 'debito',
+                            cardOrigin,
                             description,
                             amount: totalAmount,
                             date: baseDate,
@@ -1207,6 +1226,7 @@
                             db.push({
                                 type: 'pagar',
                                 method: 'credito',
+                                cardOrigin,
                                 description: `${description} (${i + 1}/${numInstallments})`,
                                 amount: valorParcela,
                                 date: dateParcela,
@@ -1222,6 +1242,7 @@
 
             descInput.value = '';
             amountInput.value = '';
+            cardOriginInput.value = '';
             document.getElementById('installments').value = '1';
             
             formAccordion.removeAttribute('open');
