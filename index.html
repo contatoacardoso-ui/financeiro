@@ -279,13 +279,13 @@
 
                         <div class="form-group">
                             <label for="card-origin">Origem / Cartão</label>
-                            <input type="text" id="card-origin" placeholder="Ex: Nubank, Itaú, Dinheiro" autocomplete="off">
+                            <input type="text" id="card-origin" placeholder="Ex: Nubank, Itaú" autocomplete="off">
                         </div>
 
                         <div id="credit-fields">
                             <div class="form-group">
                                 <label for="installments">Quantidade de Parcelas</label>
-                                <input type="number" id="installments" value="1" min="1" max="72">
+                                <input type="number" id="installments" value="1" min="1" max="72" oninput="atualizarRotuloData()">
                             </div>
                         </div>
                     </div>
@@ -301,7 +301,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="due-date">Data de Recebimento</label>
+                        <label for="due-date" id="date-label">Data de Recebimento</label>
                         <input type="date" id="due-date" required>
                     </div>
 
@@ -444,6 +444,7 @@
         const descInput = document.getElementById('description');
         const amountInput = document.getElementById('amount');
         const dateInput = document.getElementById('due-date');
+        const dateLabel = document.getElementById('date-label');
         const cardOriginInput = document.getElementById('card-origin');
         const listContainer = document.getElementById('transaction-list');
         const monthSelector = document.getElementById('month-selector');
@@ -643,6 +644,26 @@
             }
         }
 
+        window.atualizarRotuloData = function() {
+            const isReceber = document.querySelector('input[name="type"]:checked').value === 'receber';
+            if (isReceber) {
+                dateLabel.textContent = "Data de Recebimento";
+                return;
+            }
+
+            const isCredito = document.querySelector('input[name="method"]:checked').value === 'credito';
+            if (!isCredito) {
+                dateLabel.textContent = "Data de Pagamento";
+            } else {
+                const parcelas = parseInt(document.getElementById('installments').value) || 1;
+                if (parcelas <= 1) {
+                    dateLabel.textContent = "Data de Vencimento";
+                } else {
+                    dateLabel.textContent = "Data 1ª Parcela";
+                }
+            }
+        }
+
         window.toggleTypeFields = function() {
             const isPagar = document.querySelector('input[name="type"]:checked').value === 'pagar';
             document.getElementById('expense-conditional-fields').style.display = isPagar ? 'block' : 'none';
@@ -652,10 +673,12 @@
             } else {
                 descInput.placeholder = "Ex: Salario, Rendimento, Investimento...";
             }
+            atualizarRotuloData();
         }
 
         window.toggleCreditFields = function(show) {
             document.getElementById('credit-fields').style.display = show ? 'block' : 'none';
+            atualizarRotuloData();
         }
 
         window.tentarAbrirConfiguracoes = function() {
