@@ -137,23 +137,29 @@
         .delete-btn { color: var(--text-secondary); font-size: 1.2rem; border: 1px solid rgba(168, 168, 179, 0.15); }
         .empty-state { text-align: center; color: var(--text-secondary); padding: 20px 0; font-size: 0.85rem; }
 
+        /* Estilização Executiva do Relatório */
         #report-section { display: none; flex-direction: column; gap: 16px; }
         .report-mode-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
         .report-mode-btn { background-color: #121214; border: 1px solid var(--border); color: var(--text-secondary); padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; cursor: pointer; text-align: center; }
         .report-mode-btn.active { background-color: rgba(78, 168, 222, 0.15); border-color: var(--primary); color: var(--primary); }
         
         .report-actions { display: flex; margin-bottom: 4px; }
-        .report-action-btn { width: 100%; background-color: var(--card-bg); border: 1px solid var(--border); color: var(--text-color); padding: 12px; border-radius: 8px; font-size: 0.9rem; font-weight: bold; cursor: pointer; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .report-action-btn { width: 100%; background: linear-gradient(135deg, var(--primary) 0%, #3a9ec2 100%); border: none; color: #fff; padding: 14px; border-radius: 10px; font-size: 0.95rem; font-weight: bold; cursor: pointer; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(78,168,222,0.2); }
 
         .report-card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
         .report-card h3 { font-size: 0.95rem; color: var(--text-color); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .chart-container { position: relative; width: 100%; height: 220px; }
+        .chart-container { position: relative; width: 100%; height: 250px; }
         
-        .analysis-box { background: rgba(78, 168, 222, 0.08); border: 1px solid rgba(78, 168, 222, 0.2); border-radius: 8px; padding: 12px; margin-bottom: 12px; font-size: 0.85rem; line-height: 1.4; }
+        .analysis-box { background: rgba(78, 168, 222, 0.08); border: 1px solid rgba(78, 168, 222, 0.2); border-radius: 8px; padding: 14px; margin-bottom: 14px; font-size: 0.88rem; line-height: 1.5; }
         .analysis-box strong { color: var(--primary); }
 
+        .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+        .kpi-item { background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 10px; border-radius: 8px; text-align: center; }
+        .kpi-item span { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; display: block; margin-bottom: 2px; }
+        .kpi-item strong { font-size: 1rem; }
+
         .ranking-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
-        .ranking-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; padding: 6px 8px; background: rgba(255,255,255,0.02); border-radius: 6px; border: 1px solid var(--border); }
+        .ranking-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; padding: 8px 10px; background: rgba(255,255,255,0.02); border-radius: 6px; border: 1px solid var(--border); }
 
         .detailed-report-list { display: flex; flex-direction: column; gap: 8px; max-height: 350px; overflow-y: auto; }
         .detailed-item { background-color: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); padding: 10px 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
@@ -354,32 +360,44 @@
             </div>
 
             <div class="report-actions">
-                <button class="report-action-btn" onclick="salvarComoPDF()">💾 Salvar Relatório</button>
+                <button class="report-action-btn" onclick="salvarComoPDF()">🖨️ Exportar Relatório Executivo (PDF)</button>
             </div>
 
             <div class="report-card">
-                <h3 id="report-title-header">💡 Análise de Entradas e Saídas</h3>
+                <h3 id="report-title-header">💡 Sumário Executivo</h3>
+                
+                <div class="kpi-grid">
+                    <div class="kpi-item">
+                        <span>Margem Líquida</span>
+                        <strong id="kpi-margin">0%</strong>
+                    </div>
+                    <div class="kpi-item">
+                        <span>Fluxo Líquido</span>
+                        <strong id="kpi-flow">R$ 0,00</strong>
+                    </div>
+                </div>
+
                 <div class="analysis-box" id="analysis-summary-text">Calculando análise...</div>
                 
-                <h4 style="font-size:0.85rem; color:var(--expense); margin-bottom:6px;">🔥 Onde você mais gasta (Top Saídas)</h4>
+                <h4 style="font-size:0.85rem; color:var(--expense); margin-bottom:6px;">🔥 Top 3 Maiores Despesas</h4>
                 <div class="ranking-list" id="top-expenses-ranking"></div>
 
-                <h4 style="font-size:0.85rem; color:var(--income); margin-bottom:6px; margin-top:12px;">💰 De onde entra mais dinheiro (Top Entradas)</h4>
+                <h4 style="font-size:0.85rem; color:var(--income); margin-bottom:6px; margin-top:12px;">💰 Top 3 Maiores Entradas</h4>
                 <div class="ranking-list" id="top-incomes-ranking"></div>
             </div>
 
             <div class="report-card">
-                <h3>📊 Comparativo Geral</h3>
+                <h3>📊 Demonstrativo Mensal (Entradas vs Saídas)</h3>
                 <div class="chart-container"><canvas id="chart-comparison"></canvas></div>
             </div>
 
             <div class="report-card">
-                <h3>🥧 Detalhamento Gráfico de Entradas</h3>
+                <h3>🥧 Composição de Entradas (Consolidada)</h3>
                 <div class="chart-container"><canvas id="chart-incomes-pie"></canvas></div>
             </div>
 
             <div class="report-card">
-                <h3>🥧 Detalhamento Gráfico de Saídas</h3>
+                <h3>🥧 Composição de Saídas (Consolidada)</h3>
                 <div class="chart-container"><canvas id="chart-expenses-pie"></canvas></div>
             </div>
 
@@ -426,7 +444,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.0.1"; // ⬅️ ALTERE ESTE NÚMERO SEMPRE QUE FIZER UMA ATUALIZAÇÃO IMPORTANTE
+        const VERSAO_CODIGO = "1.0.2"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -502,14 +520,11 @@
 
             dbRoot = firebase.database().ref();
 
-            // Verificador Automático de Versão
             dbRoot.child('versao_sistema').on('value', (snapshot) => {
                 const versaoNuvem = snapshot.val();
                 if (!versaoNuvem) {
-                    // Inicializa a versão no banco se não existir
                     dbRoot.child('versao_sistema').set(VERSAO_CODIGO);
                 } else if (versaoNuvem !== VERSAO_CODIGO) {
-                    // Exibe aviso de atualização disponível
                     document.getElementById('update-modal').style.display = 'flex';
                 }
             });
@@ -536,7 +551,6 @@
         });
 
         window.recarregarParaAtualizar = function() {
-            // Limpa qualquer cache e recarrega forçando a nova versão
             window.location.reload(true);
         }
 
@@ -1093,6 +1107,32 @@
             });
         }
 
+        // Função inteligente para agrupar categorias menores e evitar poluição visual nos gráficos de pizza
+        function consolidarDadosParaPizza(dadosObjeto, limiteMaxFatias = 5) {
+            const entradasOrdenadas = Object.entries(dadosObjeto).sort((a, b) => b[1] - a[1]);
+            
+            if (entradasOrdenadas.length <= limiteMaxFatias) {
+                return dadosObjeto;
+            }
+
+            const resultadoConsolidado = {};
+            let somaOutros = 0;
+
+            entradasOrdenadas.forEach((item, index) => {
+                if (index < limiteMaxFatias - 1) {
+                    resultadoConsolidado[item[0]] = item[1];
+                } else {
+                    somaOutros += item[1];
+                }
+            });
+
+            if (somaOutros > 0) {
+                resultadoConsolidado['Outros'] = somaOutros;
+            }
+
+            return resultadoConsolidado;
+        }
+
         function renderReport() {
             let totalEntradas = 0, totalSaidas = 0;
             const transFiltradas = reportMode === 'month' ? transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey)) : transactions;
@@ -1109,35 +1149,47 @@
             });
 
             const diff = totalEntradas - totalSaidas;
-            document.getElementById('analysis-summary-text').innerHTML = `Total de Entradas: <strong class="income-text">${formatCurrency(totalEntradas)}</strong> | Total de Saídas: <strong class="expense-text">${formatCurrency(totalSaidas)}</strong><br><br>${diff >= 0 ? `✅ Suas <strong>entradas superam as saídas</strong> em ${formatCurrency(diff)}.` : `⚠️ Alerta: Suas <strong>saídas superam as entradas</strong> em ${formatCurrency(Math.abs(diff))}.`}`;
+            const margem = totalEntradas > 0 ? ((diff / totalEntradas) * 100).toFixed(1) : 0;
+
+            document.getElementById('kpi-margin').textContent = `${margem}%`;
+            document.getElementById('kpi-margin').className = margem >= 0 ? 'income-text' : 'expense-text';
+            document.getElementById('kpi-flow').textContent = formatCurrency(diff);
+            document.getElementById('kpi-flow').className = diff >= 0 ? 'income-text' : 'expense-text';
+
+            document.getElementById('analysis-summary-text').innerHTML = `Total de Entradas: <strong class="income-text">${formatCurrency(totalEntradas)}</strong> | Total de Saídas: <strong class="expense-text">${formatCurrency(totalSaidas)}</strong><br><br>${diff >= 0 ? `✅ Excelente! Suas <strong>entradas superam as saídas</strong> em ${formatCurrency(diff)}.` : `⚠️ Alerta Executivo: Suas <strong>saídas superam as entradas</strong> em ${formatCurrency(Math.abs(diff))}.`}`;
 
             const topExpRanking = document.getElementById('top-expenses-ranking');
             topExpRanking.innerHTML = '';
             Object.entries(agrupaSaidasDesc).sort((a, b) => b[1] - a[1]).slice(0, 3).forEach(([desc, val], idx) => {
                 topExpRanking.innerHTML += `<div class="ranking-item"><span>#${idx+1} ${desc}</span><strong class="expense-text">${formatCurrency(val)}</strong></div>`;
             });
+            if(topExpRanking.innerHTML === '') topExpRanking.innerHTML = '<div class="empty-state">Sem dados de despesas.</div>';
 
             const topIncRanking = document.getElementById('top-incomes-ranking');
             topIncRanking.innerHTML = '';
             Object.entries(agrupaEntradasOrigem).sort((a, b) => b[1] - a[1]).slice(0, 3).forEach(([orig, val], idx) => {
                 topIncRanking.innerHTML += `<div class="ranking-item"><span>#${idx+1} ${orig}</span><strong class="income-text">${formatCurrency(val)}</strong></div>`;
             });
+            if(topIncRanking.innerHTML === '') topIncRanking.innerHTML = '<div class="empty-state">Sem dados de entradas.</div>';
 
             const paletaCoresAltas = ['#3366CC', '#DC3912', '#FF9900', '#109618', '#990099', '#0099C6', '#DD4477', '#66AA00'];
             
             if (chartComparisonInstance) chartComparisonInstance.destroy();
             chartComparisonInstance = new Chart(document.getElementById('chart-comparison').getContext('2d'), {
-                type: 'bar', data: { labels: ['Entradas', 'Saídas'], datasets: [{ data: [totalEntradas, totalSaidas], backgroundColor: ['#00b37e', '#f75a68'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                type: 'bar', data: { labels: ['Entradas', 'Saídas'], datasets: [{ data: [totalEntradas, totalSaidas], backgroundColor: ['#00b37e', '#f75a68'], borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
+            // Aplica consolidação inteligente (agrupa fatias menores em 'Outros' para limpar a visualização)
+            const dadosPizzaEntradas = consolidarDadosParaPizza(agrupaEntradasOrigem, 5);
             if (chartIncomesPieInstance) chartIncomesPieInstance.destroy();
             chartIncomesPieInstance = new Chart(document.getElementById('chart-incomes-pie').getContext('2d'), {
-                type: 'doughnut', data: { labels: Object.keys(agrupaEntradasOrigem).length ? Object.keys(agrupaEntradasOrigem) : ['Nenhuma'], datasets: [{ data: Object.values(agrupaEntradasOrigem).length ? Object.values(agrupaEntradasOrigem) : [1], backgroundColor: paletaCoresAltas }] }, options: { responsive: true, maintainAspectRatio: false }
+                type: 'doughnut', data: { labels: Object.keys(dadosPizzaEntradas).length ? Object.keys(dadosPizzaEntradas) : ['Nenhuma'], datasets: [{ data: Object.values(dadosPizzaEntradas).length ? Object.values(dadosPizzaEntradas) : [1], backgroundColor: paletaCoresAltas }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } }
             });
 
+            const dadosPizzaSaidas = consolidarDadosParaPizza(agrupaSaidasDesc, 5);
             if (chartExpensesPieInstance) chartExpensesPieInstance.destroy();
             chartExpensesPieInstance = new Chart(document.getElementById('chart-expenses-pie').getContext('2d'), {
-                type: 'doughnut', data: { labels: Object.keys(agrupaSaidasDesc).length ? Object.keys(agrupaSaidasDesc) : ['Nenhuma'], datasets: [{ data: Object.values(agrupaSaidasDesc).length ? Object.values(agrupaSaidasDesc) : [1], backgroundColor: paletaCoresAltas }] }, options: { responsive: true, maintainAspectRatio: false }
+                type: 'doughnut', data: { labels: Object.keys(dadosPizzaSaidas).length ? Object.keys(dadosPizzaSaidas) : ['Nenhuma'], datasets: [{ data: Object.values(dadosPizzaSaidas).length ? Object.values(dadosPizzaSaidas) : [1], backgroundColor: paletaCoresAltas }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } }
             });
 
             const detailedIncList = document.getElementById('detailed-incomes-list');
