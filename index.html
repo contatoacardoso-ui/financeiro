@@ -65,13 +65,6 @@
             font-size: 0.75rem; font-weight: 700; margin-top: 6px;
             border: 1px solid rgba(78, 168, 222, 0.3);
         }
-        
-        #loading {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(18, 18, 20, 0.95); display: none; flex-direction: column;
-            gap: 12px; justify-content: center; align-items: center; z-index: 9999;
-            font-weight: bold; font-size: 1.1rem;
-        }
 
         .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .balance-card {
@@ -219,11 +212,6 @@
                 <button type="submit" class="submit-btn">Entrar</button>
             </form>
         </div>
-    </div>
-
-    <!-- Overlay de carregamento -->
-    <div id="loading">
-        <span id="loading-text">Conectando ao banco de dados...</span>
     </div>
 
     <!-- Aplicativo Principal -->
@@ -445,7 +433,6 @@
         const loginPassword = document.getElementById('login-password');
         const rememberMeCheckbox = document.getElementById('remember-me');
         const loginError = document.getElementById('login-error');
-        const loadingOverlay = document.getElementById('loading');
         const appContainer = document.getElementById('app-container');
         const profileBadge = document.getElementById('profile-name-badge');
         const btnMasterPanel = document.getElementById('btn-master-panel');
@@ -468,9 +455,6 @@
 
         dateInput.value = new Date().toISOString().split('T')[0];
 
-        // Agrupa (debounce) várias atualizações rápidas do Firebase em um único
-        // repaint, usando requestAnimationFrame. Evita que a tela "pule" quando
-        // chegam vários eventos 'value' em sequência (ex: escrita otimista + confirmação do servidor).
         let atualizacaoAgendada = false;
         function agendarAtualizacaoDaTela() {
             if (atualizacaoAgendada) return;
@@ -484,12 +468,6 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            // Mostra o overlay de carregamento imediatamente. Só decidimos entre
-            // "tela de login" ou "app" depois que os perfis chegarem do Firebase,
-            // assim evitamos o flash de tela errada (app aparecendo em branco
-            // antes de estar realmente pronto).
-            loadingOverlay.style.display = 'flex';
-
             if (!firebase.apps.length) {
                 firebase.initializeApp(firebaseConfig);
             }
@@ -497,7 +475,6 @@
 
             dbRoot = firebase.database().ref();
 
-            // Preenche dados salvos no formulário de login (recurso "lembrar senha")
             const usuarioSalvo = localStorage.getItem('saved_username');
             const senhaSalva = localStorage.getItem('saved_password');
             if (usuarioSalvo) loginUsernameInput.value = usuarioSalvo;
@@ -520,8 +497,6 @@
         });
 
         function verificarSessaoSalva() {
-            loadingOverlay.style.display = 'none';
-
             const jaLogado = localStorage.getItem('user_authenticated') === 'true';
             const chaveAtiva = localStorage.getItem('active_user_key');
 
@@ -532,14 +507,6 @@
                 appContainer.style.display = 'none';
             }
         }
-
-        // NOTA DE SEGURANÇA: removida a funcionalidade que preenchia
-        // automaticamente a senha de QUALQUER perfil só de o usuário digitar
-        // o nome. Em um app com múltiplos perfis (família), isso permitia que
-        // qualquer pessoa com acesso ao aparelho lesse/usasse a senha de
-        // outro perfil apenas digitando o nome dele — sem saber a senha real.
-        // Agora o autopreenchimento só existe para o ÚLTIMO perfil que de fato
-        // fez login neste aparelho com "lembrar senha" marcado (ver bloco acima).
 
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -709,8 +676,6 @@
                 const novaSenhaTrim = novaSenha.trim();
                 perfisCadastrados[chaveAtiva].pwd = novaSenhaTrim;
                 dbRoot.child('config_perfis').set(perfisCadastrados).then(() => {
-                    // Só atualiza a senha lembrada localmente se este era o perfil
-                    // que já estava com "lembrar senha" ativo neste aparelho.
                     if (localStorage.getItem('remember_active') === 'true' && localStorage.getItem('active_user_key') === chaveAtiva) {
                         localStorage.setItem('saved_password', novaSenhaTrim);
                     }
@@ -751,7 +716,6 @@
         }
 
         const NOME_MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-
         let ultimaAssinaturaDeMeses = '';
 
         function gerarFiltroDeMeses() {
@@ -775,9 +739,6 @@
 
             const assinaturaAtual = mesesOrdenados.join(',');
 
-            // Só reconstrói os botões se a lista de meses realmente mudou.
-            // Caso contrário, apenas atualiza qual botão está "ativo", sem
-            // apagar/recriar o DOM (o que causava o salto visual).
             if (assinaturaAtual !== ultimaAssinaturaDeMeses) {
                 ultimaAssinaturaDeMeses = assinaturaAtual;
                 monthSelector.innerHTML = '';
@@ -952,14 +913,8 @@
             `;
         }
 
-        // renderList reaproveita os elementos DOM já existentes (por id da transação)
-        // em vez de apagar e recriar tudo a cada atualização. Isso elimina o
-        // "salto" brusco na tela: itens que não mudaram nem são tocados,
-        // itens alterados só têm o conteúdo interno atualizado, e itens novos/removidos
-        // entram e saem com um fade suave.
         function renderList() {
             const filtered = transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey)).filter(t => currentTab === 'done' ? t.done : !t.done);
-
             const emptyState = listContainer.querySelector('.empty-state');
 
             if (filtered.length === 0) {
@@ -1124,15 +1079,23 @@
 
             if (!description || totalAmount <= 0 || !baseDate) return;
 
+            const methodVal = selectedType === 'pagar' ? document.querySelector('input[name="method"]:checked').value : 'debito';
+
             let transData = {
                 type: selectedType, description, amount: totalAmount, date: baseDate, cardOrigin: cardOrigin || '',
-                method: selectedType === 'pagar' ? document.querySelector('input[name="method"]:checked').value : 'debito',
-                installments: selectedType === 'pagar' && document.querySelector('input[name="method"]:checked').value === 'credito' ? (parseInt(document.getElementById('installments').value) || 1) : 1
+                method: methodVal,
+                installments: selectedType === 'pagar' && methodVal === 'credito' ? (parseInt(document.getElementById('installments').value) || 1) : 1
             };
 
             if (dbTransactions) {
-                if (editId) dbTransactions.child(editId).update(transData);
-                else { transData.done = false; dbTransactions.push(transData); }
+                if (editId) {
+                    dbTransactions.child(editId).update(transData);
+                } else {
+                    // Se for pagamento no débito/dinheiro ou recebimento geral, vai direto para Realizados (done: true)
+                    // Se for cartão de crédito, vai para Pendentes (done: false)
+                    transData.done = (selectedType === 'pagar' && methodVal === 'debito') ? true : false;
+                    dbTransactions.push(transData);
+                }
             }
             cancelarEdicao();
         });
