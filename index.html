@@ -305,6 +305,8 @@
             padding: 8px 12px;
             border-radius: 6px;
             margin-bottom: 8px;
+            font-size: 0.85rem;
+            font-weight: bold;
         }
 
         .transaction-list { display: flex; flex-direction: column; gap: 8px; }
@@ -350,6 +352,8 @@
         .report-card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
         .report-card h3 { font-size: 0.95rem; color: var(--text-color); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
         .chart-container { position: relative; width: 100%; height: 220px; }
+        .top-expenses-list { display: flex; flex-direction: column; gap: 8px; }
+        .top-expense-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
 
         .security-footer { margin-top: 40px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 12px; }
         .security-accordion { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
@@ -525,7 +529,6 @@
             <div class="report-card">
                 <h3>
                     <span>Principais Saídas (Por Descrição)</span>
-                    <span class="stat-badge" id="income-ratio-badge">0% da Renda</span>
                 </h3>
                 <div id="top-expenses-list" class="top-expenses-list"></div>
             </div>
@@ -1045,35 +1048,90 @@
                 return;
             }
 
+            // Agrupar por Origem / Banco / Forma de Pagamento
+            const grouped = {};
             filtered.forEach(t => {
-                const item = document.createElement('div');
-                item.className = 'transaction-item';
-                const isRec = t.type === 'receber';
+                let groupKey = 'Geral';
+                if (t.type === 'pagar') {
+                    if (t.method === 'credito') {
+                        groupKey = `Crédito: ${t.cardOrigin || 'Cartão'}`;
+                    } else {
+                        groupKey = `Débito / Dinheiro${t.cardOrigin ? ' (' + t.cardOrigin + ')' : ''}`;
+                    }
+                } else {
+                    groupKey = t.cardOrigin ? `Origem: ${t.cardOrigin}` : 'Entradas Gerais';
+                }
+
+                if (!grouped[groupKey]) grouped[groupKey] = [];
+                grouped[groupKey].push(t);
+            });
+
+            Object.keys(grouped).sort().forEach(groupKey => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'group-container';
                 
-                item.innerHTML = `
-                    <div class="item-details">
-                        <h4>${t.description}</h4>
-                        <span>Data: ${formatDate(t.date)}</span>
-                    </div>
-                    <div class="item-right">
-                        <span class="item-value ${isRec ? 'income-text' : 'expense-text'}">${formatCurrency(t.amount)}</span>
-                        <div class="item-actions-group">
-                            <button class="action-btn delete-btn" onclick="deleteTransaction('${t.id}')">×</button>
-                            ${!t.done ? `<button class="action-btn confirm-btn" onclick="confirmTransaction('${t.id}')">✓</button>` : ''}
+                const groupHeader = document.createElement('div');
+                groupHeader.className = 'group-header';
+                groupHeader.innerHTML = `<span>📂 ${groupKey}</span>`;
+                groupDiv.appendChild(groupHeader);
+
+                const listSubContainer = document.createElement('div');
+                listSubContainer.className = 'transaction-list';
+
+                grouped[groupKey].forEach(t => {
+                    const item = document.createElement('div');
+                    item.className = 'transaction-item';
+                    const isRec = t.type === 'receber';
+                    
+                    let badgeText = '';
+                    if (t.type === 'pagar') {
+                        badgeText = t.method === 'credito' ? '💳 Cartão de Crédito' : '💵 Débito/Dinheiro';
+                        if (t.installments && t.installments > 1) badgeText += ` (${t.installments}x)`;
+                    }
+
+                    item.innerHTML = `
+                        <div class="item-details">
+                            <h4>${t.description}</h4>
+                            <span>Data: ${formatDate(t.date)}</span>
+                            ${badgeText ? `<span class="method-badge">${badgeText}</span>` : ''}
                         </div>
-                    </div>
-                `;
-                listContainer.appendChild(item);
+                        <div class="item-right">
+                            <span class="item-value ${isRec ? 'income-text' : 'expense-text'}">${formatCurrency(t.amount)}</span>
+                            <div class="item-actions-group">
+                                <button class="action-btn delete-btn" onclick="deleteTransaction('${t.id}')">×</button>
+                                ${!t.done ? `<button class="action-btn confirm-btn" onclick="confirmTransaction('${t.id}')">✓</button>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    listSubContainer.appendChild(item);
+                });
+
+                groupDiv.appendChild(listSubContainer);
+                listContainer.appendChild(groupDiv);
             });
         }
 
         function renderReport() {
             let totalEntradas = 0, totalSaidas = 0;
-            transactions.forEach(t => {
-                if (t.type === 'receber') totalEntradas += t.amount;
-                else totalSaidas += t.amount;
+            const despesasPorDesc = {};
+            const entradasPorOrigem = {};
+
+            const transFiltradas = reportMode === 'month' 
+                ? transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey))
+                : transactions;
+
+            transFiltradas.forEach(t => {
+                if (t.type === 'receber') {
+                    totalEntradas += t.amount;
+                    const origem = t.cardOrigin || 'Geral';
+                    entradasPorOrigem[origem] = (entradasPorOrigem[origem] || 0) + t.amount;
+                } else {
+                    totalSaidas += t.amount;
+                    despesasPorDesc[t.description] = (despesasPorDesc[t.description] || 0) + t.amount;
+                }
             });
 
+            // Gráfico de Barras
             const ctxComp = document.getElementById('chart-comparison').getContext('2d');
             if (chartComparisonInstance) chartComparisonInstance.destroy();
 
@@ -1085,6 +1143,38 @@
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
+
+            // Lista Top Despesas
+            const topExpList = document.getElementById('top-expenses-list');
+            topExpList.innerHTML = '';
+            const sortedExp = Object.entries(despesasPorDesc).sort((a, b) => b[1] - a[1]);
+            
+            if (sortedExp.length === 0) {
+                topExpList.innerHTML = '<div class="empty-state">Sem dados para o período.</div>';
+            } else {
+                sortedExp.slice(0, 5).forEach(([desc, val]) => {
+                    const item = document.createElement('div');
+                    item.className = 'top-expense-item';
+                    item.innerHTML = `<span>${desc}</span><strong class="expense-text">${formatCurrency(val)}</strong>`;
+                    topExpList.appendChild(item);
+                });
+            }
+
+            // Lista Top Entradas
+            const topIncList = document.getElementById('top-incomes-list');
+            topIncList.innerHTML = '';
+            const sortedInc = Object.entries(entradasPorOrigem).sort((a, b) => b[1] - a[1]);
+            
+            if (sortedInc.length === 0) {
+                topIncList.innerHTML = '<div class="empty-state">Sem dados para o período.</div>';
+            } else {
+                sortedInc.slice(0, 5).forEach(([orig, val]) => {
+                    const item = document.createElement('div');
+                    item.className = 'top-expense-item';
+                    item.innerHTML = `<span>${orig}</span><strong class="income-text">${formatCurrency(val)}</strong>`;
+                    topIncList.appendChild(item);
+                });
+            }
         }
 
         form.addEventListener('submit', (e) => {
@@ -1093,21 +1183,34 @@
             const description = descInput.value.trim();
             const totalAmount = parseFormattedValue(amountInput.value);
             const baseDate = dateInput.value;
+            const cardOrigin = cardOriginInput.value.trim();
 
             if (!description || totalAmount <= 0 || !baseDate) return;
 
+            let transData = {
+                type: selectedType,
+                description,
+                amount: totalAmount,
+                date: baseDate,
+                done: false,
+                cardOrigin: cardOrigin || ''
+            };
+
+            if (selectedType === 'pagar') {
+                const method = document.querySelector('input[name="method"]:checked').value;
+                transData.method = method;
+                if (method === 'credito') {
+                    transData.installments = parseInt(document.getElementById('installments').value) || 1;
+                }
+            }
+
             if (db) {
-                db.push({
-                    type: selectedType,
-                    description,
-                    amount: totalAmount,
-                    date: baseDate,
-                    done: false
-                });
+                db.push(transData);
             }
 
             descInput.value = '';
             amountInput.value = '';
+            cardOriginInput.value = '';
             formAccordion.removeAttribute('open');
         });
     </script>
