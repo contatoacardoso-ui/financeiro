@@ -333,13 +333,14 @@
         .item-right { text-align: right; display: flex; align-items: center; gap: 8px; }
         .item-value { font-weight: bold; font-size: 0.9rem; }
         
-        .item-actions-group { display: flex; align-items: center; gap: 6px; }
+        .item-actions-group { display: flex; align-items: center; gap: 5px; }
         .action-btn {
-            background: none; border: none; font-size: 1.1rem; width: 32px; height: 32px;
+            background: none; border: none; font-size: 1rem; width: 30px; height: 30px;
             border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;
         }
         .confirm-btn { color: var(--income); border: 1px solid rgba(0, 179, 126, 0.3); }
-        .delete-btn { color: var(--text-secondary); font-size: 1.3rem; border: 1px solid rgba(168, 168, 179, 0.15); }
+        .edit-btn { color: var(--primary); border: 1px solid rgba(78, 168, 222, 0.3); }
+        .delete-btn { color: var(--text-secondary); font-size: 1.2rem; border: 1px solid rgba(168, 168, 179, 0.15); }
         .empty-state { text-align: center; color: var(--text-secondary); padding: 20px 0; font-size: 0.85rem; }
 
         #report-section { display: none; flex-direction: column; gap: 16px; }
@@ -349,6 +350,13 @@
             padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; cursor: pointer; text-align: center;
         }
         .report-mode-btn.active { background-color: rgba(78, 168, 222, 0.15); border-color: var(--primary); color: var(--primary); }
+        
+        .report-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
+        .report-action-btn {
+            background-color: var(--card-bg); border: 1px solid var(--border); color: var(--text-color);
+            padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+
         .report-card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
         .report-card h3 { font-size: 0.95rem; color: var(--text-color); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
         .chart-container { position: relative; width: 100%; height: 200px; }
@@ -389,6 +397,17 @@
         .logout-outer-btn {
             width: 100%; background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
             padding: 14px; color: var(--text-color); font-size: 0.9rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+
+        @media print {
+            body { background-color: #fff; color: #000; padding: 0; }
+            .install-banner, .tabs, .form-accordion, .month-selector, .security-footer, .report-mode-toggle, .report-actions, .action-btn, header { display: none !important; }
+            #report-section { display: flex !important; }
+            .report-card { border: 1px solid #ccc; background: #fff; color: #000; box-shadow: none; margin-bottom: 15px; }
+            .analysis-box { background: #f0f0f0; border: 1px solid #ccc; color: #000; }
+            .detailed-item, .ranking-item { background: #f9f9f9; border: 1px solid #ddd; color: #000; }
+            .income-text { color: #008000 !important; }
+            .expense-text { color: #ff0000 !important; }
         }
     </style>
 </head>
@@ -453,9 +472,10 @@
 
         <!-- ACORDEÃO DE CADASTRO -->
         <details class="form-accordion" id="form-accordion">
-            <summary>Novo Lançamento</summary>
+            <summary id="form-accordion-title">Novo Lançamento</summary>
             <div class="form-content">
                 <form id="finance-form">
+                    <input type="hidden" id="edit-id" value="">
                     <div class="form-group">
                         <label>Tipo de Transação</label>
                         <div class="radio-group">
@@ -514,6 +534,7 @@
                     </div>
 
                     <button type="submit" class="submit-btn" id="btn-salvar-lancamento">Salvar Lançamento</button>
+                    <button type="button" id="btn-cancelar-edicao" onclick="cancelarEdicao()" style="display:none; width:100%; padding:10px; background:none; border:1px solid var(--border); border-radius:8px; color:var(--text-secondary); margin-top:8px; cursor:pointer;">Cancelar Edição</button>
                 </form>
             </div>
         </details>
@@ -536,6 +557,11 @@
                 <button class="report-mode-btn" id="rep-mode-year" onclick="setReportMode('year')">Visão Anual</button>
             </div>
 
+            <div class="report-actions">
+                <button class="report-action-btn" onclick="window.print()">🖨️ Imprimir / PDF</button>
+                <button class="report-action-btn" onclick="compartilharRelatorio()">📤 Compartilhar</button>
+            </div>
+
             <!-- Resumo e Análise -->
             <div class="report-card">
                 <h3>💡 Análise de Entradas e Saídas</h3>
@@ -552,6 +578,20 @@
                 <h3>📊 Comparativo Geral</h3>
                 <div class="chart-container">
                     <canvas id="chart-comparison"></canvas>
+                </div>
+            </div>
+
+            <div class="report-card">
+                <h3>🥧 Detalhamento Gráfico de Entradas</h3>
+                <div class="chart-container">
+                    <canvas id="chart-incomes-pie"></canvas>
+                </div>
+            </div>
+
+            <div class="report-card">
+                <h3>🥧 Detalhamento Gráfico de Saídas</h3>
+                <div class="chart-container">
+                    <canvas id="chart-expenses-pie"></canvas>
                 </div>
             </div>
 
@@ -672,12 +712,8 @@
         const loginError = document.getElementById('login-error');
         const appContainer = document.getElementById('app-container');
         const loadingEl = document.getElementById('loading');
-        const loadingText = document.getElementById('loading-text');
-        const loadingCancelBtn = document.getElementById('loading-cancel-btn');
         const profileBadge = document.getElementById('profile-name-badge');
         const btnMasterPanel = document.getElementById('btn-master-panel');
-        
-        const securityToggleBtn = document.getElementById('security-toggle-btn');
         const securityPanelContent = document.getElementById('security-panel-content');
 
         window.abrirPainelMaster = function() {
@@ -768,13 +804,8 @@
             }
         }
 
-        function abrirPainelDeSeguranca() {
-            securityPanelContent.style.display = 'flex';
-        }
-
-        function fecharPainelDeSeguranca() {
-            securityPanelContent.style.display = 'none';
-        }
+        function abrirPainelDeSeguranca() { securityPanelContent.style.display = 'flex'; }
+        function fecharPainelDeSeguranca() { securityPanelContent.style.display = 'none'; }
 
         window.alterarSenhaDoSistema = function() {
             const perfil = obterPerfilLogado();
@@ -873,10 +904,14 @@
         let currentTab = 'pending';
         let selectedMonthKey = '';
         let reportMode = 'month';
+        
         let chartComparisonInstance = null;
+        let chartIncomesPieInstance = null;
+        let chartExpensesPieInstance = null;
 
         const formAccordion = document.getElementById('form-accordion');
         const form = document.getElementById('finance-form');
+        const editIdInput = document.getElementById('edit-id');
         const descInput = document.getElementById('description');
         const amountInput = document.getElementById('amount');
         const dateInput = document.getElementById('due-date');
@@ -898,9 +933,7 @@
                 firebase.initializeApp(firebaseConfig);
             }
 
-            try {
-                firebase.database().goOnline();
-            } catch(e){}
+            try { firebase.database().goOnline(); } catch(e){}
 
             db = firebase.database().ref(nodeName);
 
@@ -921,7 +954,6 @@
                     });
                 }
                 loadingEl.style.display = 'none';
-                loadingCancelBtn.style.display = 'none';
                 
                 gerarFiltroDeMeses();
                 updateDashboard();
@@ -1003,6 +1035,13 @@
             return `${day}/${month}/${year}`;
         }
 
+        function formatCurrencyInput(val) {
+            let num = (val).toFixed(2);
+            let parts = num.split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            return parts.join(',');
+        }
+
         window.switchTab = function(tab) {
             currentTab = tab;
             document.getElementById('tab-pending').classList.toggle('active', tab === 'pending');
@@ -1040,6 +1079,76 @@
         window.deleteTransaction = function(id) {
             if(confirm("Deseja apagar este lançamento?")) {
                 if (db) db.child(id).remove();
+            }
+        }
+
+        window.editTransaction = function(id) {
+            const t = transactions.find(item => item.id === id);
+            if (!t) return;
+
+            editIdInput.value = t.id;
+            descInput.value = t.description;
+            amountInput.value = formatCurrencyInput(t.amount);
+            dateInput.value = t.date;
+            cardOriginInput.value = t.cardOrigin || '';
+
+            if (t.type === 'receber') {
+                document.getElementById('type-receber').checked = true;
+            } else {
+                document.getElementById('type-pagar').checked = true;
+                if (t.method === 'credito') {
+                    document.getElementById('method-credito').checked = true;
+                    toggleCreditFields(true);
+                    document.getElementById('installments').value = t.installments || 1;
+                } else {
+                    document.getElementById('method-debito').checked = true;
+                    toggleCreditFields(false);
+                }
+            }
+            toggleMethodFields();
+
+            document.getElementById('form-accordion-title').textContent = "Editar Lançamento";
+            document.getElementById('btn-salvar-lancamento').textContent = "Atualizar Lançamento";
+            document.getElementById('btn-cancelar-edicao').style.display = 'block';
+            formAccordion.setAttribute('open', 'open');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.cancelarEdicao = function() {
+            editIdInput.value = '';
+            form.reset();
+            dateInput.value = new Date().toISOString().split('T')[0];
+            toggleMethodFields();
+            document.getElementById('form-accordion-title').textContent = "Novo Lançamento";
+            document.getElementById('btn-salvar-lancamento').textContent = "Salvar Lançamento";
+            document.getElementById('btn-cancelar-edicao').style.display = 'none';
+            formAccordion.removeAttribute('open');
+        }
+
+        window.compartilharRelatorio = function() {
+            const transFiltradas = reportMode === 'month' 
+                ? transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey))
+                : transactions;
+
+            let totalEntradas = 0, totalSaidas = 0;
+            transFiltradas.forEach(t => {
+                if (t.type === 'receber') totalEntradas += t.amount;
+                else totalSaidas += t.amount;
+            });
+            const saldo = totalEntradas - totalSaidas;
+
+            const periodoStr = reportMode === 'month' ? `Mês: ${selectedMonthKey}` : 'Visão Anual';
+            let texto = `📊 *Relatório Financeiro (${periodoStr})*\n\n`;
+            texto += `📥 Total Entradas: ${formatCurrency(totalEntradas)}\n`;
+            texto += `📤 Total Saídas: ${formatCurrency(totalSaidas)}\n`;
+            texto += `💰 Saldo: ${formatCurrency(saldo)}\n\n`;
+            texto += `Gerado pelo app Controle Financeiro.`;
+
+            if (navigator.share) {
+                navigator.share({ title: 'Relatório Financeiro', text: texto }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(texto);
+                alert("Resumo copiado para a área de transferência!");
             }
         }
 
@@ -1125,6 +1234,7 @@
                         <div class="item-right">
                             <span class="item-value ${isRec ? 'income-text' : 'expense-text'}">${formatCurrency(t.amount)}</span>
                             <div class="item-actions-group">
+                                <button class="action-btn edit-btn" onclick="editTransaction('${t.id}')">✏️</button>
                                 <button class="action-btn delete-btn" onclick="deleteTransaction('${t.id}')">×</button>
                                 ${!t.done ? `<button class="action-btn confirm-btn" onclick="confirmTransaction('${t.id}')">✓</button>` : ''}
                             </div>
@@ -1153,7 +1263,6 @@
                 if (t.type === 'receber') {
                     totalEntradas += t.amount;
                     entradasDetalhadas.push(t);
-                    // Usa a descrição ou cardOrigin separadamente para cada entrada
                     const chaveEntrada = t.cardOrigin ? `${t.description} (${t.cardOrigin})` : t.description;
                     agrupaEntradasOrigem[chaveEntrada] = (agrupaEntradasOrigem[chaveEntrada] || 0) + t.amount;
                 } else {
@@ -1188,7 +1297,7 @@
                 });
             }
 
-            // Ranking Entradas (agora individualizado por descrição/origem)
+            // Ranking Entradas
             const topIncRanking = document.getElementById('top-incomes-ranking');
             topIncRanking.innerHTML = '';
             const sortedInc = Object.entries(agrupaEntradasOrigem).sort((a, b) => b[1] - a[1]);
@@ -1204,17 +1313,47 @@
                 });
             }
 
-            // Gráfico de Barras
+            // Cores dinâmicas para gráficos de pizza
+            const paletaCores = ['#4ea8de', '#00b37e', '#ffb86c', '#f75a68', '#9370db', '#20b2aa', '#ff69b4', '#ffd700'];
+
+            // 1. Gráfico de Comparação (Barras)
             const ctxComp = document.getElementById('chart-comparison').getContext('2d');
             if (chartComparisonInstance) chartComparisonInstance.destroy();
-
             chartComparisonInstance = new Chart(ctxComp, {
                 type: 'bar',
                 data: {
                     labels: ['Entradas', 'Saídas'],
                     datasets: [{ data: [totalEntradas, totalSaidas], backgroundColor: ['#00b37e', '#f75a68'] }]
                 },
-                options: { responsive: true, maintainAspectRatio: false }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // 2. Gráfico de Pizza de Entradas
+            const ctxIncPie = document.getElementById('chart-incomes-pie').getContext('2d');
+            if (chartIncomesPieInstance) chartIncomesPieInstance.destroy();
+            const incKeys = Object.keys(agrupaEntradasOrigem);
+            const incVals = Object.values(agrupaEntradasOrigem);
+            chartIncomesPieInstance = new Chart(ctxIncPie, {
+                type: 'doughnut',
+                data: {
+                    labels: incKeys.length > 0 ? incKeys : ['Nenhuma entrada'],
+                    datasets: [{ data: incVals.length > 0 ? incVals : [1], backgroundColor: paletaCores }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
+            });
+
+            // 3. Gráfico de Pizza de Saídas
+            const ctxExpPie = document.getElementById('chart-expenses-pie').getContext('2d');
+            if (chartExpensesPieInstance) chartExpensesPieInstance.destroy();
+            const expKeys = Object.keys(agrupaSaidasDesc);
+            const expVals = Object.values(agrupaSaidasDesc);
+            chartExpensesPieInstance = new Chart(ctxExpPie, {
+                type: 'doughnut',
+                data: {
+                    labels: expKeys.length > 0 ? expKeys : ['Nenhuma saída'],
+                    datasets: [{ data: expVals.length > 0 ? expVals : [1], backgroundColor: paletaCores }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
             });
 
             // Detalhamento de Entradas
@@ -1265,6 +1404,7 @@
 
         form.addEventListener('submit', (e) => {
             e.preventDefault();
+            const editId = editIdInput.value;
             const selectedType = document.querySelector('input[name="type"]:checked').value;
             const description = descInput.value.trim();
             const totalAmount = parseFormattedValue(amountInput.value);
@@ -1278,7 +1418,6 @@
                 description,
                 amount: totalAmount,
                 date: baseDate,
-                done: false,
                 cardOrigin: cardOrigin || ''
             };
 
@@ -1287,17 +1426,24 @@
                 transData.method = method;
                 if (method === 'credito') {
                     transData.installments = parseInt(document.getElementById('installments').value) || 1;
+                } else {
+                    transData.installments = 1;
                 }
+            } else {
+                transData.method = 'debito';
+                transData.installments = 1;
             }
 
             if (db) {
-                db.push(transData);
+                if (editId) {
+                    db.child(editId).update(transData);
+                } else {
+                    transData.done = false;
+                    db.push(transData);
+                }
             }
 
-            descInput.value = '';
-            amountInput.value = '';
-            cardOriginInput.value = '';
-            formAccordion.removeAttribute('open');
+            cancelarEdicao();
         });
     </script>
 </body>
