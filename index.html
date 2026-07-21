@@ -68,7 +68,7 @@
         
         #loading {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(18, 18, 20, 0.95); display: flex; flex-direction: column;
+            background: rgba(18, 18, 20, 0.95); display: none; flex-direction: column;
             gap: 12px; justify-content: center; align-items: center; z-index: 9999;
             font-weight: bold; font-size: 1.1rem;
         }
@@ -214,7 +214,7 @@
         </div>
     </div>
 
-    <!-- Overlay de carregamento -->
+    <!-- Overlay de carregamento ocultado -->
     <div id="loading">
         <span id="loading-text">Conectando ao banco de dados...</span>
     </div>
@@ -439,7 +439,6 @@
         const rememberMeCheckbox = document.getElementById('remember-me');
         const loginError = document.getElementById('login-error');
         const appContainer = document.getElementById('app-container');
-        const loadingEl = document.getElementById('loading');
         const profileBadge = document.getElementById('profile-name-badge');
         const btnMasterPanel = document.getElementById('btn-master-panel');
         const securityPanelContent = document.getElementById('security-panel-content');
@@ -460,13 +459,6 @@
         const expenseEl = document.getElementById('total-expense');
 
         dateInput.value = new Date().toISOString().split('T')[0];
-
-        // Timeout de segurança: se o carregamento demorar mais de 3 segundos, remove o overlay de loading à força
-        const safetyTimeout = setTimeout(() => {
-            if (loadingEl.style.display !== 'none') {
-                loadingEl.style.display = 'none';
-            }
-        }, 3000);
 
         window.addEventListener('DOMContentLoaded', () => {
             if (!firebase.apps.length) {
@@ -492,7 +484,6 @@
             }
 
             dbRoot.child('config_perfis').on('value', (snapshot) => {
-                clearTimeout(safetyTimeout);
                 const dadosNuvent = snapshot.val();
                 if (!dadosNuvent) {
                     dbRoot.child('config_perfis').set(DEFAULT_PROFILES);
@@ -503,8 +494,6 @@
                 
                 verificarSessaoSalva();
             }, (error) => {
-                clearTimeout(safetyTimeout);
-                loadingEl.style.display = 'none';
                 verificarSessaoSalva();
             });
         });
@@ -518,7 +507,6 @@
             } else {
                 loginScreen.style.display = 'flex';
                 appContainer.style.display = 'none';
-                loadingEl.style.display = 'none';
             }
         }
 
@@ -589,7 +577,6 @@
             appContainer.style.display = 'block';
             profileBadge.textContent = `👤 Perfil: ${perfil.name}${perfil.isMaster ? ' (Master)' : ''}`;
             btnMasterPanel.style.display = perfil.isMaster ? 'flex' : 'none';
-            loadingEl.style.display = 'flex';
 
             const nodeTarget = perfil.isMaster ? NO_MASTER_ORIGINAL : ('lancamentos_' + sanitizarChaveNode(perfil.name));
             dbTransactions = dbRoot.child(nodeTarget);
@@ -602,12 +589,10 @@
                         transactions.push({ id: key, ...data[key] });
                     });
                 }
-                loadingEl.style.display = 'none';
                 gerarFiltroDeMeses();
                 updateDashboard();
                 renderView();
             }, (error) => {
-                loadingEl.style.display = 'none';
                 gerarFiltroDeMeses();
                 updateDashboard();
                 renderView();
