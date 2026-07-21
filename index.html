@@ -652,10 +652,13 @@
             font-weight: bold;
         }
 
-        /* Configurações de Segurança no Rodapé */
+        /* Configurações e Ações no Rodapé */
         .security-footer {
             margin-top: 40px;
             margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
         .security-accordion {
             background-color: var(--card-bg);
@@ -717,6 +720,27 @@
         .security-panel-content button.master-btn {
             color: var(--income);
             font-weight: bold;
+        }
+
+        /* Botão de Logout Externo */
+        .logout-outer-btn {
+            width: 100%;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            color: var(--text-color);
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .logout-outer-btn:active {
+            background-color: rgba(255, 255, 255, 0.05);
         }
     </style>
 </head>
@@ -896,7 +920,7 @@
             </div>
         </div>
 
-        <!-- MENU DE SEGURANÇA SEGURO NO RODAPÉ -->
+        <!-- MENU DE SEGURANÇA E BOTÃO DE TROCA DE PERFIL -->
         <div class="security-footer">
             <div class="security-accordion">
                 <button class="security-header-btn" id="security-toggle-btn" onclick="tentarAbrirConfiguracoes()">
@@ -912,14 +936,16 @@
                     <button onclick="alterarSenhaDoSistema()">
                         <span>🔑</span> Alterar Minha Senha
                     </button>
-                    <button onclick="fazerLogout()">
-                        <span>🔒</span> Trocar de Perfil / Sair
-                    </button>
                     <button class="danger-btn" onclick="limparBancoDeDados()">
                         <span>🗑️</span> Zerar Banco de Dados deste Perfil
                     </button>
                 </div>
             </div>
+
+            <!-- Botão de Sair em Destaque Fora das Configurações -->
+            <button class="logout-outer-btn" onclick="fazerLogout()">
+                <span>🔒</span> Trocar de Perfil / Sair
+            </button>
         </div>
     </div>
 
