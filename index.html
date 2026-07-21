@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Financeiro Mobile</title>
     
-    <!-- Configurações PWA (Ícone na Tela Inicial) -->
+    <!-- Configurações PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Financeiro">
@@ -14,7 +14,7 @@
     <!-- Manifesto embutido -->
     <link rel="manifest" href='data:application/json,{"name":"Controle Financeiro","short_name":"Financeiro","start_url":".","display":"standalone","background_color":"#121214","theme_color":"#121214","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2489/2489756.png","sizes":"512x512","type":"image/png"}]}' />
 
-    <!-- Firebase SDKs compatíveis -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
@@ -562,9 +562,10 @@
 
     <script>
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
+        const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
         function sanitizarChaveNode(str) {
-            if (!str) return 'default';
+            if (!str) return '';
             return str.toLowerCase()
                       .normalize("NFD")
                       .replace(/[\u0300-\u036f]/g, "")
@@ -572,12 +573,13 @@
                       .replace(/^_+|_+$/g, '');
         }
 
+        // PERFIL MASTER APONTADO DE VOLTA PARA O SEU NÓ ORIGINAL
         const DEFAULT_PROFILES = {
             'user_master': {
                 name: 'Principal',
                 pwd: 'Touchrio@8512@',
                 isMaster: true,
-                node: 'lancamentos_master_principal'
+                node: NO_MASTER_ORIGINAL
             },
             'user_esposa': {
                 name: 'Esposa',
@@ -593,7 +595,9 @@
                 try {
                     const parsed = JSON.parse(salvas);
                     Object.keys(parsed).forEach(k => {
-                        if (parsed[k].name) {
+                        if (parsed[k].isMaster) {
+                            parsed[k].node = NO_MASTER_ORIGINAL;
+                        } else if (parsed[k].name) {
                             parsed[k].node = 'lancamentos_' + sanitizarChaveNode(parsed[k].name);
                         }
                     });
@@ -630,7 +634,7 @@
 
         window.resetarPerfisPadrao = function() {
             localStorage.clear();
-            alert("Perfis resetados para o padrão do sistema!\n\nUtilize:\nUsuário: Principal\nSenha: Touchrio@8512@");
+            alert("Perfis resetados para o padrão original!\n\nUtilize:\nUsuário: Principal\nSenha: Touchrio@8512@");
             window.location.reload();
         }
 
@@ -867,22 +871,19 @@
 
         dateInput.value = new Date().toISOString().split('T')[0];
 
-        function inicializarFirebase(rawNodeName) {
-            const nodeClean = sanitizarChaveNode(rawNodeName);
-            const nodeName = nodeClean ? nodeClean : 'lancamentos_master_principal';
+        function inicializarFirebase(nodeTarget) {
+            const nodeName = nodeTarget ? nodeTarget : NO_MASTER_ORIGINAL;
             
             if (!firebase.apps.length) {
                 firebase.initializeApp(firebaseConfig);
             }
 
-            // Ativa persistência offline para impedir travamento por lentidão de rede
             try {
                 firebase.database().goOnline();
             } catch(e){}
 
             db = firebase.database().ref(nodeName);
 
-            // Timeout para liberar a tela caso a conexão não responda em 3 segundos
             const loadingTimeout = setTimeout(() => {
                 loadingEl.style.display = 'none';
                 gerarFiltroDeMeses();
