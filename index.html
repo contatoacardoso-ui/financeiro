@@ -185,11 +185,11 @@
             padding: 14px; color: var(--text-color); font-size: 0.9rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
         }
 
-        /* Modal de Atualização */
+        /* Modal de Atualização Simples com botão OK */
         #update-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center;
-            z-index: 20000; padding: 24px; backdrop-filter: blur(4px); pointer-events: auto;
+            z-index: 20000; padding: 24px; backdrop-filter: blur(4px);
         }
         .update-card {
             width: 100%; max-width: 340px; background-color: var(--card-bg);
@@ -214,13 +214,13 @@
 </head>
 <body>
 
-    <!-- Modal de Nova Versão Disponível -->
+    <!-- Modal de Nova Versão Simples (Apenas OK para fechar) -->
     <div id="update-modal">
         <div class="update-card">
-            <div style="font-size: 2.5rem; margin-bottom: 10px;">🚀</div>
-            <h3>Nova Versão Disponível!</h3>
-            <p>Há uma atualização com melhorias e correções prontas para você usar.</p>
-            <button type="button" class="submit-btn" onclick="recarregarParaAtualizar()">Atualizar Agora</button>
+            <div style="font-size: 2.5rem; margin-bottom: 10px;">✨</div>
+            <h3>Aplicativo Atualizado!</h3>
+            <p>O sistema foi atualizado com novas melhorias e correções para você.</p>
+            <button type="button" class="submit-btn" onclick="fecharAvisoAtualizacao()">OK</button>
         </div>
     </div>
 
@@ -444,7 +444,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.0.3"; 
+        const VERSAO_CODIGO = "1.0.4"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -525,7 +525,11 @@
                 if (!versaoNuvem) {
                     dbRoot.child('versao_sistema').set(VERSAO_CODIGO);
                 } else if (versaoNuvem !== VERSAO_CODIGO) {
-                    document.getElementById('update-modal').style.display = 'flex';
+                    // Verifica se o usuário já dispensou esta exata versão nesta sessão/aparelho
+                    const versaoDispensada = localStorage.getItem('versao_dispensada');
+                    if (versaoDispensada !== versaoNuvem) {
+                        document.getElementById('update-modal').style.display = 'flex';
+                    }
                 }
             });
 
@@ -550,16 +554,10 @@
             });
         });
 
-        window.recarregarParaAtualizar = function() {
-            // Força a limpeza de registros de service workers se houver e recarrega limpando cache via parâmetro dinâmico
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then(registrations => {
-                    for(let registration of registrations) {
-                        registration.unregister();
-                    }
-                });
-            }
-            window.location.href = window.location.pathname + '?v=' + new Date().getTime();
+        // Apenas fecha o aviso e memoriza para não ficar aparecendo toda hora
+        window.fecharAvisoAtualizacao = function() {
+            localStorage.setItem('versao_dispensada', VERSAO_CODIGO);
+            document.getElementById('update-modal').style.display = 'none';
         }
 
         function verificarSessaoSalva() {
