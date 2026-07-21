@@ -351,9 +351,15 @@
         .report-mode-btn.active { background-color: rgba(78, 168, 222, 0.15); border-color: var(--primary); color: var(--primary); }
         .report-card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
         .report-card h3 { font-size: 0.95rem; color: var(--text-color); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .chart-container { position: relative; width: 100%; height: 220px; }
+        .chart-container { position: relative; width: 100%; height: 200px; }
         
-        .detailed-report-list { display: flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: auto; }
+        .analysis-box { background: rgba(78, 168, 222, 0.08); border: 1px solid rgba(78, 168, 222, 0.2); border-radius: 8px; padding: 12px; margin-bottom: 12px; font-size: 0.85rem; line-height: 1.4; }
+        .analysis-box strong { color: var(--primary); }
+
+        .ranking-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+        .ranking-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; padding: 6px 8px; background: rgba(255,255,255,0.02); border-radius: 6px; border: 1px solid var(--border); }
+
+        .detailed-report-list { display: flex; flex-direction: column; gap: 8px; max-height: 350px; overflow-y: auto; }
         .detailed-item {
             background-color: rgba(255, 255, 255, 0.02);
             border: 1px solid var(--border);
@@ -530,20 +536,32 @@
                 <button class="report-mode-btn" id="rep-mode-year" onclick="setReportMode('year')">Visão Anual</button>
             </div>
 
+            <!-- Resumo e Análise -->
             <div class="report-card">
-                <h3 id="chart-comp-title">Entradas vs. Saídas</h3>
+                <h3>💡 Análise de Entradas e Saídas</h3>
+                <div class="analysis-box" id="analysis-summary-text">Calculando análise...</div>
+                
+                <h4 style="font-size:0.85rem; color:var(--expense); margin-bottom:6px;">🔥 Onde você mais gasta (Top Saídas)</h4>
+                <div class="ranking-list" id="top-expenses-ranking"></div>
+
+                <h4 style="font-size:0.85rem; color:var(--income); margin-bottom:6px; margin-top:12px;">💰 De onde entra mais dinheiro (Top Entradas)</h4>
+                <div class="ranking-list" id="top-incomes-ranking"></div>
+            </div>
+
+            <div class="report-card">
+                <h3>📊 Comparativo Geral</h3>
                 <div class="chart-container">
                     <canvas id="chart-comparison"></canvas>
                 </div>
             </div>
 
             <div class="report-card">
-                <h3>📥 Detalhamento de Entradas</h3>
+                <h3>📥 Detalhamento Completo de Entradas</h3>
                 <div id="detailed-incomes-list" class="detailed-report-list"></div>
             </div>
 
             <div class="report-card">
-                <h3>📤 Detalhamento de Saídas</h3>
+                <h3>📤 Detalhamento Completo de Saídas</h3>
                 <div id="detailed-expenses-list" class="detailed-report-list"></div>
             </div>
         </div>
@@ -1122,23 +1140,68 @@
 
         function renderReport() {
             let totalEntradas = 0, totalSaidas = 0;
-            
             const transFiltradas = reportMode === 'month' 
                 ? transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey))
                 : transactions;
 
             const entradasDetalhadas = [];
             const saidasDetalhadas = [];
+            const agrupaSaidasDesc = {};
+            const agrupaEntradasOrigem = {};
 
             transFiltradas.forEach(t => {
                 if (t.type === 'receber') {
                     totalEntradas += t.amount;
                     entradasDetalhadas.push(t);
+                    const orig = t.cardOrigin || 'Outras Entradas';
+                    agrupaEntradasOrigem[orig] = (agrupaEntradasOrigem[orig] || 0) + t.amount;
                 } else {
                     totalSaidas += t.amount;
                     saidasDetalhadas.push(t);
+                    agrupaSaidasDesc[t.description] = (agrupaSaidasDesc[t.description] || 0) + t.amount;
                 }
             });
+
+            // Análise Inteligente
+            const summaryBox = document.getElementById('analysis-summary-text');
+            const diff = totalEntradas - totalSaidas;
+            let statusTexto = diff >= 0 
+                ? `✅ Suas <strong>entradas superam as saídas</strong> em ${formatCurrency(diff)}. Excelente controle!`
+                : `⚠️ Alerta: Suas <strong>saídas estão superando as entradas</strong> em ${formatCurrency(Math.abs(diff))}. Reduza gastos para equilibrar o caixa.`;
+
+            summaryBox.innerHTML = `Total de Entradas: <strong class="income-text">${formatCurrency(totalEntradas)}</strong> | Total de Saídas: <strong class="expense-text">${formatCurrency(totalSaidas)}</strong><br><br>${statusTexto}`;
+
+            // Ranking Saídas
+            const topExpRanking = document.getElementById('top-expenses-ranking');
+            topExpRanking.innerHTML = '';
+            const sortedExp = Object.entries(agrupaSaidasDesc).sort((a, b) => b[1] - a[1]);
+            if (sortedExp.length === 0) {
+                topExpRanking.innerHTML = '<div class="empty-state">Sem dados de saídas.</div>';
+            } else {
+                sortedExp.slice(0, 3).forEach(([desc, val], idx) => {
+                    const pct = totalSaidas > 0 ? ((val / totalSaidas) * 100).toFixed(1) : 0;
+                    const item = document.createElement('div');
+                    item.className = 'ranking-item';
+                    item.innerHTML = `<span>#${idx+1} ${desc} (${pct}%)</span><strong class="expense-text">${formatCurrency(val)}</strong>`;
+                    topExpRanking.appendChild(item);
+                });
+            }
+
+            // Ranking Entradas
+            const topIncRanking = document.getElementById('top-incomes-ranking');
+            topIncRanking.innerHTML = '';
+            const sortedInc = Object.entries(agrupaEntradasOrigem).sort((a, b) => b[1] - a[1]);
+            if (sortedInc.length === 0) {
+                topIncRanking.innerHTML = '<div class="empty-state">Sem dados de entradas.</div>';
+            } else {
+                sortedInc.slice(0, 3).forEach(([orig, val], idx) => {
+                    const pct = totalEntradas > 0 ? ((val / totalEntradas) * 100).toFixed(1) : 0;
+                    const item = document.createElement('div');
+                    item.className = 'ranking-item';
+                    item.innerHTML = `<span>#${idx+1} ${orig} (${pct}%)</span><strong class="income-text">${formatCurrency(val)}</strong>`;
+                    topIncRanking.appendChild(item);
+                });
+            }
 
             // Gráfico de Barras
             const ctxComp = document.getElementById('chart-comparison').getContext('2d');
