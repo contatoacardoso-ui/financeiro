@@ -162,11 +162,23 @@
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(18, 18, 20, 0.95);
             display: none;
+            flex-direction: column;
+            gap: 12px;
             justify-content: center;
             align-items: center;
             z-index: 9999;
             font-weight: bold;
             font-size: 1.1rem;
+        }
+        #loading button {
+            background-color: var(--expense);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 10px;
         }
 
         /* Dashboard */
@@ -764,7 +776,10 @@
     </div>
 
     <!-- Overlay de carregamento pós-login -->
-    <div id="loading">Conectando ao banco de dados...</div>
+    <div id="loading">
+        <span id="loading-text">Conectando ao banco de dados...</span>
+        <button id="loading-cancel-btn" onclick="fazerLogout()" style="display: none;">Cancelar / Trocar Perfil</button>
+    </div>
 
     <!-- Aplicativo Principal -->
     <div id="app-container">
@@ -954,6 +969,11 @@
         const CHAVE_DE_RECUPERACAO = "uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         
+        // Função auxiliar para garantir que o nome do nó do Firebase seja 100% válido (sem espaços)
+        function sanitizarChaveNode(str) {
+            return str.toLowerCase().replace(/[^a-z0-9]/g, '_');
+        }
+
         // Definição Inicial dos Perfis
         const DEFAULT_PROFILES = {
             'user_master': {
@@ -972,7 +992,16 @@
 
         function obterConfigPerfis() {
             const salvas = localStorage.getItem('finance_app_profiles');
-            if (salvas) return JSON.parse(salvas);
+            if (salvas) {
+                const parsed = JSON.parse(salvas);
+                // Higienização automática de nós antigos com espaço
+                Object.keys(parsed).forEach(k => {
+                    if (parsed[k].node && parsed[k].node.includes(' ')) {
+                        parsed[k].node = parsed[k].node.replace(/\s+/g, '_');
+                    }
+                });
+                return parsed;
+            }
             return DEFAULT_PROFILES;
         }
 
@@ -1015,6 +1044,8 @@
         const loginError = document.getElementById('login-error');
         const appContainer = document.getElementById('app-container');
         const loadingEl = document.getElementById('loading');
+        const loadingText = document.getElementById('loading-text');
+        const loadingCancelBtn = document.getElementById('loading-cancel-btn');
         const profileBadge = document.getElementById('profile-name-badge');
         const btnMasterPanel = document.getElementById('btn-master-panel');
         
@@ -1045,11 +1076,11 @@
             );
 
             if (acao === '1') {
-                const nomeNovoPerfil = prompt("Digite o NOME do novo perfil (Ex: Filho, Sócio, Maria):");
+                const nomeNovoPerfil = prompt("Digite o NOME do novo perfil (Ex: Suelen Winnie, Filho, Sócio):");
                 if (nomeNovoPerfil && nomeNovoPerfil.trim() !== "") {
                     const nomeTrimmed = nomeNovoPerfil.trim();
-                    const keyNova = 'user_' + Date.now();
-                    const nodeNovo = 'lancamentos_' + keyNova + '_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM';
+                    const keyNova = 'user_' + sanitizarChaveNode(nomeTrimmed) + '_' + Date.now();
+                    const nodeNovo = 'lancamentos_' + sanitizarChaveNode(nomeTrimmed) + '_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM';
 
                     profiles[keyNova] = {
                         name: nomeTrimmed,
@@ -1198,11 +1229,9 @@
         }
 
         window.fazerLogout = function() {
-            if (confirm("Deseja sair deste perfil e retornar à tela de login?")) {
-                localStorage.removeItem('user_authenticated');
-                localStorage.removeItem('active_user_key');
-                window.location.reload();
-            }
+            localStorage.removeItem('user_authenticated');
+            localStorage.removeItem('active_user_key');
+            window.location.reload();
         }
 
         window.fazerBackup = function() {
@@ -1304,13 +1333,25 @@
 
         dateInput.value = new Date().toISOString().split('T')[0];
 
-        function inicializarFirebase(nodeName) {
+        function inicializarFirebase(rawNodeName) {
+            // Garantia adicional de sanitização de nós com espaço
+            const nodeName = rawNodeName ? rawNodeName.replace(/\s+/g, '_') : 'lancamentos_default';
+            
             if (!firebase.apps.length) {
                 firebase.initializeApp(firebaseConfig);
             }
             db = firebase.database().ref(nodeName);
 
+            // Timeout de segurança para travar se o Firebase não responder em 5 segundos
+            const loadingTimeout = setTimeout(() => {
+                if (loadingEl.style.display === 'flex' && transactions.length === 0) {
+                    loadingText.textContent = "Erro na conexão com o banco do perfil.";
+                    loadingCancelBtn.style.display = 'block';
+                }
+            }, 5000);
+
             db.on('value', (snapshot) => {
+                clearTimeout(loadingTimeout);
                 const data = snapshot.val();
                 transactions = [];
                 if (data) {
@@ -1319,12 +1360,16 @@
                     });
                 }
                 loadingEl.style.display = 'none';
+                loadingCancelBtn.style.display = 'none';
+                loadingText.textContent = "Conectando ao banco de dados...";
                 
                 gerarFiltroDeMeses();
                 updateDashboard();
                 renderView();
             }, (error) => {
-                alert("Erro de conexão com o Firebase.");
+                clearTimeout(loadingTimeout);
+                loadingText.textContent = "Erro de conexão com o Firebase.";
+                loadingCancelBtn.style.display = 'block';
             });
         }
 
