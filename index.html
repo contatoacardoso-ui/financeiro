@@ -252,11 +252,11 @@
                         <label>Tipo de Transação</label>
                         <div class="radio-group">
                             <div class="radio-btn">
-                                <input type="radio" id="type-receber" name="type" value="receber" checked onclick="toggleMethodFields()">
+                                <input type="radio" id="type-receber" name="type" value="receber" checked onclick="toggleTypeFields()">
                                 <label for="type-receber" class="radio-label lbl-receber">A Receber</label>
                             </div>
                             <div class="radio-btn">
-                                <input type="radio" id="type-pagar" name="type" value="pagar" onclick="toggleMethodFields()">
+                                <input type="radio" id="type-pagar" name="type" value="pagar" onclick="toggleTypeFields()">
                                 <label for="type-pagar" class="radio-label lbl-pagar">A Pagar</label>
                             </div>
                         </div>
@@ -292,7 +292,7 @@
 
                     <div class="form-group">
                         <label for="description">Descrição do Lançamento</label>
-                        <input type="text" id="description" placeholder="Ex: Lojas Americanas, Salário..." required autocomplete="off">
+                        <input type="text" id="description" placeholder="Ex: Salário, Rendimento, Investimento..." required autocomplete="off">
                     </div>
 
                     <div class="form-group">
@@ -643,9 +643,16 @@
             }
         }
 
-        window.toggleMethodFields = function() {
+        window.toggleTypeFields = function() {
             const isPagar = document.querySelector('input[name="type"]:checked').value === 'pagar';
             document.getElementById('expense-conditional-fields').style.display = isPagar ? 'block' : 'none';
+            
+            // Atualiza o placeholder dinamicamente conforme o tipo escolhido
+            if (isPagar) {
+                descInput.placeholder = "Ex: Mercado, Padaria, Combustivel...";
+            } else {
+                descInput.placeholder = "Ex: Salario, Rendimento, Investimento...";
+            }
         }
 
         window.toggleCreditFields = function(show) {
@@ -853,7 +860,7 @@
                     toggleCreditFields(false);
                 }
             }
-            toggleMethodFields();
+            toggleTypeFields();
             document.getElementById('form-accordion-title').textContent = "Editar Lançamento";
             document.getElementById('btn-salvar-lancamento').textContent = "Atualizar Lançamento";
             document.getElementById('btn-cancelar-edicao').style.display = 'block';
@@ -865,7 +872,7 @@
             editIdInput.value = '';
             form.reset();
             dateInput.value = new Date().toISOString().split('T')[0];
-            toggleMethodFields();
+            toggleTypeFields();
             document.getElementById('form-accordion-title').textContent = "Novo Lançamento";
             document.getElementById('btn-salvar-lancamento').textContent = "Salvar Lançamento";
             document.getElementById('btn-cancelar-edicao').style.display = 'none';
@@ -1091,8 +1098,6 @@
                 if (editId) {
                     dbTransactions.child(editId).update(transData);
                 } else {
-                    // Se for pagamento no débito/dinheiro ou recebimento geral, vai direto para Realizados (done: true)
-                    // Se for cartão de crédito, vai para Pendentes (done: false)
                     transData.done = (selectedType === 'pagar' && methodVal === 'debito') ? true : false;
                     dbTransactions.push(transData);
                 }
