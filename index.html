@@ -32,7 +32,7 @@
 
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--bg-color); display: flex; flex-direction: column;
+            background-color: var(--bg-color); display: none; flex-direction: column;
             justify-content: center; align-items: center; z-index: 10000; padding: 24px;
         }
         .login-card {
@@ -55,13 +55,6 @@
         }
         .remember-container input { width: auto; margin-bottom: 0; cursor: pointer; }
         .login-error { color: var(--expense); font-size: 0.8rem; margin-bottom: 12px; display: none; }
-        
-        .install-pwa-btn {
-            width: 100%; padding: 10px; background: rgba(78, 168, 222, 0.1);
-            border: 1px dashed rgba(78, 168, 222, 0.4); border-radius: 8px; color: var(--primary);
-            font-size: 0.82rem; font-weight: bold; cursor: pointer; margin-top: 12px;
-            align-items: center; justify-content: center; gap: 6px; display: flex;
-        }
 
         #app-container { display: none; }
         header { margin-bottom: 20px; text-align: center; }
@@ -73,7 +66,12 @@
             border: 1px solid rgba(78, 168, 222, 0.3);
         }
         
-        #loading { display: none; }
+        #loading {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(18, 18, 20, 0.95); display: none; flex-direction: column;
+            gap: 12px; justify-content: center; align-items: center; z-index: 9999;
+            font-weight: bold; font-size: 1.1rem;
+        }
 
         .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .balance-card {
@@ -213,10 +211,12 @@
                 <div class="login-error" id="login-error">Usuário ou senha incorretos.</div>
                 <button type="submit" class="submit-btn">Entrar</button>
             </form>
-            <button type="button" id="btn-install-pwa" class="install-pwa-btn" onclick="instalarAplicativo()">
-                📱 Instala
-            </button>
         </div>
+    </div>
+
+    <!-- Overlay de carregamento ocultado -->
+    <div id="loading">
+        <span id="loading-text">Conectando ao banco de dados...</span>
     </div>
 
     <!-- Aplicativo Principal -->
@@ -423,11 +423,10 @@
         let dbRoot;
         let dbTransactions;
         let perfisCadastrados = DEFAULT_PROFILES;
-        let transactions = JSON.parse(localStorage.getItem('cached_transactions') || '[]');
+        let transactions = [];
         let currentTab = 'pending';
         let selectedMonthKey = '';
         let reportMode = 'month';
-        let deferredPrompt = null;
         
         let chartComparisonInstance = null;
         let chartIncomesPieInstance = null;
@@ -443,7 +442,6 @@
         const profileBadge = document.getElementById('profile-name-badge');
         const btnMasterPanel = document.getElementById('btn-master-panel');
         const securityPanelContent = document.getElementById('security-panel-content');
-        const btnInstallPwa = document.getElementById('btn-install-pwa');
 
         const formAccordion = document.getElementById('form-accordion');
         const form = document.getElementById('finance-form');
@@ -462,45 +460,6 @@
 
         dateInput.value = new Date().toISOString().split('T')[0];
 
-        // Inicialização instantânea dos dados salvos no aparelho para garantir interatividade imediata
-        const jaLogadoInstantaneo = localStorage.getItem('user_authenticated') === 'true';
-        const chaveAtivaInstantanea = localStorage.getItem('active_user_key');
-
-        if (jaLogadoInstantaneo && chaveAtivaInstantanea) {
-            loginScreen.style.display = 'none';
-            appContainer.style.display = 'block';
-            if (chaveAtivaInstantanea === 'user_master') {
-                profileBadge.textContent = "👤 Perfil: Principal (Master)";
-                btnMasterPanel.style.display = 'flex';
-            } else if (chaveAtivaInstantanea === 'user_suelen_winnie') {
-                profileBadge.textContent = "👤 Perfil: Suelen Winnie";
-            } else {
-                profileBadge.textContent = "👤 Perfil: " + chaveAtiva.replace('user_', '');
-            }
-            gerarFiltroDeMeses();
-            updateDashboard();
-            renderView();
-        }
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            btnInstallPwa.style.display = 'flex';
-        });
-
-        window.instalarAplicativo = async function() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    btnInstallPwa.style.display = 'none';
-                }
-                deferredPrompt = null;
-            } else {
-                alert("Para instalar na tela inicial:\n\n• No Android: Toque no menu do navegador (três pontinhos) e escolha 'Adicionar à tela inicial' ou 'Instalar aplicativo'.\n• No iPhone (iOS): Toque no botão de Compartilhar (quadrado com seta para cima) e selecione 'Adicionar à Tela de Início'.");
-            }
-        };
-
         window.addEventListener('DOMContentLoaded', () => {
             if (!firebase.apps.length) {
                 firebase.initializeApp(firebaseConfig);
@@ -509,45 +468,46 @@
 
             dbRoot = firebase.database().ref();
 
+            // Preenche dados salvos no input
             const usuarioSalvo = localStorage.getItem('saved_username');
             const senhaSalva = localStorage.getItem('saved_password');
             if (usuarioSalvo) loginUsernameInput.value = usuarioSalvo;
             if (senhaSalva) loginPassword.value = senhaSalva;
             rememberMeCheckbox.checked = localStorage.getItem('remember_active') === 'true' || localStorage.getItem('remember_active') === null;
 
-            // Conecta em segundo plano para atualizar perfis e dados sem bloquear cliques
+            const jaLogado = localStorage.getItem('user_authenticated') === 'true';
+            const chaveAtiva = localStorage.getItem('active_user_key');
+
+            if (jaLogado && chaveAtiva) {
+                loginScreen.style.display = 'none';
+                appContainer.style.display = 'block';
+            }
+
             dbRoot.child('config_perfis').on('value', (snapshot) => {
                 const dadosNuvent = snapshot.val();
-                if (dadosNuvent) {
+                if (!dadosNuvent) {
+                    dbRoot.child('config_perfis').set(DEFAULT_PROFILES);
+                    perfisCadastrados = DEFAULT_PROFILES;
+                } else {
                     perfisCadastrados = dadosNuvent;
                 }
-            }, (error) => {});
-
-            if (jaLogadoInstantaneo && chaveAtivaInstantanea) {
-                conectarBancoSilencioso(chaveAtivaInstantanea);
-            }
+                
+                verificarSessaoSalva();
+            }, (error) => {
+                verificarSessaoSalva();
+            });
         });
 
-        function conectarBancoSilencioso(chaveKey) {
-            const perfilObj = DEFAULT_PROFILES[chaveKey] || { name: chaveKey.replace('user_', ''), isMaster: chaveKey === 'user_master' };
-            const nodeTarget = perfilObj.isMaster ? NO_MASTER_ORIGINAL : ('lancamentos_' + sanitizarChaveNode(perfilObj.name));
-            dbTransactions = dbRoot.child(nodeTarget);
+        function verificarSessaoSalva() {
+            const jaLogado = localStorage.getItem('user_authenticated') === 'true';
+            const chaveAtiva = localStorage.getItem('active_user_key');
 
-            dbTransactions.on('value', (snapshot) => {
-                const data = snapshot.val();
-                let novasTransacoes = [];
-                if (data) {
-                    Object.keys(data).forEach(key => {
-                        novasTransacoes.push({ id: key, ...data[key] });
-                    });
-                }
-                transactions = novasTransacoes;
-                localStorage.setItem('cached_transactions', JSON.stringify(transactions));
-                
-                gerarFiltroDeMeses();
-                updateDashboard();
-                renderView();
-            }, (error) => {});
+            if (jaLogado && chaveAtiva && perfisCadastrados[chaveAtiva]) {
+                entrarNoAplicativo(perfisCadastrados[chaveAtiva], chaveAtiva);
+            } else {
+                loginScreen.style.display = 'flex';
+                appContainer.style.display = 'none';
+            }
         }
 
         loginUsernameInput.addEventListener('input', () => {
@@ -618,13 +578,31 @@
             profileBadge.textContent = `👤 Perfil: ${perfil.name}${perfil.isMaster ? ' (Master)' : ''}`;
             btnMasterPanel.style.display = perfil.isMaster ? 'flex' : 'none';
 
-            conectarBancoSilencioso(chaveKey);
+            const nodeTarget = perfil.isMaster ? NO_MASTER_ORIGINAL : ('lancamentos_' + sanitizarChaveNode(perfil.name));
+            dbTransactions = dbRoot.child(nodeTarget);
+
+            dbTransactions.on('value', (snapshot) => {
+                const data = snapshot.val();
+                transactions = [];
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        transactions.push({ id: key, ...data[key] });
+                    });
+                }
+                gerarFiltroDeMeses();
+                updateDashboard();
+                renderView();
+            }, (error) => {
+                gerarFiltroDeMeses();
+                updateDashboard();
+                renderView();
+            });
         }
 
         window.abrirPainelMaster = function() {
             const chaveAtiva = localStorage.getItem('active_user_key');
-            const perfilAtivo = perfisCadastrados[chaveAtiva] || { isMaster: chaveAtiva === 'user_master' };
-            if (!perfilAtivo.isMaster) {
+            const perfilAtivo = perfisCadastrados[chaveAtiva];
+            if (!perfilAtivo || !perfilAtivo.isMaster) {
                 alert("Acesso restrito ao Administrador Master.");
                 return;
             }
@@ -697,9 +675,9 @@
                 return;
             }
             const chaveAtiva = localStorage.getItem('active_user_key');
-            const perfil = perfisCadastrados[chaveAtiva] || { name: 'Perfil', pwd: '12345' };
-            const senhaDigitada = prompt(`Insira a Senha do Perfil (${perfil.name}):`);
-            if (senhaDigitada && senhaDigitada.trim() === perfil.pwd) {
+            const perfil = perfisCadastrados[chaveAtiva];
+            const senhaDigitada = prompt(`Insira a Senha do Perfil (${perfil ? perfil.name : ''}):`);
+            if (perfil && senhaDigitada && senhaDigitada.trim() === perfil.pwd) {
                 securityPanelContent.style.display = 'flex';
             } else if (senhaDigitada !== null) {
                 alert("Erro: Senha incorreta.");
@@ -708,14 +686,11 @@
 
         window.alterarSenhaDoSistema = function() {
             const chaveAtiva = localStorage.getItem('active_user_key');
-            const perfil = perfisCadastrados[chaveAtiva] || { name: 'Perfil', pwd: '12345' };
+            const perfil = perfisCadastrados[chaveAtiva];
+            if (!perfil) return;
             const novaSenha = prompt("Digite a SUA NOVA senha:");
             if (novaSenha && novaSenha.trim().length >= 4) {
-                if (!perfisCadastrados[chaveAtiva]) {
-                    perfisCadastrados[chaveAtiva] = { name: chaveAtiva.replace('user_', ''), pwd: novaSenha.trim(), isMaster: chaveAtiva === 'user_master' };
-                } else {
-                    perfisCadastrados[chaveAtiva].pwd = novaSenha.trim();
-                }
+                perfisCadastrados[chaveAtiva].pwd = novaSenha.trim();
                 dbRoot.child('config_perfis').set(perfisCadastrados).then(() => {
                     localStorage.setItem('saved_password', novaSenha.trim());
                     localStorage.setItem('pwd_' + chaveAtiva, novaSenha.trim());
@@ -727,12 +702,12 @@
 
         window.limparBancoDeDados = function() {
             const chaveAtiva = localStorage.getItem('active_user_key');
-            const perfil = perfisCadastrados[chaveAtiva] || { pwd: '12345' };
+            const perfil = perfisCadastrados[chaveAtiva];
+            if (!perfil) return;
             if (confirm("⚠️ APAGAR todos os lançamentos deste perfil?")) {
                 const senha = prompt("Digite sua SENHA:");
                 if (senha && senha.trim() === perfil.pwd && dbTransactions) {
                     dbTransactions.remove().then(() => {
-                        localStorage.removeItem('cached_transactions');
                         alert("Banco de dados zerado.");
                         window.location.reload();
                     });
@@ -743,18 +718,17 @@
         window.fazerLogout = function() {
             localStorage.removeItem('user_authenticated');
             localStorage.removeItem('active_user_key');
-            localStorage.removeItem('cached_transactions');
             window.location.reload();
         }
 
         window.fazerBackup = function() {
             if (transactions.length === 0) return alert("Banco de dados vazio.");
             const chaveAtiva = localStorage.getItem('active_user_key');
-            const perfil = perfisCadastrados[chaveAtiva] || { name: 'financeiro' };
+            const perfil = perfisCadastrados[chaveAtiva];
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(transactions, null, 2));
             const a = document.createElement('a');
             a.setAttribute("href", dataStr);
-            a.setAttribute("download", `backup_${perfil.name}.json`);
+            a.setAttribute("download", `backup_${perfil ? perfil.name : 'financeiro'}.json`);
             a.click();
         }
 
