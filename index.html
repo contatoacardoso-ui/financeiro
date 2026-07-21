@@ -55,6 +55,13 @@
         }
         .remember-container input { width: auto; margin-bottom: 0; cursor: pointer; }
         .login-error { color: var(--expense); font-size: 0.8rem; margin-bottom: 12px; display: none; }
+        
+        .install-pwa-btn {
+            width: 100%; padding: 10px; background: rgba(78, 168, 222, 0.1);
+            border: 1px dashed rgba(78, 168, 222, 0.4); border-radius: 8px; color: var(--primary);
+            font-size: 0.82rem; font-weight: bold; cursor: pointer; margin-top: 12px; display: none;
+            align-items: center; justify-content: center; gap: 6px;
+        }
 
         #app-container { display: none; }
         header { margin-bottom: 20px; text-align: center; }
@@ -211,6 +218,9 @@
                 <div class="login-error" id="login-error">Usuário ou senha incorretos.</div>
                 <button type="submit" class="submit-btn">Entrar</button>
             </form>
+            <button type="button" id="btn-install-pwa" class="install-pwa-btn" onclick="instalarAplicativo()">
+                📱 Salvar App na Tela do Celular
+            </button>
         </div>
     </div>
 
@@ -427,6 +437,7 @@
         let currentTab = 'pending';
         let selectedMonthKey = '';
         let reportMode = 'month';
+        let deferredPrompt = null;
         
         let chartComparisonInstance = null;
         let chartIncomesPieInstance = null;
@@ -442,6 +453,7 @@
         const profileBadge = document.getElementById('profile-name-badge');
         const btnMasterPanel = document.getElementById('btn-master-panel');
         const securityPanelContent = document.getElementById('security-panel-content');
+        const btnInstallPwa = document.getElementById('btn-install-pwa');
 
         const formAccordion = document.getElementById('form-accordion');
         const form = document.getElementById('finance-form');
@@ -460,6 +472,25 @@
 
         dateInput.value = new Date().toISOString().split('T')[0];
 
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            btnInstallPwa.style.display = 'flex';
+        });
+
+        window.installarAplicativo = async function() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    btnInstallPwa.style.display = 'none';
+                }
+                deferredPrompt = null;
+            } else {
+                alert("Para instalar na tela inicial:\n\n• No Android: Toque no menu do navegador (três pontinhos) e escolha 'Adicionar à tela inicial' ou 'Instalar aplicativo'.\n• No iPhone (iOS): Toque no botão de Compartilhar (quadrado com seta para cima) e selecione 'Adicionar à Tela de Início'.");
+            }
+        };
+
         window.addEventListener('DOMContentLoaded', () => {
             if (!firebase.apps.length) {
                 firebase.initializeApp(firebaseConfig);
@@ -468,7 +499,6 @@
 
             dbRoot = firebase.database().ref();
 
-            // Preenche dados salvos no input
             const usuarioSalvo = localStorage.getItem('saved_username');
             const senhaSalva = localStorage.getItem('saved_password');
             if (usuarioSalvo) loginUsernameInput.value = usuarioSalvo;
