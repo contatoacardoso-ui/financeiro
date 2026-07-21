@@ -1232,17 +1232,32 @@
             }
         }
 
-        window.editTransactionAmount = function(id) {
+        // EDIÇÃO COMPLETA: DESCRIÇÃO E VALOR
+        window.editTransaction = function(id) {
             const t = transactions.find(item => item.id === id);
-            if (t && db) {
-                const valorDigitado = prompt(`Corrigir valor do lançamento "${t.description}":\nValor Atual: ${formatCurrency(t.amount)}\n\nDigite o novo valor correto (Ex: 145,90):`, t.amount.toString().replace('.', ','));
-                
-                if (valorDigitado === null) return;
+            if (!t || !db) return;
 
-                if (valorDigitado.trim() !== "") {
-                    const valorFinal = parseFormattedValue(valorDigitado);
-                    db.child(id).update({ amount: valorFinal });
-                }
+            // 1. Edição da Descrição
+            const novaDescricao = prompt(`Editar Nome/Descrição do lançamento:`, t.description);
+            if (novaDescricao === null) return; // Cancelou
+
+            // 2. Edição do Valor
+            const valorAtualFormatado = t.amount.toString().replace('.', ',');
+            const novoValorStr = prompt(`Editar Valor do lançamento:\n\nDigite o valor correto (Ex: 145,90):`, valorAtualFormatado);
+            if (novoValorStr === null) return; // Cancelou
+
+            const updates = {};
+            
+            if (novaDescricao.trim() !== '') {
+                updates.description = novaDescricao.trim();
+            }
+            
+            if (novoValorStr.trim() !== '') {
+                updates.amount = parseFormattedValue(novoValorStr);
+            }
+
+            if (Object.keys(updates).length > 0) {
+                db.child(id).update(updates);
             }
         }
 
@@ -1280,7 +1295,6 @@
             realBalanceEl.style.color = realBalance < 0 ? 'var(--expense)' : 'var(--income)';
         }
 
-        // Agrupamento visual mantido exatamente como você queria para as abas Pendentes/Realizados
         function getGroupTitle(t) {
             if (t.type === 'receber') return 'A Receber';
             const complementoOrigem = t.cardOrigin ? ` (${t.cardOrigin})` : '';
@@ -1289,7 +1303,6 @@
                 : `Débito/Dinheiro${complementoOrigem}`;
         }
 
-        // Limpa o indicador de parcela ex: "Lojas Americanas (1/3)" -> "Lojas Americanas"
         function getBaseDescription(desc) {
             if (!desc) return 'Sem Descrição';
             return desc.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim();
@@ -1383,7 +1396,7 @@
                         <div class="item-right">
                             <div class="value-wrapper">
                                 <div class="value-container">
-                                    <button class="edit-value-btn" onclick="editTransactionAmount('${t.id}')" title="Corrigir valor">✏️</button>
+                                    <button class="edit-value-btn" onclick="editTransaction('${t.id}')" title="Editar lançamento">✏️</button>
                                     <span class="item-value ${isRec ? 'income-text' : 'expense-text'}">${formatCurrency(t.amount)}</span>
                                 </div>
                             </div>
