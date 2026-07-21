@@ -971,7 +971,7 @@
         const securityToggleBtn = document.getElementById('security-toggle-btn');
         const securityPanelContent = document.getElementById('security-panel-content');
 
-        // --- PAINEL MASTER: CRIAR E EXCLUIR PERFIS ---
+        // --- PAINEL MASTER: CRIAR, EXCLUIR E RESETAR SENHAS DE PERFIS ---
         window.abrirPainelMaster = function() {
             const perfilAtivo = obterPerfilLogado();
             if (!perfilAtivo || !perfilAtivo.isMaster) {
@@ -991,7 +991,7 @@
             });
 
             const acao = prompt(
-                `${listaPerfisTexto}\nDigite o número da ação desejada:\n1 - Criar Novo Perfil\n2 - Excluir um Perfil\n0 - Cancelar`
+                `${listaPerfisTexto}\nDigite o número da ação desejada:\n1 - Criar Novo Perfil\n2 - Excluir um Perfil\n3 - Resetar Senha de um Perfil (para 12345)\n0 - Cancelar`
             );
 
             if (acao === '1') {
@@ -1030,6 +1030,22 @@
                         alert(`Perfil "${perfilExcluir.name}" foi removido com sucesso.`);
                     }
                 } else if (numExcluir !== null && numExcluir !== '0') {
+                    alert("Opção inválida.");
+                }
+            } else if (acao === '3') {
+                const numReset = prompt(`${listaPerfisTexto}\nDigite o NÚMERO do perfil que deseja RESETAR a senha:`);
+                const idx = parseInt(numReset) - 1;
+
+                if (!isNaN(idx) && idx >= 0 && idx < chaves.length) {
+                    const chaveReset = chaves[idx];
+                    const perfilReset = profiles[chaveReset];
+
+                    if (confirm(`🔄 Resetar a senha do perfil "${perfilReset.name}" para "12345"?`)) {
+                        profiles[chaveReset].pwd = SENHA_PADRAO_NOVOS_PERFIS;
+                        salvarConfigPerfis(profiles);
+                        alert(`✅ Senha do perfil "${perfilReset.name}" foi redefinida com sucesso para: 12345`);
+                    }
+                } else if (numReset !== null && numReset !== '0') {
                     alert("Opção inválida.");
                 }
             }
