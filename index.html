@@ -59,8 +59,8 @@
         .install-pwa-btn {
             width: 100%; padding: 10px; background: rgba(78, 168, 222, 0.1);
             border: 1px dashed rgba(78, 168, 222, 0.4); border-radius: 8px; color: var(--primary);
-            font-size: 0.82rem; font-weight: bold; cursor: pointer; margin-top: 12px; display: none;
-            align-items: center; justify-content: center; gap: 6px;
+            font-size: 0.82rem; font-weight: bold; cursor: pointer; margin-top: 12px;
+            align-items: center; justify-content: center; gap: 6px; display: flex;
         }
 
         #app-container { display: none; }
@@ -472,6 +472,20 @@
 
         dateInput.value = new Date().toISOString().split('T')[0];
 
+        // Se já estiver logado, exibe instantaneamente o nome do perfil salvo para evitar qualquer piscar na tela
+        const jaLogadoInstantaneo = localStorage.getItem('user_authenticated') === 'true';
+        const chaveAtivaInstantanea = localStorage.getItem('active_user_key');
+        if (jaLogadoInstantaneo && chaveAtivaInstantanea) {
+            loginScreen.style.display = 'none';
+            appContainer.style.display = 'block';
+            if (chaveAtivaInstantanea === 'user_master') {
+                profileBadge.textContent = "👤 Perfil: Principal (Master)";
+                btnMasterPanel.style.display = 'flex';
+            } else if (chaveAtivaInstantanea === 'user_suelen_winnie') {
+                profileBadge.textContent = "👤 Perfil: Suelen Winnie";
+            }
+        }
+
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
@@ -504,14 +518,6 @@
             if (usuarioSalvo) loginUsernameInput.value = usuarioSalvo;
             if (senhaSalva) loginPassword.value = senhaSalva;
             rememberMeCheckbox.checked = localStorage.getItem('remember_active') === 'true' || localStorage.getItem('remember_active') === null;
-
-            const jaLogado = localStorage.getItem('user_authenticated') === 'true';
-            const chaveAtiva = localStorage.getItem('active_user_key');
-
-            if (jaLogado && chaveAtiva) {
-                loginScreen.style.display = 'none';
-                appContainer.style.display = 'block';
-            }
 
             dbRoot.child('config_perfis').on('value', (snapshot) => {
                 const dadosNuvent = snapshot.val();
