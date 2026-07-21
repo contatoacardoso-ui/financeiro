@@ -18,6 +18,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
+    <!-- Chart.js para Renderização de Gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         :root {
             --bg-color: #121214;
@@ -374,22 +377,23 @@
             border-color: var(--primary);
         }
 
-        /* Abas de Navegação (Pendentes vs Realizados) */
+        /* Abas de Navegação */
         .tabs {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
             margin-bottom: 14px;
         }
         .tab-btn {
             background-color: var(--card-bg);
             border: 1px solid var(--border);
             color: var(--text-secondary);
-            padding: 10px;
+            padding: 10px 4px;
             border-radius: 8px;
             font-weight: bold;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             cursor: pointer;
+            text-align: center;
         }
         .tab-btn.active {
             border-color: var(--primary);
@@ -535,6 +539,73 @@
             color: var(--text-secondary);
             padding: 20px 0;
             font-size: 0.85rem;
+        }
+
+        /* ESTILOS DA SEÇÃO DE RELATÓRIOS */
+        #report-section {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .report-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+        }
+        .report-card h3 {
+            font-size: 0.95rem;
+            color: var(--text-color);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 220px;
+        }
+        .top-expenses-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .expense-bar-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .expense-bar-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+        }
+        .expense-bar-info .name {
+            font-weight: 600;
+        }
+        .expense-bar-info .val {
+            color: var(--text-secondary);
+        }
+        .progress-track {
+            height: 8px;
+            background-color: #121214;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: var(--expense);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        .stat-badge {
+            background-color: rgba(247, 90, 104, 0.15);
+            color: var(--expense);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: bold;
         }
 
         /* Configurações de Segurança no Rodapé */
@@ -733,15 +804,34 @@
         <!-- FILTROS DE VISUALIZAÇÃO -->
         <div class="month-selector" id="month-selector"></div>
 
-        <!-- Abas Pendentes / Realizados -->
+        <!-- Abas de Navegação -->
         <div class="tabs">
             <button class="tab-btn active" id="tab-pending" onclick="switchTab('pending')">Pendentes</button>
             <button class="tab-btn" id="tab-done" onclick="switchTab('done')">Realizados</button>
+            <button class="tab-btn" id="tab-report" onclick="switchTab('report')">📊 Relatórios</button>
         </div>
 
         <!-- Lista de Lançamentos -->
-        <div>
+        <div id="transactions-wrapper">
             <div class="transaction-list" id="transaction-list"></div>
+        </div>
+
+        <!-- SEÇÃO DE RELATÓRIOS E ANÁLISE DE GASTOS -->
+        <div id="report-section">
+            <div class="report-card">
+                <h3>Entradas vs. Saídas do Mês</h3>
+                <div class="chart-container">
+                    <canvas id="chart-comparison"></canvas>
+                </div>
+            </div>
+
+            <div class="report-card">
+                <h3>
+                    <span>Onde Você Mais Gastou</span>
+                    <span class="stat-badge" id="income-ratio-badge">0% da Renda</span>
+                </h3>
+                <div id="top-expenses-list" class="top-expenses-list"></div>
+            </div>
         </div>
 
         <!-- MENU DE SEGURANÇA SEGURO NO RODAPÉ -->
@@ -937,6 +1027,7 @@
         let transactions = [];
         let currentTab = 'pending';
         let selectedMonthKey = '';
+        let chartInstance = null;
 
         const formAccordion = document.getElementById('form-accordion');
         const form = document.getElementById('finance-form');
@@ -970,7 +1061,7 @@
                 
                 gerarFiltroDeMeses();
                 updateDashboard();
-                renderList();
+                renderView();
             }, (error) => {
                 alert("Erro de conexão com o Firebase.");
             });
@@ -1026,7 +1117,7 @@
                 const nomeMes = NOME_MESES[parseInt(mes) - 1];
                 btn.classList.toggle('active', btn.textContent === `${nomeMes}/${ano}`);
             });
-            renderList();
+            renderView();
         }
 
         function obterDiasDeAtraso(t) {
@@ -1067,7 +1158,23 @@
             currentTab = tab;
             document.getElementById('tab-pending').classList.toggle('active', tab === 'pending');
             document.getElementById('tab-done').classList.toggle('active', tab === 'done');
-            renderList();
+            document.getElementById('tab-report').classList.toggle('active', tab === 'report');
+            renderView();
+        }
+
+        function renderView() {
+            const wrapper = document.getElementById('transactions-wrapper');
+            const reportSection = document.getElementById('report-section');
+
+            if (currentTab === 'report') {
+                wrapper.style.display = 'none';
+                reportSection.style.display = 'flex';
+                renderReport();
+            } else {
+                wrapper.style.display = 'block';
+                reportSection.style.display = 'none';
+                renderList();
+            }
         }
 
         window.confirmTransaction = function(id) {
@@ -1124,7 +1231,6 @@
             realBalanceEl.style.color = realBalance < 0 ? 'var(--expense)' : 'var(--income)';
         }
 
-        // Função de nome de grupo para agrupamento inteligente
         function getGroupTitle(t) {
             if (t.type === 'receber') return 'A Receber';
             const complementoOrigem = t.cardOrigin ? ` (${t.cardOrigin})` : '';
@@ -1143,7 +1249,6 @@
                 return;
             }
 
-            // Agrupa os lançamentos por Forma de Pagamento e Banco/Origem
             const groups = {};
             filtered.forEach(t => {
                 const groupTitle = getGroupTitle(t);
@@ -1158,7 +1263,6 @@
                 groups[groupTitle].subtotal += t.amount;
             });
 
-            // Ordena os grupos
             Object.keys(groups).sort().forEach(groupTitle => {
                 const groupData = groups[groupTitle];
                 const groupDiv = document.createElement('div');
@@ -1166,7 +1270,6 @@
 
                 const isReceberGroup = groupData.type === 'receber';
                 
-                // Cabeçalho do Grupo com Subtotal
                 const headerDiv = document.createElement('div');
                 headerDiv.className = 'group-header';
                 headerDiv.innerHTML = `
@@ -1177,7 +1280,6 @@
                 `;
                 groupDiv.appendChild(headerDiv);
 
-                // Ordena os itens do grupo por data
                 const sortedItems = [...groupData.items].sort((a, b) => new Date(a.date) - new Date(b.date));
 
                 sortedItems.forEach(t => {
@@ -1234,6 +1336,109 @@
                 });
 
                 listContainer.appendChild(groupDiv);
+            });
+        }
+
+        // --- LÓGICA DO RELATÓRIO E GRÁFICOS ---
+        function renderReport() {
+            const filteredByMonth = transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey));
+            
+            let totalEntradas = 0;
+            let totalSaidas = 0;
+            const gastosPorCategoria = {};
+
+            filteredByMonth.forEach(t => {
+                if (t.type === 'receber') {
+                    totalEntradas += t.amount;
+                } else {
+                    totalSaidas += t.amount;
+                    const chave = getGroupTitle(t);
+                    gastosPorCategoria[chave] = (gastosPorCategoria[chave] || 0) + t.amount;
+                }
+            });
+
+            // Indicador de Comprometimento de Renda
+            const ratioBadge = document.getElementById('income-ratio-badge');
+            if (totalEntradas > 0) {
+                const ratio = Math.round((totalSaidas / totalEntradas) * 100);
+                ratioBadge.textContent = `${ratio}% da Renda`;
+                ratioBadge.style.backgroundColor = ratio > 90 ? 'rgba(247, 90, 104, 0.2)' : 'rgba(78, 168, 222, 0.2)';
+                ratioBadge.style.color = ratio > 90 ? 'var(--expense)' : 'var(--primary)';
+            } else {
+                ratioBadge.textContent = `S/ Renda Mapeada`;
+            }
+
+            // Renderizar Gráfico de Comparação
+            const ctx = document.getElementById('chart-comparison').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Entradas', 'Saídas'],
+                    datasets: [{
+                        data: [totalEntradas, totalSaidas],
+                        backgroundColor: ['#00b37e', '#f75a68'],
+                        borderRadius: 6,
+                        barThickness: 32
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => ` R$ ${context.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                color: '#a8a8b3',
+                                font: { size: 10 },
+                                callback: (value) => 'R$ ' + value
+                            },
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                        },
+                        x: {
+                            ticks: { color: '#e1e1e6', font: { weight: 'bold' } },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // Renderizar Lista do "Onde Você Mais Gastou"
+            const topListEl = document.getElementById('top-expenses-list');
+            topListEl.innerHTML = '';
+
+            const ordenados = Object.keys(gastosPorCategoria)
+                .map(key => ({ name: key, value: gastosPorCategoria[key] }))
+                .sort((a, b) => b.value - a.value);
+
+            if (ordenados.length === 0) {
+                topListEl.innerHTML = `<div class="empty-state">Sem despesas registradas neste mês.</div>`;
+                return;
+            }
+
+            ordenados.forEach(item => {
+                const percent = totalSaidas > 0 ? Math.round((item.value / totalSaidas) * 100) : 0;
+                
+                const itemEl = document.createElement('div');
+                itemEl.className = 'expense-bar-item';
+                itemEl.innerHTML = `
+                    <div class="expense-bar-info">
+                        <span class="name">${item.name}</span>
+                        <span class="val">${formatCurrency(item.value)} (${percent}%)</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width: ${percent}%;"></div>
+                    </div>
+                `;
+                topListEl.appendChild(itemEl);
             });
         }
 
