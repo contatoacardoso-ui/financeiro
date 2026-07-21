@@ -219,7 +219,7 @@
                 <button type="submit" class="submit-btn">Entrar</button>
             </form>
             <button type="button" id="btn-install-pwa" class="install-pwa-btn" onclick="instalarAplicativo()">
-                📱 Salvar App na Tela do Celular
+                📱 Instala
             </button>
         </div>
     </div>
@@ -478,7 +478,7 @@
             btnInstallPwa.style.display = 'flex';
         });
 
-        window.installarAplicativo = async function() {
+        window.instalarAplicativo = async function() {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
