@@ -352,8 +352,19 @@
         .report-card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
         .report-card h3 { font-size: 0.95rem; color: var(--text-color); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
         .chart-container { position: relative; width: 100%; height: 220px; }
-        .top-expenses-list { display: flex; flex-direction: column; gap: 8px; }
-        .top-expense-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+        
+        .detailed-report-list { display: flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: auto; }
+        .detailed-item {
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .detailed-info h4 { font-size: 0.85rem; margin-bottom: 2px; }
+        .detailed-info span { font-size: 0.7rem; color: var(--text-secondary); }
 
         .security-footer { margin-top: 40px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 12px; }
         .security-accordion { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
@@ -527,15 +538,13 @@
             </div>
 
             <div class="report-card">
-                <h3>
-                    <span>Principais Saídas (Por Descrição)</span>
-                </h3>
-                <div id="top-expenses-list" class="top-expenses-list"></div>
+                <h3>📥 Detalhamento de Entradas</h3>
+                <div id="detailed-incomes-list" class="detailed-report-list"></div>
             </div>
 
             <div class="report-card">
-                <h3>Principais Entradas (Origens)</h3>
-                <div id="top-incomes-list" class="top-expenses-list"></div>
+                <h3>📤 Detalhamento de Saídas</h3>
+                <div id="detailed-expenses-list" class="detailed-report-list"></div>
             </div>
         </div>
 
@@ -971,6 +980,7 @@
         }
 
         function formatDate(dateString) {
+            if (!dateString) return '';
             const [year, month, day] = dateString.split('-');
             return `${day}/${month}/${year}`;
         }
@@ -1048,7 +1058,6 @@
                 return;
             }
 
-            // Agrupar por Origem / Banco / Forma de Pagamento
             const grouped = {};
             filtered.forEach(t => {
                 let groupKey = 'Geral';
@@ -1113,21 +1122,21 @@
 
         function renderReport() {
             let totalEntradas = 0, totalSaidas = 0;
-            const despesasPorDesc = {};
-            const entradasPorOrigem = {};
-
+            
             const transFiltradas = reportMode === 'month' 
                 ? transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey))
                 : transactions;
 
+            const entradasDetalhadas = [];
+            const saidasDetalhadas = [];
+
             transFiltradas.forEach(t => {
                 if (t.type === 'receber') {
                     totalEntradas += t.amount;
-                    const origem = t.cardOrigin || 'Geral';
-                    entradasPorOrigem[origem] = (entradasPorOrigem[origem] || 0) + t.amount;
+                    entradasDetalhadas.push(t);
                 } else {
                     totalSaidas += t.amount;
-                    despesasPorDesc[t.description] = (despesasPorDesc[t.description] || 0) + t.amount;
+                    saidasDetalhadas.push(t);
                 }
             });
 
@@ -1144,35 +1153,48 @@
                 options: { responsive: true, maintainAspectRatio: false }
             });
 
-            // Lista Top Despesas
-            const topExpList = document.getElementById('top-expenses-list');
-            topExpList.innerHTML = '';
-            const sortedExp = Object.entries(despesasPorDesc).sort((a, b) => b[1] - a[1]);
-            
-            if (sortedExp.length === 0) {
-                topExpList.innerHTML = '<div class="empty-state">Sem dados para o período.</div>';
+            // Detalhamento de Entradas
+            const detailedIncList = document.getElementById('detailed-incomes-list');
+            detailedIncList.innerHTML = '';
+            if (entradasDetalhadas.length === 0) {
+                detailedIncList.innerHTML = '<div class="empty-state">Nenhuma entrada registrada.</div>';
             } else {
-                sortedExp.slice(0, 5).forEach(([desc, val]) => {
+                entradasDetalhadas.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
                     const item = document.createElement('div');
-                    item.className = 'top-expense-item';
-                    item.innerHTML = `<span>${desc}</span><strong class="expense-text">${formatCurrency(val)}</strong>`;
-                    topExpList.appendChild(item);
+                    item.className = 'detailed-item';
+                    const origemInfo = t.cardOrigin ? ` • Origem: ${t.cardOrigin}` : '';
+                    item.innerHTML = `
+                        <div class="detailed-info">
+                            <h4>${t.description}</h4>
+                            <span>${formatDate(t.date)}${origemInfo}</span>
+                        </div>
+                        <strong class="income-text">${formatCurrency(t.amount)}</strong>
+                    `;
+                    detailedIncList.appendChild(item);
                 });
             }
 
-            // Lista Top Entradas
-            const topIncList = document.getElementById('top-incomes-list');
-            topIncList.innerHTML = '';
-            const sortedInc = Object.entries(entradasPorOrigem).sort((a, b) => b[1] - a[1]);
-            
-            if (sortedInc.length === 0) {
-                topIncList.innerHTML = '<div class="empty-state">Sem dados para o período.</div>';
+            // Detalhamento de Saídas
+            const detailedExpList = document.getElementById('detailed-expenses-list');
+            detailedExpList.innerHTML = '';
+            if (saidasDetalhadas.length === 0) {
+                detailedExpList.innerHTML = '<div class="empty-state">Nenhuma saída registrada.</div>';
             } else {
-                sortedInc.slice(0, 5).forEach(([orig, val]) => {
+                saidasDetalhadas.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
                     const item = document.createElement('div');
-                    item.className = 'top-expense-item';
-                    item.innerHTML = `<span>${orig}</span><strong class="income-text">${formatCurrency(val)}</strong>`;
-                    topIncList.appendChild(item);
+                    item.className = 'detailed-item';
+                    let metodoInfo = t.method === 'credito' ? 'Cartão de Crédito' : 'Débito/Dinheiro';
+                    if (t.cardOrigin) metodoInfo += ` (${t.cardOrigin})`;
+                    if (t.installments && t.installments > 1) metodoInfo += ` - ${t.installments}x`;
+
+                    item.innerHTML = `
+                        <div class="detailed-info">
+                            <h4>${t.description}</h4>
+                            <span>${formatDate(t.date)} • ${metodoInfo}</span>
+                        </div>
+                        <strong class="expense-text">${formatCurrency(t.amount)}</strong>
+                    `;
+                    detailedExpList.appendChild(item);
                 });
             }
         }
