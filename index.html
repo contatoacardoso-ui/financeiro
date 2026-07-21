@@ -564,14 +564,14 @@
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         
         function sanitizarChaveNode(str) {
-            if (!str) return '';
+            if (!str) return 'default';
             return str.toLowerCase()
                       .normalize("NFD")
                       .replace(/[\u0300-\u036f]/g, "")
-                      .replace(/[^a-z0-9]/g, '_');
+                      .replace(/[^a-z0-9]/g, '_')
+                      .replace(/^_+|_+$/g, '');
         }
 
-        // PERFIS COM NÓS LIMPOS E PADRONIZADOS
         const DEFAULT_PROFILES = {
             'user_master': {
                 name: 'Principal',
@@ -593,7 +593,6 @@
                 try {
                     const parsed = JSON.parse(salvas);
                     Object.keys(parsed).forEach(k => {
-                        // Força a higienização do nó de qualquer perfil salvo
                         if (parsed[k].name) {
                             parsed[k].node = 'lancamentos_' + sanitizarChaveNode(parsed[k].name);
                         }
@@ -869,20 +868,27 @@
         dateInput.value = new Date().toISOString().split('T')[0];
 
         function inicializarFirebase(rawNodeName) {
-            // Garante um nó seguro no Firebase sem caracteres proibidos
-            const nodeName = rawNodeName ? sanitizarChaveNode(rawNodeName) : 'lancamentos_master_principal';
+            const nodeClean = sanitizarChaveNode(rawNodeName);
+            const nodeName = nodeClean ? nodeClean : 'lancamentos_master_principal';
             
             if (!firebase.apps.length) {
                 firebase.initializeApp(firebaseConfig);
             }
+
+            // Ativa persistência offline para impedir travamento por lentidão de rede
+            try {
+                firebase.database().goOnline();
+            } catch(e){}
+
             db = firebase.database().ref(nodeName);
 
+            // Timeout para liberar a tela caso a conexão não responda em 3 segundos
             const loadingTimeout = setTimeout(() => {
-                if (loadingEl.style.display === 'flex' && transactions.length === 0) {
-                    loadingText.textContent = "Aguardando sincronização com o banco...";
-                    loadingCancelBtn.style.display = 'block';
-                }
-            }, 4000);
+                loadingEl.style.display = 'none';
+                gerarFiltroDeMeses();
+                updateDashboard();
+                renderView();
+            }, 3000);
 
             db.on('value', (snapshot) => {
                 clearTimeout(loadingTimeout);
@@ -901,8 +907,10 @@
                 renderView();
             }, (error) => {
                 clearTimeout(loadingTimeout);
-                loadingText.textContent = "Erro ao localizar o nó no Firebase.";
-                loadingCancelBtn.style.display = 'block';
+                loadingEl.style.display = 'none';
+                gerarFiltroDeMeses();
+                updateDashboard();
+                renderView();
             });
         }
 
