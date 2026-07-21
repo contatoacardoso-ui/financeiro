@@ -268,11 +268,11 @@
                             <div class="radio-group">
                                 <div class="radio-btn">
                                     <input type="radio" id="method-debito" name="method" value="debito" checked onclick="toggleCreditFields(false)">
-                                    <label for="method-debito" class="radio-label lbl-debito">Dinheiro/Débito</label>
+                                    <label for="method-debito" class="radio-label lbl-debito">Débito</label>
                                 </div>
                                 <div class="radio-btn">
                                     <input type="radio" id="method-credito" name="method" value="credito" onclick="toggleCreditFields(true)">
-                                    <label for="method-credito" class="radio-label lbl-credito">Cartão de Crédito</label>
+                                    <label for="method-credito" class="radio-label lbl-credito">Crédito</label>
                                 </div>
                             </div>
                         </div>
@@ -292,7 +292,7 @@
 
                     <div class="form-group">
                         <label for="description">Descrição do Lançamento</label>
-                        <input type="text" id="description" placeholder="Ex: Salário, Rendimento, Investimento..." required autocomplete="off">
+                        <input type="text" id="description" placeholder="Ex: Salario, Rendimento, Investimento..." required autocomplete="off">
                     </div>
 
                     <div class="form-group">
@@ -647,7 +647,6 @@
             const isPagar = document.querySelector('input[name="type"]:checked').value === 'pagar';
             document.getElementById('expense-conditional-fields').style.display = isPagar ? 'block' : 'none';
             
-            // Atualiza o placeholder dinamicamente conforme o tipo escolhido
             if (isPagar) {
                 descInput.placeholder = "Ex: Mercado, Padaria, Combustivel...";
             } else {
@@ -902,7 +901,7 @@
 
         function montarHtmlDoItem(t) {
             const isRec = t.type === 'receber';
-            let badgeText = t.type === 'pagar' ? (t.method === 'credito' ? `💳 Cartão de Crédito${t.installments > 1 ? ' (' + t.installments + 'x)' : ''}` : '💵 Débito/Dinheiro') : '';
+            let badgeText = t.type === 'pagar' ? (t.method === 'credito' ? `💳 Crédito${t.installments > 1 ? ' (' + t.installments + 'x)' : ''}` : '💵 Débito') : '';
             return `
                 <div class="item-details">
                     <h4>${t.description}</h4>
@@ -933,7 +932,7 @@
 
             const grouped = {};
             filtered.forEach(t => {
-                let groupKey = t.type === 'pagar' ? (t.method === 'credito' ? `Crédito: ${t.cardOrigin || 'Cartão'}` : `Débito / Dinheiro${t.cardOrigin ? ' (' + t.cardOrigin + ')' : ''}`) : (t.cardOrigin ? `Origem: ${t.cardOrigin}` : 'Entradas Gerais');
+                let groupKey = t.type === 'pagar' ? (t.method === 'credito' ? `Crédito: ${t.cardOrigin || 'Cartão'}` : `Débito${t.cardOrigin ? ' (' + t.cardOrigin + ')' : ''}`) : (t.cardOrigin ? `Origem: ${t.cardOrigin}` : 'Entradas Gerais');
                 if (!grouped[groupKey]) grouped[groupKey] = [];
                 grouped[groupKey].push(t);
             });
