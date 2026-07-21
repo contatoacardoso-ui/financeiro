@@ -770,6 +770,9 @@
                 <div class="login-error" id="login-error">Usuário ou senha incorretos.</div>
                 <button type="submit" class="submit-btn">Entrar</button>
             </form>
+            <button type="button" onclick="resetarPerfisPadrao()" style="background:none; border:none; color:var(--primary); font-size:0.75rem; text-decoration:underline; cursor:pointer; margin-top:16px;">
+                🔄 Resetar Perfis para o Padrão
+            </button>
         </div>
     </div>
 
@@ -969,6 +972,7 @@
         
         // Função para sanitizar e remover acentos/espaços para os nós do Firebase
         function sanitizarChaveNode(str) {
+            if (!str) return '';
             return str.toLowerCase()
                       .normalize("NFD")
                       .replace(/[\u0300-\u036f]/g, "")
@@ -994,13 +998,17 @@
         function obterConfigPerfis() {
             const salvas = localStorage.getItem('finance_app_profiles');
             if (salvas) {
-                const parsed = JSON.parse(salvas);
-                Object.keys(parsed).forEach(k => {
-                    if (parsed[k].node && (parsed[k].node.includes(' ') || parsed[k].node.includes('%'))) {
-                        parsed[k].node = sanitizarChaveNode(parsed[k].node);
-                    }
-                });
-                return parsed;
+                try {
+                    const parsed = JSON.parse(salvas);
+                    Object.keys(parsed).forEach(k => {
+                        if (parsed[k].node && (parsed[k].node.includes(' ') || parsed[k].node.includes('%'))) {
+                            parsed[k].node = sanitizarChaveNode(parsed[k].node);
+                        }
+                    });
+                    return parsed;
+                } catch(e) {
+                    return DEFAULT_PROFILES;
+                }
             }
             return DEFAULT_PROFILES;
         }
@@ -1011,9 +1019,10 @@
 
         function autenticarUsuario(nomeInput, senhaInput) {
             const profiles = obterConfigPerfis();
-            const nomeNorm = sanitizarChaveNode(nomeInput);
+            const nomeNorm = sanitizarChaveNode(nomeInput.trim());
+            const senhaClean = senhaInput.trim();
             
-            // Busca permissiva para aceitar "principal", "master", "user_master" ou qualquer perfil criado
+            // Busca permissiva para aceitar "principal", "master", "user_master" ou qualquer perfil cadastrado
             for (const key in profiles) {
                 const profileNameNorm = sanitizarChaveNode(profiles[key].name);
                 const keyNorm = sanitizarChaveNode(key);
@@ -1021,11 +1030,21 @@
                 const ehMasterAlias = profiles[key].isMaster && (nomeNorm === 'principal' || nomeNorm === 'master' || nomeNorm === 'user_master');
                 const ehNomeMatch = profileNameNorm === nomeNorm || keyNorm === nomeNorm;
 
-                if ((ehMasterAlias || ehNomeMatch) && profiles[key].pwd === senhaInput) {
+                if ((ehMasterAlias || ehNomeMatch) && profiles[key].pwd === senhaClean) {
                     return { key, ...profiles[key] };
                 }
             }
             return null;
+        }
+
+        window.resetarPerfisPadrao = function() {
+            if (confirm("Deseja restaurar as configurações de perfis padrão?\nIsso vai redefinir o acesso Master para 'Principal' e senha 'Touchrio@8512@'.")) {
+                localStorage.removeItem('finance_app_profiles');
+                localStorage.removeItem('active_user_key');
+                localStorage.removeItem('user_authenticated');
+                alert("Perfis redefinidos com sucesso! Tente logar com 'Principal' e a senha 'Touchrio@8512@'.");
+                window.location.reload();
+            }
         }
 
         function obterPerfilLogado() {
@@ -1169,7 +1188,7 @@
             }
             const perfil = obterPerfilLogado();
             const senhaDigitada = prompt(`Insira a Senha do Perfil (${perfil ? perfil.name : ''}) para acessar as Configurações:`);
-            if (perfil && senhaDigitada === perfil.pwd) {
+            if (perfil && senhaDigitada && senhaDigitada.trim() === perfil.pwd) {
                 abrirPainelDeSeguranca();
             } else if (senhaDigitada !== null) {
                 alert("Erro: Senha incorreta. Acesso negado.");
@@ -1210,7 +1229,7 @@
 
             if (confirm(`⚠️ ATENÇÃO: Esta ação irá APAGAR todos os lançamentos do perfil "${perfil.name}".\n\nDeseja prosseguir?`)) {
                 const senhaDigitada = prompt("Digite sua SENHA para autorizar a limpeza:");
-                if (senhaDigitada === perfil.pwd) {
+                if (senhaDigitada && senhaDigitada.trim() === perfil.pwd) {
                     if (db) {
                         loadingEl.style.display = 'flex';
                         db.remove().then(() => {
