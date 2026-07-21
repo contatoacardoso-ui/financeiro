@@ -49,6 +49,11 @@
             border-radius: 8px; color: var(--text-color); outline: none;
         }
         .login-card input:focus { border-color: var(--primary); }
+        .remember-container {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+            font-size: 0.82rem; color: var(--text-secondary); text-align: left; cursor: pointer;
+        }
+        .remember-container input { width: auto; margin-bottom: 0; cursor: pointer; }
         .login-error { color: var(--expense); font-size: 0.8rem; margin-bottom: 12px; display: none; }
 
         #app-container { display: none; }
@@ -198,6 +203,11 @@
             <form id="login-form">
                 <input type="text" id="login-username" placeholder="Nome do Usuário" required autocomplete="username">
                 <input type="password" id="login-password" placeholder="Sua Senha" required autocomplete="current-password">
+                
+                <label class="remember-container">
+                    <input type="checkbox" id="remember-me" checked> Lembrar senha neste aparelho
+                </label>
+
                 <div class="login-error" id="login-error">Usuário ou senha incorretos.</div>
                 <button type="submit" class="submit-btn">Entrar</button>
             </form>
@@ -325,7 +335,7 @@
             </div>
 
             <div class="report-actions">
-                <button class="report-action-btn" onclick="salvarComoPDF()">💾 Salvar Relatório em PDF</button>
+                <button class="report-action-btn" onclick="salvarComoPDF()">💾 Salvar Relatório</button>
             </div>
 
             <div class="report-card">
@@ -426,6 +436,7 @@
         const loginForm = document.getElementById('login-form');
         const loginUsernameInput = document.getElementById('login-username');
         const loginPassword = document.getElementById('login-password');
+        const rememberMeCheckbox = document.getElementById('remember-me');
         const loginError = document.getElementById('login-error');
         const appContainer = document.getElementById('app-container');
         const loadingEl = document.getElementById('loading');
@@ -458,7 +469,6 @@
 
             dbRoot = firebase.database().ref();
 
-            // Sincroniza e garante os perfis na nuvem (Firebase) para acesso universal
             dbRoot.child('config_perfis').on('value', (snapshot) => {
                 const dadosNuvent = snapshot.val();
                 if (!dadosNuvent) {
@@ -467,6 +477,19 @@
                 } else {
                     perfisCadastrados = dadosNuvent;
                 }
+                
+                // Preenche automaticamente o usuário salvo anteriormente se houver
+                const usuarioSalvo = localStorage.getItem('remembered_username');
+                if (usuarioSalvo) {
+                    loginUsernameInput.value = usuarioSalvo;
+                    for (const k in perfisCadastrados) {
+                        if (k === localStorage.getItem('remembered_key') || sanitizarChaveNode(perfisCadastrados[k].name) === sanitizarChaveNode(usuarioSalvo)) {
+                            loginPassword.value = perfisCadastrados[k].pwd;
+                            break;
+                        }
+                    }
+                }
+
                 verificarSessaoSalva();
             });
         });
@@ -509,6 +532,15 @@
             if (perfilEncontradoObj) {
                 localStorage.setItem('user_authenticated', 'true');
                 localStorage.setItem('active_user_key', perfilEncontradoKey);
+
+                if (rememberMeCheckbox.checked) {
+                    localStorage.setItem('remembered_username', usernameInput);
+                    localStorage.setItem('remembered_key', perfilEncontradoKey);
+                } else {
+                    localStorage.removeItem('remembered_username');
+                    localStorage.removeItem('remembered_key');
+                }
+
                 entrarNoAplicativo(perfilEncontradoObj, perfilEncontradoKey);
             } else {
                 loginError.style.display = 'block';
