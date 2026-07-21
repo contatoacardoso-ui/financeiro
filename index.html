@@ -521,13 +521,14 @@
 
             for (const key in perfisCadastrados) {
                 const p = perfisCadastrados[key];
+                if (!p) continue;
                 const pNameNorm = sanitizarChaveNode(p.name);
                 const keyNorm = sanitizarChaveNode(key);
 
                 const ehMasterAlias = p.isMaster && (nomeNorm === 'principal' || nomeNorm === 'master' || nomeNorm === 'user_master');
                 const ehNomeMatch = pNameNorm === nomeNorm || keyNorm === nomeNorm;
 
-                if ((ehMasterAlias || ehNomeMatch) && p.pwd === passwordInput) {
+                if ((ehMasterAlias || ehNomeMatch) && String(p.pwd) === String(passwordInput)) {
                     perfilEncontradoKey = key;
                     perfilEncontradoObj = p;
                     break;
@@ -562,7 +563,7 @@
             profileBadge.textContent = `👤 Perfil: ${perfil.name}${perfil.isMaster ? ' (Master)' : ''}`;
             btnMasterPanel.style.display = perfil.isMaster ? 'flex' : 'none';
 
-            const nodeTarget = perfil.isMaster ? NO_MASTER_ORIGINAL : ('lancamentos_' + sanitizarChaveNode(perfil.name));
+            const nodeTarget = perfil.isMaster ? NO_MASTER_ORIGINAL : (perfil.node || ('lancamentos_' + sanitizarChaveNode(perfil.name)));
 
             if (dbTransactions) {
                 dbTransactions.off();
@@ -598,8 +599,10 @@
 
             chaves.forEach(key => {
                 const p = perfisCadastrados[key];
-                listaPerfisTexto += `${index}. ${p.name} ${p.isMaster ? '(Master)' : ''}\n`;
-                index++;
+                if (p) {
+                    listaPerfisTexto += `${index}. ${p.name} ${p.isMaster ? '(Master)' : ''}\n`;
+                    index++;
+                }
             });
 
             const acao = prompt(`${listaPerfisTexto}\nDigite a opção:\n1 - Criar Novo Perfil\n2 - Excluir Perfil\n3 - Resetar Senha (para 12345)\n0 - Cancelar`);
@@ -609,14 +612,18 @@
                 if (nomeNovo && nomeNovo.trim() !== "") {
                     const nomeTrimmed = nomeNovo.trim();
                     const keyNova = 'user_' + sanitizarChaveNode(nomeTrimmed);
+                    
                     perfisCadastrados[keyNova] = {
                         name: nomeTrimmed,
                         pwd: SENHA_PADRAO_NOVOS_PERFIS,
                         isMaster: false,
                         node: 'lancamentos_' + sanitizarChaveNode(nomeTrimmed)
                     };
+                    
                     dbRoot.child('config_perfis').set(perfisCadastrados).then(() => {
                         alert(`✅ Perfil "${nomeTrimmed}" criado com sucesso!\n🔑 Senha inicial: 12345`);
+                    }).catch((err) => {
+                        alert("Erro ao salvar perfil no banco de dados.");
                     });
                 }
             } else if (acao === '2') {
@@ -685,7 +692,7 @@
             const chaveAtiva = localStorage.getItem('active_user_key');
             const perfil = perfisCadastrados[chaveAtiva];
             const senhaDigitada = prompt(`Insira a Senha do Perfil (${perfil ? perfil.name : ''}):`);
-            if (perfil && senhaDigitada && senhaDigitada.trim() === perfil.pwd) {
+            if (perfil && senhaDigitada && senhaDigitada.trim() === String(perfil.pwd)) {
                 securityPanelContent.style.display = 'flex';
             } else if (senhaDigitada !== null) {
                 alert("Erro: Senha incorreta.");
@@ -715,7 +722,7 @@
             if (!perfil) return;
             if (confirm("⚠️ APAGAR todos os lançamentos deste perfil?")) {
                 const senha = prompt("Digite sua SENHA:");
-                if (senha && senha.trim() === perfil.pwd && dbTransactions) {
+                if (senha && senha.trim() === String(perfil.pwd) && dbTransactions) {
                     dbTransactions.remove().then(() => {
                         alert("Banco de dados zerado.");
                     });
