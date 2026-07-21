@@ -11,14 +11,14 @@
     <meta name="apple-mobile-web-app-title" content="Financeiro">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2489/2489756.png">
 
-    <!-- Manifesto embutido para criar o ícone de instalação em Tela Cheia (standalone) -->
+    <!-- Manifesto embutido -->
     <link rel="manifest" href='data:application/json,{"name":"Controle Financeiro","short_name":"Financeiro","start_url":".","display":"standalone","background_color":"#121214","theme_color":"#121214","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2489/2489756.png","sizes":"512x512","type":"image/png"}]}' />
 
-    <!-- Firebase SDKs compatíveis para rodar direto no navegador -->
+    <!-- Firebase SDKs compatíveis -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
-    <!-- Chart.js para Renderização de Gráficos -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -48,7 +48,6 @@
             padding-bottom: 60px;
         }
         
-        /* Botão Flutuante de Instalação no Topo */
         .install-banner {
             display: none;
             background-color: rgba(78, 168, 222, 0.15);
@@ -60,10 +59,7 @@
             align-items: center;
             justify-content: space-between;
         }
-        .install-banner p {
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
+        .install-banner p { font-size: 0.85rem; font-weight: 500; }
         .install-banner button {
             background-color: var(--primary);
             color: #fff;
@@ -75,7 +71,6 @@
             cursor: pointer;
         }
 
-        /* Tela de Login */
         #login-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -97,19 +92,9 @@
             text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
-        .login-icon {
-            font-size: 3rem;
-            margin-bottom: 16px;
-        }
-        .login-card h2 {
-            font-size: 1.2rem;
-            margin-bottom: 8px;
-        }
-        .login-card p {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-bottom: 20px;
-        }
+        .login-icon { font-size: 3rem; margin-bottom: 16px; }
+        .login-card h2 { font-size: 1.2rem; margin-bottom: 8px; }
+        .login-card p { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px; }
         .login-card input {
             text-align: center;
             font-size: 1rem;
@@ -122,28 +107,13 @@
             color: var(--text-color);
             outline: none;
         }
-        .login-card input:focus {
-            border-color: var(--primary);
-        }
-        .login-error {
-            color: var(--expense);
-            font-size: 0.8rem;
-            margin-bottom: 12px;
-            display: none;
-        }
+        .login-card input:focus { border-color: var(--primary); }
+        .login-error { color: var(--expense); font-size: 0.8rem; margin-bottom: 12px; display: none; }
 
-        /* Container do Aplicativo Principal */
-        #app-container {
-            display: none;
-        }
+        #app-container { display: none; }
 
-        header {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        header h1 {
-            font-size: 1.4rem;
-        }
+        header { margin-bottom: 20px; text-align: center; }
+        header h1 { font-size: 1.4rem; }
         .profile-badge {
             display: inline-block;
             background-color: rgba(78, 168, 222, 0.15);
@@ -156,7 +126,6 @@
             border: 1px solid rgba(78, 168, 222, 0.3);
         }
         
-        /* Overlay de carregamento inicial */
         #loading {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -181,13 +150,7 @@
             margin-top: 10px;
         }
 
-        /* Dashboard */
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .balance-card {
             grid-column: span 2;
             background: linear-gradient(135deg, #202024 0%, #121214 100%);
@@ -198,35 +161,19 @@
             display: flex;
             justify-content: space-around;
         }
-        .balance-sub-card h3 {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-            margin-bottom: 4px;
-        }
-        .balance-value {
-            font-size: 1.4rem;
-            font-weight: bold;
-        }
+        .balance-sub-card h3 { font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; }
+        .balance-value { font-size: 1.4rem; font-weight: bold; }
         .mini-card {
             background-color: var(--card-bg);
             padding: 12px;
             border-radius: 12px;
             border: 1px solid var(--border);
         }
-        .mini-card h4 {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-bottom: 4px;
-        }
-        .mini-card p {
-            font-size: 1rem;
-            font-weight: bold;
-        }
+        .mini-card h4 { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px; }
+        .mini-card p { font-size: 1rem; font-weight: bold; }
         .income-text { color: var(--income); }
         .expense-text { color: var(--expense); }
 
-        /* Acordeão de Cadastro (Novo Lançamento Expansível) */
         .form-accordion {
             background-color: var(--card-bg);
             border: 1px solid var(--border);
@@ -244,9 +191,7 @@
             display: flex;
             align-items: center;
         }
-        .form-accordion summary::-webkit-details-marker {
-            display: none;
-        }
+        .form-accordion summary::-webkit-details-marker { display: none; }
         .form-accordion summary::before {
             content: "+";
             font-size: 1.1rem;
@@ -255,28 +200,14 @@
             margin-right: 8px;
             display: inline-block;
         }
-        .form-accordion summary::after {
-            display: none;
-        }
         .form-accordion[open] summary {
             border-bottom: 1px solid var(--border);
             background-color: rgba(255, 255, 255, 0.02);
         }
-        .form-accordion[open] summary::before {
-            content: "-";
-        }
-        .form-content {
-            padding: 16px;
-        }
-        .form-group {
-            margin-bottom: 12px;
-        }
-        label {
-            display: block;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            margin-bottom: 4px;
-        }
+        .form-accordion[open] summary::before { content: "-"; }
+        .form-content { padding: 16px; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 4px; }
         input, select {
             width: 100%;
             padding: 10px;
@@ -287,24 +218,10 @@
             font-size: 0.95rem;
             outline: none;
         }
-        input:focus, select:focus {
-            border-color: var(--primary);
-        }
-        .radio-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-        .radio-btn {
-            position: relative;
-        }
-        .radio-btn input {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+        input:focus, select:focus { border-color: var(--primary); }
+        .radio-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+        .radio-btn { position: relative; }
+        .radio-btn input { position: absolute; opacity: 0; width: 0; height: 0; }
         .radio-label {
             display: block;
             text-align: center;
@@ -316,28 +233,11 @@
             font-weight: 600;
             font-size: 0.85rem;
         }
-        .radio-btn input:checked + .radio-label.lbl-receber {
-            border-color: var(--income);
-            background-color: rgba(0, 179, 126, 0.1);
-            color: var(--income);
-        }
-        .radio-btn input:checked + .radio-label.lbl-pagar {
-            border-color: var(--expense);
-            background-color: rgba(247, 90, 104, 0.1);
-            color: var(--expense);
-        }
-        .radio-btn input:checked + .radio-label.lbl-debito {
-            border-color: var(--primary);
-            background-color: rgba(78, 168, 222, 0.1);
-            color: var(--primary);
-        }
-        .radio-btn input:checked + .radio-label.lbl-credito {
-            border-color: var(--warning);
-            background-color: rgba(255, 184, 108, 0.1);
-            color: var(--warning);
-        }
+        .radio-btn input:checked + .radio-label.lbl-receber { border-color: var(--income); background-color: rgba(0, 179, 126, 0.1); color: var(--income); }
+        .radio-btn input:checked + .radio-label.lbl-pagar { border-color: var(--expense); background-color: rgba(247, 90, 104, 0.1); color: var(--expense); }
+        .radio-btn input:checked + .radio-label.lbl-debito { border-color: var(--primary); background-color: rgba(78, 168, 222, 0.1); color: var(--primary); }
+        .radio-btn input:checked + .radio-label.lbl-credito { border-color: var(--warning); background-color: rgba(255, 184, 108, 0.1); color: var(--warning); }
 
-        /* Botão Lindo de Lançamento */
         button.submit-btn {
             width: 100%;
             padding: 14px;
@@ -347,22 +247,10 @@
             color: #fff;
             font-size: 1rem;
             font-weight: 700;
-            letter-spacing: 0.5px;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(78, 168, 222, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
             margin-top: 8px;
         }
-        button.submit-btn:active {
-            transform: scale(0.98);
-            box-shadow: 0 2px 6px rgba(78, 168, 222, 0.1);
-            opacity: 0.9;
-        }
 
-        /* Campos Condicionais das Despesas */
         #expense-conditional-fields {
             display: none;
             border-left: 2px solid var(--border);
@@ -370,27 +258,14 @@
             margin-top: 10px;
             margin-bottom: 12px;
         }
-        #credit-fields {
-            display: none;
-            margin-top: 10px;
-        }
+        #credit-fields { display: none; margin-top: 10px; }
 
-        /* Filtro de Meses Deslizável */
         .month-selector {
             display: flex;
             gap: 8px;
             overflow-x: auto;
             padding-bottom: 8px;
             margin-bottom: 16px;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-        }
-        .month-selector::-webkit-scrollbar {
-            height: 4px;
-        }
-        .month-selector::-webkit-scrollbar-thumb {
-            background-color: var(--border);
-            border-radius: 4px;
         }
         .month-btn {
             background-color: var(--card-bg);
@@ -403,19 +278,9 @@
             white-space: nowrap;
             cursor: pointer;
         }
-        .month-btn.active {
-            background-color: var(--primary);
-            color: #fff;
-            border-color: var(--primary);
-        }
+        .month-btn.active { background-color: var(--primary); color: #fff; border-color: var(--primary); }
 
-        /* Abas de Navegação */
-        .tabs {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 6px;
-            margin-bottom: 14px;
-        }
+        .tabs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 14px; }
         .tab-btn {
             background-color: var(--card-bg);
             border: 1px solid var(--border);
@@ -427,16 +292,9 @@
             cursor: pointer;
             text-align: center;
         }
-        .tab-btn.active {
-            border-color: var(--primary);
-            color: var(--primary);
-            background-color: rgba(78, 168, 222, 0.1);
-        }
+        .tab-btn.active { border-color: var(--primary); color: var(--primary); background-color: rgba(78, 168, 222, 0.1); }
 
-        /* Estilos do Agrupamento da Lista */
-        .group-container {
-            margin-bottom: 16px;
-        }
+        .group-container { margin-bottom: 16px; }
         .group-header {
             display: flex;
             justify-content: space-between;
@@ -448,22 +306,8 @@
             border-radius: 6px;
             margin-bottom: 8px;
         }
-        .group-header h3 {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--text-color);
-        }
-        .group-header .group-subtotal {
-            font-size: 0.85rem;
-            font-weight: 700;
-        }
 
-        /* Lista de Lançamentos */
-        .transaction-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
+        .transaction-list { display: flex; flex-direction: column; gap: 8px; }
         .transaction-item {
             background-color: var(--card-bg);
             border: 1px solid var(--border);
@@ -473,15 +317,8 @@
             justify-content: space-between;
             align-items: center;
         }
-        .item-details h4 {
-            font-size: 0.9rem;
-            margin-bottom: 2px;
-        }
-        .item-details span {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            display: block;
-        }
+        .item-details h4 { font-size: 0.9rem; margin-bottom: 2px; }
+        .item-details span { font-size: 0.7rem; color: var(--text-secondary); display: block; }
         .item-details .method-badge {
             font-size: 0.65rem;
             color: var(--text-secondary);
@@ -491,268 +328,46 @@
             display: inline-block;
             margin-top: 4px;
         }
-        .item-details .delay-tag {
-            color: var(--expense);
-            font-weight: 600;
-            font-size: 0.7rem;
-            display: inline-block;
-            margin-left: 6px;
-        }
-        .item-right {
-            text-align: right;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .value-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            justify-content: center;
-        }
-        .value-container {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .edit-value-btn {
-            background: none;
-            border: none;
-            font-size: 0.8rem;
-            cursor: pointer;
-            opacity: 0.6;
-            padding: 4px;
-        }
-        .edit-value-btn:active {
-            opacity: 1;
-        }
-        .item-value {
-            font-weight: bold;
-            font-size: 0.9rem;
-        }
+        .item-right { text-align: right; display: flex; align-items: center; gap: 8px; }
+        .item-value { font-weight: bold; font-size: 0.9rem; }
         
-        /* Botões de Ação */
-        .item-actions-group {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+        .item-actions-group { display: flex; align-items: center; gap: 6px; }
         .action-btn {
-            background: none;
-            border: none;
-            font-size: 1.1rem;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
+            background: none; border: none; font-size: 1.1rem; width: 32px; height: 32px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;
         }
-        .confirm-btn {
-            color: var(--income);
-            border: 1px solid rgba(0, 179, 126, 0.3);
-        }
-        .confirm-btn:active {
-            background-color: rgba(0, 179, 126, 0.2);
-        }
-        .delete-btn {
-            color: var(--text-secondary);
-            font-size: 1.3rem;
-            border: 1px solid rgba(168, 168, 179, 0.15);
-        }
-        .delete-btn:active {
-            color: var(--expense);
-            border-color: rgba(247, 90, 104, 0.3);
-            background-color: rgba(247, 90, 104, 0.1);
-        }
-        .empty-state {
-            text-align: center;
-            color: var(--text-secondary);
-            padding: 20px 0;
-            font-size: 0.85rem;
-        }
+        .confirm-btn { color: var(--income); border: 1px solid rgba(0, 179, 126, 0.3); }
+        .delete-btn { color: var(--text-secondary); font-size: 1.3rem; border: 1px solid rgba(168, 168, 179, 0.15); }
+        .empty-state { text-align: center; color: var(--text-secondary); padding: 20px 0; font-size: 0.85rem; }
 
-        /* ESTILOS DA SEÇÃO DE RELATÓRIOS */
-        #report-section {
-            display: none;
-            flex-direction: column;
-            gap: 16px;
-        }
-        .report-mode-toggle {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 4px;
-        }
+        #report-section { display: none; flex-direction: column; gap: 16px; }
+        .report-mode-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
         .report-mode-btn {
-            background-color: #121214;
-            border: 1px solid var(--border);
-            color: var(--text-secondary);
-            padding: 8px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            cursor: pointer;
-            text-align: center;
+            background-color: #121214; border: 1px solid var(--border); color: var(--text-secondary);
+            padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; cursor: pointer; text-align: center;
         }
-        .report-mode-btn.active {
-            background-color: rgba(78, 168, 222, 0.15);
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-        .report-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px;
-        }
-        .report-card h3 {
-            font-size: 0.95rem;
-            color: var(--text-color);
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .chart-container {
-            position: relative;
-            width: 100%;
-            height: 220px;
-        }
-        .top-expenses-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .expense-bar-item {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        .expense-bar-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-        }
-        .expense-bar-info .name {
-            font-weight: 600;
-        }
-        .expense-bar-info .val {
-            color: var(--text-secondary);
-        }
-        .progress-track {
-            height: 8px;
-            background-color: #121214;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-        .progress-fill.expense { background-color: var(--expense); }
-        .progress-fill.income { background-color: var(--income); }
+        .report-mode-btn.active { background-color: rgba(78, 168, 222, 0.15); border-color: var(--primary); color: var(--primary); }
+        .report-card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+        .report-card h3 { font-size: 0.95rem; color: var(--text-color); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .chart-container { position: relative; width: 100%; height: 220px; }
 
-        .stat-badge {
-            background-color: rgba(247, 90, 104, 0.15);
-            color: var(--expense);
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: bold;
-        }
-
-        /* Configurações e Ações no Rodapé */
-        .security-footer {
-            margin-top: 40px;
-            margin-bottom: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .security-accordion {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            overflow: hidden;
-        }
+        .security-footer { margin-top: 40px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 12px; }
+        .security-accordion { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
         .security-header-btn {
-            width: 100%;
-            background: none;
-            border: none;
-            padding: 16px;
-            font-size: 0.9rem;
-            font-weight: bold;
-            color: var(--text-secondary);
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            outline: none;
+            width: 100%; background: none; border: none; padding: 16px; font-size: 0.9rem; font-weight: bold;
+            color: var(--text-secondary); cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px;
         }
-        .security-header-btn:active {
-            background-color: rgba(255, 255, 255, 0.02);
-        }
-        .security-header-btn.is-open {
-            border-bottom: 1px solid var(--border);
-            color: var(--text-color);
-            background-color: rgba(255, 255, 255, 0.02);
-        }
-        .security-panel-content {
-            display: none;
-            flex-direction: column;
-        }
+        .security-panel-content { display: none; flex-direction: column; }
         .security-panel-content button {
-            background: none;
-            border: none;
-            border-bottom: 1px solid var(--border);
-            padding: 14px 20px;
-            color: var(--text-color);
-            font-size: 0.85rem;
-            cursor: pointer;
-            text-align: left;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            width: 100%;
-            outline: none;
+            background: none; border: none; border-bottom: 1px solid var(--border); padding: 14px 20px;
+            color: var(--text-color); font-size: 0.85rem; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 12px; width: 100%;
         }
-        .security-panel-content button:last-child {
-            border-bottom: none;
-        }
-        .security-panel-content button:active {
-            background-color: rgba(255,255,255,0.05);
-        }
-        .security-panel-content button.danger-btn {
-            color: var(--expense);
-        }
-        .security-panel-content button.master-btn {
-            color: var(--income);
-            font-weight: bold;
-        }
+        .security-panel-content button.danger-btn { color: var(--expense); }
+        .security-panel-content button.master-btn { color: var(--income); font-weight: bold; }
 
-        /* Botão de Logout Externo */
         .logout-outer-btn {
-            width: 100%;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 14px;
-            color: var(--text-color);
-            font-size: 0.9rem;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: background 0.2s;
-        }
-        .logout-outer-btn:active {
-            background-color: rgba(255, 255, 255, 0.05);
+            width: 100%; background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+            padding: 14px; color: var(--text-color); font-size: 0.9rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
         }
     </style>
 </head>
@@ -771,7 +386,7 @@
                 <button type="submit" class="submit-btn">Entrar</button>
             </form>
             <button type="button" onclick="resetarPerfisPadrao()" style="background:none; border:none; color:var(--primary); font-size:0.75rem; text-decoration:underline; cursor:pointer; margin-top:16px;">
-                🔄 Resetar Perfis para o Padrão
+                🔄 Redefinir Perfis Padronizados
             </button>
         </div>
     </div>
@@ -785,7 +400,6 @@
     <!-- Aplicativo Principal -->
     <div id="app-container">
         
-        <!-- Banner de Instalação de Aplicativo -->
         <div id="install-banner" class="install-banner">
             <p>📲 Use como aplicativo em tela cheia!</p>
             <button id="install-btn">Instalar</button>
@@ -824,8 +438,6 @@
             <summary>Novo Lançamento</summary>
             <div class="form-content">
                 <form id="finance-form">
-                    
-                    <!-- Passo 1: Seleção de Tipo -->
                     <div class="form-group">
                         <label>Tipo de Transação</label>
                         <div class="radio-group">
@@ -840,9 +452,7 @@
                         </div>
                     </div>
 
-                    <!-- Bloco Condicional se for A Pagar -->
                     <div id="expense-conditional-fields">
-                        <!-- Passo 2: Seleção de Forma de Lançamento -->
                         <div class="form-group" style="margin-bottom: 12px;">
                             <label>Forma de Lançamento</label>
                             <div class="radio-group">
@@ -857,13 +467,11 @@
                             </div>
                         </div>
 
-                        <!-- Origem / Cartão Informado -->
                         <div class="form-group">
                             <label for="card-origin">Origem / Cartão</label>
                             <input type="text" id="card-origin" placeholder="Ex: Nubank, Itaú, Dinheiro" autocomplete="off">
                         </div>
 
-                        <!-- Passo 3: Parcelas Condicionais (Se Crédito) -->
                         <div id="credit-fields">
                             <div class="form-group">
                                 <label for="installments">Quantidade de Parcelas</label>
@@ -872,10 +480,9 @@
                         </div>
                     </div>
 
-                    <!-- Detalhes do Lançamento -->
                     <div class="form-group">
                         <label for="description" id="desc-label">Descrição do Lançamento</label>
-                        <input type="text" id="description" placeholder="Ex: Lojas Americanas, Salário, Evento Casamento..." required autocomplete="off">
+                        <input type="text" id="description" placeholder="Ex: Lojas Americanas, Salário..." required autocomplete="off">
                     </div>
 
                     <div class="form-group">
@@ -893,22 +500,18 @@
             </div>
         </details>
 
-        <!-- FILTROS DE VISUALIZAÇÃO DE MESES -->
         <div class="month-selector" id="month-selector"></div>
 
-        <!-- Abas de Navegação -->
         <div class="tabs">
             <button class="tab-btn active" id="tab-pending" onclick="switchTab('pending')">Pendentes</button>
             <button class="tab-btn" id="tab-done" onclick="switchTab('done')">Realizados</button>
             <button class="tab-btn" id="tab-report" onclick="switchTab('report')">📊 Relatórios</button>
         </div>
 
-        <!-- Lista de Lançamentos -->
         <div id="transactions-wrapper">
             <div class="transaction-list" id="transaction-list"></div>
         </div>
 
-        <!-- SEÇÃO DE RELATÓRIOS E ANÁLISE DETALHADA -->
         <div id="report-section">
             <div class="report-mode-toggle">
                 <button class="report-mode-btn active" id="rep-mode-month" onclick="setReportMode('month')">Visão Mensal</button>
@@ -924,19 +527,18 @@
 
             <div class="report-card">
                 <h3>
-                    <span>Principais Saídas (Por Descrição/Loja)</span>
+                    <span>Principais Saídas (Por Descrição)</span>
                     <span class="stat-badge" id="income-ratio-badge">0% da Renda</span>
                 </h3>
                 <div id="top-expenses-list" class="top-expenses-list"></div>
             </div>
 
             <div class="report-card">
-                <h3>Principais Entradas (Origens/Fontes)</h3>
+                <h3>Principais Entradas (Origens)</h3>
                 <div id="top-incomes-list" class="top-expenses-list"></div>
             </div>
         </div>
 
-        <!-- MENU DE SEGURANÇA E BOTÃO DE TROCA DE PERFIL -->
         <div class="security-footer">
             <div class="security-accordion">
                 <button class="security-header-btn" id="security-toggle-btn" onclick="tentarAbrirConfiguracoes()">
@@ -946,19 +548,12 @@
                     <button class="master-btn" id="btn-master-panel" onclick="abrirPainelMaster()" style="display: none;">
                         <span>👑</span> Gerenciar Perfis (Painel Master)
                     </button>
-                    <button onclick="fazerBackup()">
-                        <span>📥</span> Exportar Dados (Backup)
-                    </button>
-                    <button onclick="alterarSenhaDoSistema()">
-                        <span>🔑</span> Alterar Minha Senha
-                    </button>
-                    <button class="danger-btn" onclick="limparBancoDeDados()">
-                        <span>🗑️</span> Zerar Banco de Dados deste Perfil
-                    </button>
+                    <button onclick="fazerBackup()"><span>📥</span> Exportar Dados (Backup)</button>
+                    <button onclick="alterarSenhaDoSistema()"><span>🔑</span> Alterar Minha Senha</button>
+                    <button class="danger-btn" onclick="limparBancoDeDados()"><span>🗑️</span> Zerar Banco de Dados deste Perfil</button>
                 </div>
             </div>
 
-            <!-- Botão de Sair em Destaque Fora das Configurações -->
             <button class="logout-outer-btn" onclick="fazerLogout()">
                 <span>🔒</span> Trocar de Perfil / Sair
             </button>
@@ -966,11 +561,8 @@
     </div>
 
     <script>
-        // --- CONSTANTES E GERENCIAMENTO DE PERFIS ---
-        const CHAVE_DE_RECUPERACAO = "uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         
-        // Função para sanitizar e remover acentos/espaços para os nós do Firebase
         function sanitizarChaveNode(str) {
             if (!str) return '';
             return str.toLowerCase()
@@ -979,19 +571,19 @@
                       .replace(/[^a-z0-9]/g, '_');
         }
 
-        // Definição Inicial dos Perfis
+        // PERFIS COM NÓS LIMPOS E PADRONIZADOS
         const DEFAULT_PROFILES = {
             'user_master': {
                 name: 'Principal',
                 pwd: 'Touchrio@8512@',
                 isMaster: true,
-                node: 'lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM'
+                node: 'lancamentos_master_principal'
             },
             'user_esposa': {
                 name: 'Esposa',
                 pwd: 'Esposa123',
                 isMaster: false,
-                node: 'lancamentos_esposa_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM'
+                node: 'lancamentos_esposa'
             }
         };
 
@@ -1001,8 +593,9 @@
                 try {
                     const parsed = JSON.parse(salvas);
                     Object.keys(parsed).forEach(k => {
-                        if (parsed[k].node && (parsed[k].node.includes(' ') || parsed[k].node.includes('%'))) {
-                            parsed[k].node = sanitizarChaveNode(parsed[k].node);
+                        // Força a higienização do nó de qualquer perfil salvo
+                        if (parsed[k].name) {
+                            parsed[k].node = 'lancamentos_' + sanitizarChaveNode(parsed[k].name);
                         }
                     });
                     return parsed;
@@ -1022,7 +615,6 @@
             const nomeNorm = sanitizarChaveNode(nomeInput.trim());
             const senhaClean = senhaInput.trim();
             
-            // Busca permissiva para aceitar "principal", "master", "user_master" ou qualquer perfil cadastrado
             for (const key in profiles) {
                 const profileNameNorm = sanitizarChaveNode(profiles[key].name);
                 const keyNorm = sanitizarChaveNode(key);
@@ -1038,13 +630,9 @@
         }
 
         window.resetarPerfisPadrao = function() {
-            if (confirm("Deseja restaurar as configurações de perfis padrão?\nIsso vai redefinir o acesso Master para 'Principal' e senha 'Touchrio@8512@'.")) {
-                localStorage.removeItem('finance_app_profiles');
-                localStorage.removeItem('active_user_key');
-                localStorage.removeItem('user_authenticated');
-                alert("Perfis redefinidos com sucesso! Tente logar com 'Principal' e a senha 'Touchrio@8512@'.");
-                window.location.reload();
-            }
+            localStorage.clear();
+            alert("Perfis resetados para o padrão do sistema!\n\nUtilize:\nUsuário: Principal\nSenha: Touchrio@8512@");
+            window.location.reload();
         }
 
         function obterPerfilLogado() {
@@ -1069,7 +657,6 @@
         const securityToggleBtn = document.getElementById('security-toggle-btn');
         const securityPanelContent = document.getElementById('security-panel-content');
 
-        // --- PAINEL MASTER: CRIAR, EXCLUIR E RESETAR SENHAS DE PERFIS ---
         window.abrirPainelMaster = function() {
             const perfilAtivo = obterPerfilLogado();
             if (!perfilAtivo || !perfilAtivo.isMaster) {
@@ -1089,15 +676,15 @@
             });
 
             const acao = prompt(
-                `${listaPerfisTexto}\nDigite o número da ação desejada:\n1 - Criar Novo Perfil\n2 - Excluir um Perfil\n3 - Resetar Senha de um Perfil (para 12345)\n0 - Cancelar`
+                `${listaPerfisTexto}\nDigite a opção:\n1 - Criar Novo Perfil\n2 - Excluir Perfil\n3 - Resetar Senha (para 12345)\n0 - Cancelar`
             );
 
             if (acao === '1') {
-                const nomeNovoPerfil = prompt("Digite o NOME do novo perfil (Ex: Suelen Winnie, Filho, Sócio):");
+                const nomeNovoPerfil = prompt("Digite o NOME do novo perfil:");
                 if (nomeNovoPerfil && nomeNovoPerfil.trim() !== "") {
                     const nomeTrimmed = nomeNovoPerfil.trim();
-                    const keyNova = 'user_' + sanitizarChaveNode(nomeTrimmed) + '_' + Date.now();
-                    const nodeNovo = 'lancamentos_' + sanitizarChaveNode(nomeTrimmed) + '_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM';
+                    const keyNova = 'user_' + sanitizarChaveNode(nomeTrimmed);
+                    const nodeNovo = 'lancamentos_' + sanitizarChaveNode(nomeTrimmed);
 
                     profiles[keyNova] = {
                         name: nomeTrimmed,
@@ -1107,78 +694,41 @@
                     };
 
                     salvarConfigPerfis(profiles);
-                    alert(`✅ Perfil "${nomeTrimmed}" criado com sucesso!\n\n🔑 Senha inicial de acesso: 12345\nOrientação: O usuário pode alterar a senha a qualquer momento no menu de configurações.`);
+                    alert(`✅ Perfil "${nomeTrimmed}" criado!\n🔑 Senha inicial: 12345`);
                 }
             } else if (acao === '2') {
-                const numExcluir = prompt(`${listaPerfisTexto}\nDigite o NÚMERO do perfil que deseja excluir:`);
+                const numExcluir = prompt(`${listaPerfisTexto}\nDigite o NÚMERO do perfil para excluir:`);
                 const idx = parseInt(numExcluir) - 1;
                 
                 if (!isNaN(idx) && idx >= 0 && idx < chaves.length) {
                     const chaveExcluir = chaves[idx];
-                    const perfilExcluir = profiles[chaveExcluir];
-
-                    if (perfilExcluir.isMaster) {
-                        alert("❌ Não é possível excluir o perfil Master Principal.");
+                    if (profiles[chaveExcluir].isMaster) {
+                        alert("❌ O perfil Master não pode ser excluído.");
                         return;
                     }
-
-                    if (confirm(`⚠️ Tem certeza que deseja apagar o perfil "${perfilExcluir.name}"?\nOs dados dele deixarão de ser acessíveis.`)) {
-                        delete profiles[chaveExcluir];
-                        salvarConfigPerfis(profiles);
-                        alert(`Perfil "${perfilExcluir.name}" foi removido com sucesso.`);
-                    }
-                } else if (numExcluir !== null && numExcluir !== '0') {
-                    alert("Opção inválida.");
+                    delete profiles[chaveExcluir];
+                    salvarConfigPerfis(profiles);
+                    alert("Perfil removido com sucesso.");
                 }
             } else if (acao === '3') {
-                const numReset = prompt(`${listaPerfisTexto}\nDigite o NÚMERO do perfil que deseja RESETAR a senha:`);
+                const numReset = prompt(`${listaPerfisTexto}\nDigite o NÚMERO do perfil para resetar a senha:`);
                 const idx = parseInt(numReset) - 1;
 
                 if (!isNaN(idx) && idx >= 0 && idx < chaves.length) {
-                    const chaveReset = chaves[idx];
-                    const perfilReset = profiles[chaveReset];
-
-                    if (confirm(`🔄 Resetar a senha do perfil "${perfilReset.name}" para "12345"?`)) {
-                        profiles[chaveReset].pwd = SENHA_PADRAO_NOVOS_PERFIS;
-                        salvarConfigPerfis(profiles);
-                        alert(`✅ Senha do perfil "${perfilReset.name}" foi redefinida com sucesso para: 12345`);
-                    }
-                } else if (numReset !== null && numReset !== '0') {
-                    alert("Opção inválida.");
+                    profiles[chaves[idx]].pwd = SENHA_PADRAO_NOVOS_PERFIS;
+                    salvarConfigPerfis(profiles);
+                    alert("Senha redefinida para 12345");
                 }
             }
         }
 
-        // --- CONTROLE DINÂMICO DOS CAMPOS ---
         window.toggleMethodFields = function() {
             const isPagar = document.querySelector('input[name="type"]:checked').value === 'pagar';
             document.getElementById('expense-conditional-fields').style.display = isPagar ? 'block' : 'none';
-            
-            const descLabel = document.getElementById('desc-label');
-            const descInput = document.getElementById('description');
-
-            if (!isPagar) {
-                toggleCreditFields(false);
-                document.getElementById('date-label').textContent = 'Data de Recebimento';
-                descLabel.textContent = 'Descrição do Recebimento (Origem/Cliente)';
-                descInput.placeholder = 'Ex: Salário, Evento, Entrega, Cliente X...';
-            } else {
-                const isCredito = document.getElementById('method-credito').checked;
-                toggleCreditFields(isCredito);
-                descLabel.textContent = 'Descrição do Pagamento (Nome da Loja/Local)';
-                descInput.placeholder = 'Ex: Lojas Americanas, Padaria do Zé, Petshop...';
-            }
         }
 
         window.toggleCreditFields = function(show) {
-            const isPagar = document.querySelector('input[name="type"]:checked').value === 'pagar';
             document.getElementById('credit-fields').style.display = show ? 'block' : 'none';
-            
-            if (isPagar) {
-                document.getElementById('date-label').textContent = show ? 'Mês da 1ª Cobrança / Vencimento' : 'Data do Pagamento';
-            } else {
-                document.getElementById('date-label').textContent = 'Data de Recebimento';
-            }
         }
 
         window.tentarAbrirConfiguracoes = function() {
@@ -1187,58 +737,45 @@
                 return;
             }
             const perfil = obterPerfilLogado();
-            const senhaDigitada = prompt(`Insira a Senha do Perfil (${perfil ? perfil.name : ''}) para acessar as Configurações:`);
+            const senhaDigitada = prompt(`Insira a Senha do Perfil (${perfil ? perfil.name : ''}):`);
             if (perfil && senhaDigitada && senhaDigitada.trim() === perfil.pwd) {
                 abrirPainelDeSeguranca();
             } else if (senhaDigitada !== null) {
-                alert("Erro: Senha incorreta. Acesso negado.");
-                fecharPainelDeSeguranca();
+                alert("Erro: Senha incorreta.");
             }
         }
 
         function abrirPainelDeSeguranca() {
             securityPanelContent.style.display = 'flex';
-            securityToggleBtn.classList.add('is-open');
         }
 
         function fecharPainelDeSeguranca() {
             securityPanelContent.style.display = 'none';
-            securityToggleBtn.classList.remove('is-open');
         }
 
-        // --- SEGURANÇA E ADMINISTRAÇÃO ---
         window.alterarSenhaDoSistema = function() {
             const perfil = obterPerfilLogado();
             if (!perfil) return;
-
-            const novaSenha = prompt(`Digite a SUA NOVA senha de login para o perfil "${perfil.name}":`);
+            const novaSenha = prompt("Digite a SUA NOVA senha:");
             if (novaSenha && novaSenha.trim().length >= 4) {
                 const profiles = obterConfigPerfis();
                 profiles[perfil.key].pwd = novaSenha.trim();
                 salvarConfigPerfis(profiles);
-                alert("Sua senha foi alterada com sucesso! O aplicativo será reiniciado.");
+                alert("Senha alterada com sucesso!");
                 window.location.reload();
-            } else if (novaSenha) {
-                alert("Erro: A senha precisa ter pelo menos 4 caracteres.");
             }
         }
 
         window.limparBancoDeDados = function() {
             const perfil = obterPerfilLogado();
             if (!perfil) return;
-
-            if (confirm(`⚠️ ATENÇÃO: Esta ação irá APAGAR todos os lançamentos do perfil "${perfil.name}".\n\nDeseja prosseguir?`)) {
-                const senhaDigitada = prompt("Digite sua SENHA para autorizar a limpeza:");
-                if (senhaDigitada && senhaDigitada.trim() === perfil.pwd) {
-                    if (db) {
-                        loadingEl.style.display = 'flex';
-                        db.remove().then(() => {
-                            alert("Banco de dados deste perfil foi limpo com sucesso!");
-                            window.location.reload();
-                        });
-                    }
-                } else if (senhaDigitada !== null) {
-                    alert("Erro: Senha incorreta.");
+            if (confirm("⚠️ APAGAR todos os lançamentos deste perfil?")) {
+                const senha = prompt("Digite sua SENHA:");
+                if (senha && senha.trim() === perfil.pwd && db) {
+                    db.remove().then(() => {
+                        alert("Banco de dados zerado.");
+                        window.location.reload();
+                    });
                 }
             }
         }
@@ -1250,26 +787,17 @@
         }
 
         window.fazerBackup = function() {
-            if (transactions.length === 0) {
-                alert("O seu banco de dados está vazio.");
-                return;
-            }
+            if (transactions.length === 0) return alert("Banco de dados vazio.");
             const perfil = obterPerfilLogado();
-            const nomePerfil = perfil ? perfil.name.toLowerCase() : 'perfil';
-            const dadosJSON = JSON.stringify(transactions, null, 2);
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(dadosJSON);
-            const linkDownload = document.createElement('a');
-            linkDownload.setAttribute("href", dataStr);
-            linkDownload.setAttribute("download", `backup_financeiro_${nomePerfil}.json`);
-            document.body.appendChild(linkDownload);
-            linkDownload.click();
-            linkDownload.remove();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(transactions, null, 2));
+            const a = document.createElement('a');
+            a.setAttribute("href", dataStr);
+            a.setAttribute("download", `backup_${perfil ? perfil.name : 'financeiro'}.json`);
+            a.click();
         }
 
-        // --- AUTENTICAÇÃO ---
         window.addEventListener('DOMContentLoaded', () => {
             toggleMethodFields();
-            
             const jaLogado = localStorage.getItem('user_authenticated') === 'true';
             const perfil = obterPerfilLogado();
 
@@ -1290,11 +818,6 @@
             const usernameInput = loginUsernameInput.value.trim();
             const passwordInput = loginPassword.value;
 
-            if (!usernameInput) {
-                alert("Por favor, digite o nome do usuário.");
-                return;
-            }
-
             const perfilEncontrado = autenticarUsuario(usernameInput, passwordInput);
 
             if (perfilEncontrado) {
@@ -1309,11 +832,9 @@
             } else {
                 loginError.style.display = 'block';
                 loginPassword.value = '';
-                loginPassword.focus();
             }
         });
 
-        // --- CONFIGURAÇÃO DO FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyDLlTOuVyPLLYXTEAX__8Sys2RMSV-UX54",
             authDomain: "financeiro-3fe98.firebaseapp.com",
@@ -1348,20 +869,20 @@
         dateInput.value = new Date().toISOString().split('T')[0];
 
         function inicializarFirebase(rawNodeName) {
-            const nodeName = rawNodeName ? sanitizarChaveNode(rawNodeName) : 'lancamentos_default';
+            // Garante um nó seguro no Firebase sem caracteres proibidos
+            const nodeName = rawNodeName ? sanitizarChaveNode(rawNodeName) : 'lancamentos_master_principal';
             
             if (!firebase.apps.length) {
                 firebase.initializeApp(firebaseConfig);
             }
             db = firebase.database().ref(nodeName);
 
-            // Timeout de segurança
             const loadingTimeout = setTimeout(() => {
                 if (loadingEl.style.display === 'flex' && transactions.length === 0) {
-                    loadingText.textContent = "Erro na conexão com o banco do perfil.";
+                    loadingText.textContent = "Aguardando sincronização com o banco...";
                     loadingCancelBtn.style.display = 'block';
                 }
-            }, 5000);
+            }, 4000);
 
             db.on('value', (snapshot) => {
                 clearTimeout(loadingTimeout);
@@ -1374,14 +895,13 @@
                 }
                 loadingEl.style.display = 'none';
                 loadingCancelBtn.style.display = 'none';
-                loadingText.textContent = "Conectando ao banco de dados...";
                 
                 gerarFiltroDeMeses();
                 updateDashboard();
                 renderView();
             }, (error) => {
                 clearTimeout(loadingTimeout);
-                loadingText.textContent = "Erro de conexão com o Firebase.";
+                loadingText.textContent = "Erro ao localizar o nó no Firebase.";
                 loadingCancelBtn.style.display = 'block';
             });
         }
@@ -1417,15 +937,6 @@
                 btn.onclick = () => selectMonth(key);
                 monthSelector.appendChild(btn);
             });
-
-            rolarParaMesAtivo();
-        }
-
-        function rolarParaMesAtivo() {
-            const activeBtn = monthSelector.querySelector('.active');
-            if (activeBtn) {
-                monthSelector.scrollLeft = activeBtn.offsetLeft - monthSelector.offsetWidth / 2 + activeBtn.offsetWidth / 2;
-            }
         }
 
         function selectMonth(key) {
@@ -1437,17 +948,6 @@
                 btn.classList.toggle('active', btn.textContent === `${nomeMes}/${ano}`);
             });
             renderView();
-        }
-
-        function obterDiasDeAtraso(t) {
-            if (t.done || !t.date) return 0;
-            const partesVencimento = t.date.split('-');
-            const dataVencimento = new Date(Date.UTC(partesVencimento[0], partesVencimento[1] - 1, partesVencimento[2]));
-            const hojeLocal = new Date();
-            const hoje = new Date(Date.UTC(hojeLocal.getFullYear(), hojeLocal.getMonth(), hojeLocal.getDate()));
-            
-            const diferencaTempo = hoje.getTime() - dataVencimento.getTime();
-            return Math.floor(diferencaTempo / (1000 * 60 * 60 * 24));
         }
 
         amountInput.addEventListener('input', (e) => {
@@ -1504,33 +1004,11 @@
         }
 
         window.confirmTransaction = function(id) {
-            if (db) {
-                db.child(id).update({ done: true });
-            }
-        }
-
-        window.editTransaction = function(id) {
-            const t = transactions.find(item => item.id === id);
-            if (!t || !db) return;
-
-            const novaDescricao = prompt(`Editar Nome/Descrição do lançamento:`, t.description);
-            if (novaDescricao === null) return;
-
-            const valorAtualFormatado = t.amount.toString().replace('.', ',');
-            const novoValorStr = prompt(`Editar Valor do lançamento:\n\nDigite o valor correto (Ex: 145,90):`, valorAtualFormatado);
-            if (novoValorStr === null) return;
-
-            const updates = {};
-            if (novaDescricao.trim() !== '') updates.description = novaDescricao.trim();
-            if (novoValorStr.trim() !== '') updates.amount = parseFormattedValue(novoValorStr);
-
-            if (Object.keys(updates).length > 0) {
-                db.child(id).update(updates);
-            }
+            if (db) db.child(id).update({ done: true });
         }
 
         window.deleteTransaction = function(id) {
-            if(confirm("Deseja apagar permanentemente este lançamento?")) {
+            if(confirm("Deseja apagar este lançamento?")) {
                 if (db) db.child(id).remove();
             }
         }
@@ -1548,177 +1026,55 @@
                 }
             });
 
-            const totalIncome = realIncome + pendingIncome;
-            const totalExpense = realExpense + pendingExpense;
-            const predictedBalance = totalIncome - totalExpense;
+            const predictedBalance = (realIncome + pendingIncome) - (realExpense + pendingExpense);
             const realBalance = realIncome - realExpense;
 
             incomeEl.textContent = formatCurrency(pendingIncome);
             expenseEl.textContent = formatCurrency(pendingExpense);
-            
             balanceEl.textContent = formatCurrency(predictedBalance);
-            balanceEl.style.color = predictedBalance < 0 ? 'var(--expense)' : 'var(--text-color)';
-
             realBalanceEl.textContent = formatCurrency(realBalance);
-            realBalanceEl.style.color = realBalance < 0 ? 'var(--expense)' : 'var(--income)';
-        }
-
-        function getGroupTitle(t) {
-            if (t.type === 'receber') return 'A Receber';
-            const complementoOrigem = t.cardOrigin ? ` (${t.cardOrigin})` : '';
-            return t.method === 'credito' 
-                ? `Crédito${complementoOrigem}` 
-                : `Débito/Dinheiro${complementoOrigem}`;
-        }
-
-        function getBaseDescription(desc) {
-            if (!desc) return 'Sem Descrição';
-            return desc.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim();
         }
 
         function renderList() {
             listContainer.innerHTML = '';
-            const filteredByMonth = transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey));
-            const filtered = filteredByMonth.filter(t => currentTab === 'done' ? t.done : !t.done);
+            const filtered = transactions
+                .filter(t => t.date && t.date.startsWith(selectedMonthKey))
+                .filter(t => currentTab === 'done' ? t.done : !t.done);
 
             if (filtered.length === 0) {
-                listContainer.innerHTML = `<div class="empty-state">Nenhum lançamento ${currentTab === 'done' ? 'realizado' : 'pendente'} neste mês.</div>`;
+                listContainer.innerHTML = `<div class="empty-state">Nenhum lançamento encontrado.</div>`;
                 return;
             }
 
-            const groups = {};
             filtered.forEach(t => {
-                const groupTitle = getGroupTitle(t);
-                if (!groups[groupTitle]) {
-                    groups[groupTitle] = {
-                        items: [],
-                        subtotal: 0,
-                        type: t.type
-                    };
-                }
-                groups[groupTitle].items.push(t);
-                groups[groupTitle].subtotal += t.amount;
-            });
-
-            Object.keys(groups).sort().forEach(groupTitle => {
-                const groupData = groups[groupTitle];
-                const groupDiv = document.createElement('div');
-                groupDiv.className = 'group-container';
-
-                const isReceberGroup = groupData.type === 'receber';
+                const item = document.createElement('div');
+                item.className = 'transaction-item';
+                const isRec = t.type === 'receber';
                 
-                const headerDiv = document.createElement('div');
-                headerDiv.className = 'group-header';
-                headerDiv.innerHTML = `
-                    <h3>${groupTitle}</h3>
-                    <span class="group-subtotal ${isReceberGroup ? 'income-text' : 'expense-text'}">
-                        ${formatCurrency(groupData.subtotal)}
-                    </span>
+                item.innerHTML = `
+                    <div class="item-details">
+                        <h4>${t.description}</h4>
+                        <span>Data: ${formatDate(t.date)}</span>
+                    </div>
+                    <div class="item-right">
+                        <span class="item-value ${isRec ? 'income-text' : 'expense-text'}">${formatCurrency(t.amount)}</span>
+                        <div class="item-actions-group">
+                            <button class="action-btn delete-btn" onclick="deleteTransaction('${t.id}')">×</button>
+                            ${!t.done ? `<button class="action-btn confirm-btn" onclick="confirmTransaction('${t.id}')">✓</button>` : ''}
+                        </div>
+                    </div>
                 `;
-                groupDiv.appendChild(headerDiv);
-
-                const sortedItems = [...groupData.items].sort((a, b) => new Date(a.date) - new Date(b.date));
-
-                sortedItems.forEach(t => {
-                    const item = document.createElement('div');
-                    item.className = 'transaction-item';
-                    const isRec = t.type === 'receber';
-                    
-                    const diasAtraso = obterDiasDeAtraso(t);
-                    let atrasoMarkup = (diasAtraso > 0 && t.type === 'pagar') ? `<span class="delay-tag">⚠️ Atrasado ${diasAtraso}d</span>` : '';
-                    
-                    let métodoText = "";
-                    if (t.type === 'pagar') {
-                        const complementoOrigem = t.cardOrigin ? ` (${t.cardOrigin})` : "";
-                        métodoText = t.method === 'credito' 
-                            ? `Crédito${complementoOrigem} ${t.installmentText || ''}` 
-                            : `Débito/Dinheiro${complementoOrigem}`;
-                    } else {
-                        métodoText = 'Recebimento';
-                    }
-
-                    let actionMarkup = "";
-                    if (!t.done) {
-                        actionMarkup = `
-                            <div class="item-actions-group">
-                                <button class="action-btn delete-btn" onclick="deleteTransaction('${t.id}')" title="Excluir item">×</button>
-                                <button class="action-btn confirm-btn" onclick="confirmTransaction('${t.id}')" title="Confirmar pagamento">✓</button>
-                            </div>
-                        `;
-                    } else {
-                        actionMarkup = `
-                            <div class="item-actions-group">
-                                <button class="action-btn delete-btn" onclick="deleteTransaction('${t.id}')" title="Excluir item">×</button>
-                            </div>
-                        `;
-                    }
-
-                    item.innerHTML = `
-                        <div class="item-details">
-                            <h4>${t.description} ${atrasoMarkup}</h4>
-                            <span>${t.done ? 'Realizado em' : 'Vence em'}: ${formatDate(t.date)}</span>
-                            <div>
-                                <span class="method-badge">${métodoText}</span>
-                            </div>
-                        </div>
-                        <div class="item-right">
-                            <div class="value-wrapper">
-                                <div class="value-container">
-                                    <button class="edit-value-btn" onclick="editTransaction('${t.id}')" title="Editar lançamento">✏️</button>
-                                    <span class="item-value ${isRec ? 'income-text' : 'expense-text'}">${formatCurrency(t.amount)}</span>
-                                </div>
-                            </div>
-                            ${actionMarkup}
-                        </div>
-                    `;
-                    groupDiv.appendChild(item);
-                });
-
-                listContainer.appendChild(groupDiv);
+                listContainer.appendChild(item);
             });
         }
 
-        // --- LÓGICA DO RELATÓRIO TOTALMENTE DESCRIMINADO ---
         function renderReport() {
-            const currentYear = selectedMonthKey.split('-')[0];
-            
-            const filteredTransactions = transactions.filter(t => {
-                if (!t.date) return false;
-                if (reportMode === 'month') return t.date.startsWith(selectedMonthKey);
-                return t.date.startsWith(currentYear);
+            let totalEntradas = 0, totalSaidas = 0;
+            transactions.forEach(t => {
+                if (t.type === 'receber') totalEntradas += t.amount;
+                else totalSaidas += t.amount;
             });
 
-            const compTitle = document.getElementById('chart-comp-title');
-            compTitle.textContent = reportMode === 'month' ? 'Entradas vs. Saídas do Mês' : `Entradas vs. Saídas de ${currentYear}`;
-
-            let totalEntradas = 0;
-            let totalSaidas = 0;
-            const descriminaçãoSaidas = {};
-            const descriminaçãoEntradas = {};
-
-            filteredTransactions.forEach(t => {
-                const nomeItem = getBaseDescription(t.description);
-                
-                if (t.type === 'receber') {
-                    totalEntradas += t.amount;
-                    descriminaçãoEntradas[nomeItem] = (descriminaçãoEntradas[nomeItem] || 0) + t.amount;
-                } else {
-                    totalSaidas += t.amount;
-                    descriminaçãoSaidas[nomeItem] = (descriminaçãoSaidas[nomeItem] || 0) + t.amount;
-                }
-            });
-
-            const ratioBadge = document.getElementById('income-ratio-badge');
-            if (totalEntradas > 0) {
-                const ratio = Math.round((totalSaidas / totalEntradas) * 100);
-                ratioBadge.textContent = `${ratio}% da Renda`;
-                ratioBadge.style.backgroundColor = ratio > 90 ? 'rgba(247, 90, 104, 0.2)' : 'rgba(78, 168, 222, 0.2)';
-                ratioBadge.style.color = ratio > 90 ? 'var(--expense)' : 'var(--primary)';
-            } else {
-                ratioBadge.textContent = `S/ Renda Mapeada`;
-            }
-
-            // 1. Gráfico de Barras: Entradas vs Saídas
             const ctxComp = document.getElementById('chart-comparison').getContext('2d');
             if (chartComparisonInstance) chartComparisonInstance.destroy();
 
@@ -1726,94 +1082,10 @@
                 type: 'bar',
                 data: {
                     labels: ['Entradas', 'Saídas'],
-                    datasets: [{
-                        data: [totalEntradas, totalSaidas],
-                        backgroundColor: ['#00b37e', '#f75a68'],
-                        borderRadius: 6,
-                        barThickness: 32
-                    }]
+                    datasets: [{ data: [totalEntradas, totalSaidas], backgroundColor: ['#00b37e', '#f75a68'] }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => ` R$ ${context.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            ticks: { color: '#a8a8b3', font: { size: 10 }, callback: (value) => 'R$ ' + value },
-                            grid: { color: 'rgba(255, 255, 255, 0.05)' }
-                        },
-                        x: {
-                            ticks: { color: '#e1e1e6', font: { weight: 'bold' } },
-                            grid: { display: false }
-                        }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false }
             });
-
-            // 2. Lista Descriminada de SAÍDAS
-            const topExpensesEl = document.getElementById('top-expenses-list');
-            topExpensesEl.innerHTML = '';
-
-            const ordenadosSaidas = Object.keys(descriminaçãoSaidas)
-                .map(key => ({ name: key, value: descriminaçãoSaidas[key] }))
-                .sort((a, b) => b.value - a.value);
-
-            if (ordenadosSaidas.length === 0) {
-                topExpensesEl.innerHTML = `<div class="empty-state">Sem despesas registradas no período.</div>`;
-            } else {
-                ordenadosSaidas.forEach(item => {
-                    const percent = totalSaidas > 0 ? Math.round((item.value / totalSaidas) * 100) : 0;
-                    
-                    const itemEl = document.createElement('div');
-                    itemEl.className = 'expense-bar-item';
-                    itemEl.innerHTML = `
-                        <div class="expense-bar-info">
-                            <span class="name">🛒 ${item.name}</span>
-                            <span class="val">${formatCurrency(item.value)} (${percent}%)</span>
-                        </div>
-                        <div class="progress-track">
-                            <div class="progress-fill expense" style="width: ${percent}%;"></div>
-                        </div>
-                    `;
-                    topExpensesEl.appendChild(itemEl);
-                });
-            }
-
-            // 3. Lista Descriminada de ENTRADAS
-            const topIncomesEl = document.getElementById('top-incomes-list');
-            topIncomesEl.innerHTML = '';
-
-            const ordenadosEntradas = Object.keys(descriminaçãoEntradas)
-                .map(key => ({ name: key, value: descriminaçãoEntradas[key] }))
-                .sort((a, b) => b.value - a.value);
-
-            if (ordenadosEntradas.length === 0) {
-                topIncomesEl.innerHTML = `<div class="empty-state">Sem entradas registradas no período.</div>`;
-            } else {
-                ordenadosEntradas.forEach(item => {
-                    const percent = totalEntradas > 0 ? Math.round((item.value / totalEntradas) * 100) : 0;
-                    
-                    const itemEl = document.createElement('div');
-                    itemEl.className = 'expense-bar-item';
-                    itemEl.innerHTML = `
-                        <div class="expense-bar-info">
-                            <span class="name">💰 ${item.name}</span>
-                            <span class="val">${formatCurrency(item.value)} (${percent}%)</span>
-                        </div>
-                        <div class="progress-track">
-                            <div class="progress-fill income" style="width: ${percent}%;"></div>
-                        </div>
-                    `;
-                    topIncomesEl.appendChild(itemEl);
-                });
-            }
         }
 
         form.addEventListener('submit', (e) => {
@@ -1825,129 +1097,20 @@
 
             if (!description || totalAmount <= 0 || !baseDate) return;
 
-            const [ano, mes] = baseDate.split('-');
-            let mesAlvoKey = `${ano}-${mes}`;
-            let abaAlvo = 'pending';
-
             if (db) {
-                if (selectedType === 'receber') {
-                    db.push({
-                        type: 'receber',
-                        description,
-                        amount: totalAmount,
-                        date: baseDate,
-                        done: false
-                    });
-                } else {
-                    const method = document.querySelector('input[name="method"]:checked').value;
-                    const cardOrigin = cardOriginInput.value.trim();
-                    
-                    if (method === 'debito') {
-                        db.push({
-                            type: 'pagar',
-                            method: 'debito',
-                            cardOrigin,
-                            description,
-                            amount: totalAmount,
-                            date: baseDate,
-                            done: true
-                        });
-                        abaAlvo = 'done';
-                    } else {
-                        const numInstallments = parseInt(document.getElementById('installments').value) || 1;
-                        const valorParcela = parseFloat((totalAmount / numInstallments).toFixed(2));
-                        const [year, month, day] = baseDate.split('-').map(Number);
-
-                        for (let i = 0; i < numInstallments; i++) {
-                            let currentMonth = month + i;
-                            let currentYear = year;
-                            
-                            while (currentMonth > 12) {
-                                currentMonth -= 12;
-                                currentYear += 1;
-                            }
-
-                            const formattedMonth = String(currentMonth).padStart(2, '0');
-                            const formattedDay = String(day).padStart(2, '0');
-                            const dateParcela = `${currentYear}-${formattedMonth}-${formattedDay}`;
-
-                            if (i === 0) {
-                                mesAlvoKey = `${currentYear}-${formattedMonth}`;
-                            }
-
-                            db.push({
-                                type: 'pagar',
-                                method: 'credito',
-                                cardOrigin,
-                                description: `${description} (${i + 1}/${numInstallments})`,
-                                amount: valorParcela,
-                                date: dateParcela,
-                                installmentText: `(${i + 1}/${numInstallments})`,
-                                done: false
-                            });
-                        }
-                    }
-                }
+                db.push({
+                    type: selectedType,
+                    description,
+                    amount: totalAmount,
+                    date: baseDate,
+                    done: false
+                });
             }
-
-            selectedMonthKey = mesAlvoKey;
 
             descInput.value = '';
             amountInput.value = '';
-            cardOriginInput.value = '';
-            document.getElementById('installments').value = '1';
-            
             formAccordion.removeAttribute('open');
-            fecharPainelDeSeguranca();
-            
-            descInput.focus();
-            
-            gerarFiltroDeMeses();
-            switchTab(abaAlvo);
         });
-
-        // --- PWA ---
-        let deferredPrompt;
-        const installBanner = document.getElementById('install-banner');
-        const installBtn = document.getElementById('install-btn');
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        const isRunningStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-
-        if (!isRunningStandalone) {
-            if (isIOS) {
-                installBanner.style.display = 'flex';
-                installBtn.addEventListener('click', () => {
-                    alert("Para instalar no iPhone:\n\n1. Toque no botão de 'Compartilhar' no Safari\n2. Escolha 'Adicionar à Tela de Início'.");
-                });
-            } else {
-                window.addEventListener('beforeinstallprompt', (e) => {
-                    e.preventDefault();
-                    deferredPrompt = e;
-                    installBanner.style.display = 'flex';
-                });
-                installBtn.addEventListener('click', async () => {
-                    if (deferredPrompt) {
-                        deferredPrompt.prompt();
-                        const { outcome } = await deferredPrompt.userChoice;
-                        if (outcome === 'accepted') installBanner.style.display = 'none';
-                        deferredPrompt = null;
-                    }
-                });
-            }
-        }
-        window.addEventListener('appinstalled', () => { installBanner.style.display = 'none'; });
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                const swCode = `
-                    self.addEventListener('install', e => self.skipWaiting());
-                    self.addEventListener('activate', e => e.waitUntil(clients.claim()));
-                    self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
-                `;
-                const blob = new Blob([swCode], { type: 'application/javascript' });
-                navigator.serviceWorker.register(URL.createObjectURL(blob));
-            });
-        }
     </script>
 </body>
 </html>
