@@ -478,16 +478,15 @@
                     perfisCadastrados = dadosNuvent;
                 }
                 
-                // Preenche automaticamente o usuário salvo anteriormente se houver
-                const usuarioSalvo = localStorage.getItem('remembered_username');
-                if (usuarioSalvo) {
-                    loginUsernameInput.value = usuarioSalvo;
-                    for (const k in perfisCadastrados) {
-                        if (k === localStorage.getItem('remembered_key') || sanitizarChaveNode(perfisCadastrados[k].name) === sanitizarChaveNode(usuarioSalvo)) {
-                            loginPassword.value = perfisCadastrados[k].pwd;
-                            break;
-                        }
-                    }
+                // Preenche o campo de usuário e senha salvos se a opção "lembrar" estiver ativa
+                const lembrarAtivo = localStorage.getItem('remember_me_active') === 'true';
+                rememberMeCheckbox.checked = lembrarAtivo;
+
+                if (lembrarAtivo) {
+                    const usuarioSalvo = localStorage.getItem('remembered_username');
+                    const senhaSalva = localStorage.getItem('remembered_password');
+                    if (usuarioSalvo) loginUsernameInput.value = usuarioSalvo;
+                    if (senhaSalva) loginPassword.value = senhaSalva;
                 }
 
                 verificarSessaoSalva();
@@ -534,11 +533,13 @@
                 localStorage.setItem('active_user_key', perfilEncontradoKey);
 
                 if (rememberMeCheckbox.checked) {
+                    localStorage.setItem('remember_me_active', 'true');
                     localStorage.setItem('remembered_username', usernameInput);
-                    localStorage.setItem('remembered_key', perfilEncontradoKey);
+                    localStorage.setItem('remembered_password', passwordInput.trim());
                 } else {
+                    localStorage.removeItem('remember_me_active');
                     localStorage.removeItem('remembered_username');
-                    localStorage.removeItem('remembered_key');
+                    localStorage.removeItem('remembered_password');
                 }
 
                 entrarNoAplicativo(perfilEncontradoObj, perfilEncontradoKey);
