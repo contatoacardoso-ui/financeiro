@@ -351,10 +351,11 @@
         }
         .report-mode-btn.active { background-color: rgba(78, 168, 222, 0.15); border-color: var(--primary); color: var(--primary); }
         
-        .report-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
+        .report-actions { display: flex; margin-bottom: 4px; }
         .report-action-btn {
+            width: 100%;
             background-color: var(--card-bg); border: 1px solid var(--border); color: var(--text-color);
-            padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 12px; border-radius: 8px; font-size: 0.9rem; font-weight: bold; cursor: pointer; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;
         }
 
         .report-card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
@@ -559,8 +560,7 @@
             </div>
 
             <div class="report-actions">
-                <button class="report-action-btn" onclick="window.print()">🖨️ Imprimir / PDF</button>
-                <button class="report-action-btn" onclick="compartilharRelatorio()">📤 Compartilhar</button>
+                <button class="report-action-btn" onclick="salvarComoPDF()">💾 Salvar Relatório em PDF</button>
             </div>
 
             <!-- Resumo e Análise -->
@@ -1126,31 +1126,8 @@
             formAccordion.removeAttribute('open');
         }
 
-        window.compartilharRelatorio = function() {
-            const transFiltradas = reportMode === 'month' 
-                ? transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey))
-                : transactions;
-
-            let totalEntradas = 0, totalSaidas = 0;
-            transFiltradas.forEach(t => {
-                if (t.type === 'receber') totalEntradas += t.amount;
-                else totalSaidas += t.amount;
-            });
-            const saldo = totalEntradas - totalSaidas;
-
-            const periodoStr = reportMode === 'month' ? `Mês: ${selectedMonthKey}` : 'Visão Anual';
-            let texto = `📊 *Relatório Financeiro (${periodoStr})*\n\n`;
-            texto += `📥 Total Entradas: ${formatCurrency(totalEntradas)}\n`;
-            texto += `📤 Total Saídas: ${formatCurrency(totalSaidas)}\n`;
-            texto += `💰 Saldo: ${formatCurrency(saldo)}\n\n`;
-            texto += `Gerado pelo app Controle Financeiro.`;
-
-            if (navigator.share) {
-                navigator.share({ title: 'Relatório Financeiro', text: texto }).catch(() => {});
-            } else {
-                navigator.clipboard.writeText(texto);
-                alert("Resumo copiado para a área de transferência!");
-            }
+        window.salvarComoPDF = function() {
+            window.print();
         }
 
         function updateDashboard() {
@@ -1320,7 +1297,6 @@
                 });
             }
 
-            // Paleta de cores de alta distinção (Cores vibrantes e bem contrastantes entre si)
             const paletaCoresAltas = [
                 '#3366CC', '#DC3912', '#FF9900', '#109618', '#990099', 
                 '#0099C6', '#DD4477', '#66AA00', '#B82E2E', '#316395', 
