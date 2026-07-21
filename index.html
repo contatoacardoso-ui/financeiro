@@ -245,7 +245,7 @@
             color: var(--text-secondary);
             margin-bottom: 4px;
         }
-        input {
+        input, select {
             width: 100%;
             padding: 10px;
             background-color: #121214;
@@ -255,7 +255,7 @@
             font-size: 0.95rem;
             outline: none;
         }
-        input:focus {
+        input:focus, select:focus {
             border-color: var(--primary);
         }
         .radio-group {
@@ -459,6 +459,16 @@
             display: inline-block;
             margin-top: 4px;
         }
+        .item-details .category-tag {
+            font-size: 0.65rem;
+            color: var(--primary);
+            background-color: rgba(78, 168, 222, 0.1);
+            padding: 1px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 4px;
+            margin-left: 4px;
+        }
         .item-details .delay-tag {
             color: var(--expense);
             font-weight: 600;
@@ -541,11 +551,33 @@
             font-size: 0.85rem;
         }
 
-        /* ESTILOS DA SEÇÃO DE RELATÓRIOS */
+        /* ESTILOS DA SEÇÃO DE RELATÓRIOS E COMPARAÇÃO DE CATEGORIAS */
         #report-section {
             display: none;
             flex-direction: column;
             gap: 16px;
+        }
+        .report-mode-toggle {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        .report-mode-btn {
+            background-color: #121214;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+        }
+        .report-mode-btn.active {
+            background-color: rgba(78, 168, 222, 0.15);
+            border-color: var(--primary);
+            color: var(--primary);
         }
         .report-card {
             background-color: var(--card-bg);
@@ -569,7 +601,7 @@
         .top-expenses-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
         .expense-bar-item {
             display: flex;
@@ -765,10 +797,26 @@
                             </div>
                         </div>
 
-                        <!-- Novo Campo Comum: Origem / Cartão Informado -->
+                        <!-- Origem / Cartão Informado -->
                         <div class="form-group">
                             <label for="card-origin">Origem / Cartão</label>
                             <input type="text" id="card-origin" placeholder="Ex: Nubank, Itaú, Dinheiro" autocomplete="off">
+                        </div>
+
+                        <!-- NOVO CAMPO: Categoria / Tipo de Compra -->
+                        <div class="form-group">
+                            <label for="category-input">Categoria / Local da Compra</label>
+                            <input type="text" id="category-input" list="category-suggestions" placeholder="Ex: Mercado, Padaria, Petshop, Café..." autocomplete="off">
+                            <datalist id="category-suggestions">
+                                <option value="Mercado"></option>
+                                <option value="Padaria"></option>
+                                <option value="Petshop"></option>
+                                <option value="Restaurante/Café"></option>
+                                <option value="Farmácia"></option>
+                                <option value="Combustível"></option>
+                                <option value="Assinaturas/Lazer"></option>
+                                <option value="Serviços/Outros"></option>
+                            </datalist>
                         </div>
 
                         <!-- Passo 3: Parcelas Condicionais (Se Crédito) -->
@@ -783,7 +831,7 @@
                     <!-- Passo 4: Detalhes do Lançamento -->
                     <div class="form-group">
                         <label for="description">Descrição</label>
-                        <input type="text" id="description" placeholder="Ex: Aluguel, Supermercado" required autocomplete="off">
+                        <input type="text" id="description" placeholder="Ex: Pão de açúcar, Ração do gato" required autocomplete="off">
                     </div>
 
                     <div class="form-group">
@@ -801,7 +849,7 @@
             </div>
         </details>
 
-        <!-- FILTROS DE VISUALIZAÇÃO -->
+        <!-- FILTROS DE VISUALIZAÇÃO DE MESES -->
         <div class="month-selector" id="month-selector"></div>
 
         <!-- Abas de Navegação -->
@@ -818,10 +866,22 @@
 
         <!-- SEÇÃO DE RELATÓRIOS E ANÁLISE DE GASTOS -->
         <div id="report-section">
+            <div class="report-mode-toggle">
+                <button class="report-mode-btn active" id="rep-mode-month" onclick="setReportMode('month')">Visão Mensal</button>
+                <button class="report-mode-btn" id="rep-mode-year" onclick="setReportMode('year')">Visão Anual</button>
+            </div>
+
             <div class="report-card">
-                <h3>Entradas vs. Saídas do Mês</h3>
+                <h3 id="chart-comp-title">Entradas vs. Saídas</h3>
                 <div class="chart-container">
                     <canvas id="chart-comparison"></canvas>
+                </div>
+            </div>
+
+            <div class="report-card">
+                <h3>Gastos por Categoria / Local</h3>
+                <div class="chart-container" style="height:200px;">
+                    <canvas id="chart-categories"></canvas>
                 </div>
             </div>
 
@@ -1027,7 +1087,9 @@
         let transactions = [];
         let currentTab = 'pending';
         let selectedMonthKey = '';
-        let chartInstance = null;
+        let reportMode = 'month'; // 'month' ou 'year'
+        let chartComparisonInstance = null;
+        let chartCategoriesInstance = null;
 
         const formAccordion = document.getElementById('form-accordion');
         const form = document.getElementById('finance-form');
@@ -1035,6 +1097,7 @@
         const amountInput = document.getElementById('amount');
         const dateInput = document.getElementById('due-date');
         const cardOriginInput = document.getElementById('card-origin');
+        const categoryInput = document.getElementById('category-input');
         const listContainer = document.getElementById('transaction-list');
         const monthSelector = document.getElementById('month-selector');
         
@@ -1162,6 +1225,13 @@
             renderView();
         }
 
+        window.setReportMode = function(mode) {
+            reportMode = mode;
+            document.getElementById('rep-mode-month').classList.toggle('active', mode === 'month');
+            document.getElementById('rep-mode-year').classList.toggle('active', mode === 'year');
+            renderReport();
+        }
+
         function renderView() {
             const wrapper = document.getElementById('transactions-wrapper');
             const reportSection = document.getElementById('report-section');
@@ -1239,6 +1309,21 @@
                 : `Débito/Dinheiro${complementoOrigem}`;
         }
 
+        // Obtém a Categoria do Lançamento (ou infere inteligentemente caso antigo)
+        function getTransactionCategory(t) {
+            if (t.category && t.category.trim() !== '') return t.category.trim();
+            const desc = (t.description || '').toLowerCase();
+            const orig = (t.cardOrigin || '').toLowerCase();
+            
+            if (desc.includes('padaria') || desc.includes('pao') || desc.includes('café') || desc.includes('cafe')) return 'Padaria/Café';
+            if (desc.includes('mercado') || desc.includes('supermercado') || desc.includes('feira') || desc.includes('açougue')) return 'Mercado';
+            if (desc.includes('pet') || desc.includes('ração') || desc.includes('racao') || desc.includes('vet')) return 'Petshop';
+            if (desc.includes('farmacia') || desc.includes('drogaria') || desc.includes('remedio')) return 'Farmácia';
+            if (desc.includes('posto') || desc.includes('gasolina') || desc.includes('combustivel')) return 'Combustível';
+            
+            return 'Geral/Outros';
+        }
+
         function renderList() {
             listContainer.innerHTML = '';
             const filteredByMonth = transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey));
@@ -1300,6 +1385,9 @@
                         métodoText = 'Recebimento';
                     }
 
+                    const catText = getTransactionCategory(t);
+                    const catBadge = t.type === 'pagar' ? `<span class="category-tag">🏷️ ${catText}</span>` : '';
+
                     let actionMarkup = "";
                     if (!t.done) {
                         actionMarkup = `
@@ -1320,7 +1408,10 @@
                         <div class="item-details">
                             <h4>${t.description} ${atrasoMarkup}</h4>
                             <span>${t.done ? 'Realizado em' : 'Vence em'}: ${formatDate(t.date)}</span>
-                            <span class="method-badge">${métodoText}</span>
+                            <div>
+                                <span class="method-badge">${métodoText}</span>
+                                ${catBadge}
+                            </div>
                         </div>
                         <div class="item-right">
                             <div class="value-wrapper">
@@ -1339,21 +1430,31 @@
             });
         }
 
-        // --- LÓGICA DO RELATÓRIO E GRÁFICOS ---
+        // --- LÓGICA DO RELATÓRIO MENSAL E ANUAL ---
         function renderReport() {
-            const filteredByMonth = transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey));
+            const currentYear = selectedMonthKey.split('-')[0];
             
+            // Filtragem de Acordo com o Modo (Mensal vs Anual)
+            const filteredTransactions = transactions.filter(t => {
+                if (!t.date) return false;
+                if (reportMode === 'month') return t.date.startsWith(selectedMonthKey);
+                return t.date.startsWith(currentYear);
+            });
+
+            const compTitle = document.getElementById('chart-comp-title');
+            compTitle.textContent = reportMode === 'month' ? 'Entradas vs. Saídas do Mês' : `Entradas vs. Saídas de ${currentYear}`;
+
             let totalEntradas = 0;
             let totalSaidas = 0;
             const gastosPorCategoria = {};
 
-            filteredByMonth.forEach(t => {
+            filteredTransactions.forEach(t => {
                 if (t.type === 'receber') {
                     totalEntradas += t.amount;
                 } else {
                     totalSaidas += t.amount;
-                    const chave = getGroupTitle(t);
-                    gastosPorCategoria[chave] = (gastosPorCategoria[chave] || 0) + t.amount;
+                    const cat = getTransactionCategory(t);
+                    gastosPorCategoria[cat] = (gastosPorCategoria[cat] || 0) + t.amount;
                 }
             });
 
@@ -1368,11 +1469,11 @@
                 ratioBadge.textContent = `S/ Renda Mapeada`;
             }
 
-            // Renderizar Gráfico de Comparação
-            const ctx = document.getElementById('chart-comparison').getContext('2d');
-            if (chartInstance) chartInstance.destroy();
+            // 1. Gráfico de Barras: Entradas vs Saídas
+            const ctxComp = document.getElementById('chart-comparison').getContext('2d');
+            if (chartComparisonInstance) chartComparisonInstance.destroy();
 
-            chartInstance = new Chart(ctx, {
+            chartComparisonInstance = new Chart(ctxComp, {
                 type: 'bar',
                 data: {
                     labels: ['Entradas', 'Saídas'],
@@ -1396,11 +1497,7 @@
                     },
                     scales: {
                         y: {
-                            ticks: {
-                                color: '#a8a8b3',
-                                font: { size: 10 },
-                                callback: (value) => 'R$ ' + value
-                            },
+                            ticks: { color: '#a8a8b3', font: { size: 10 }, callback: (value) => 'R$ ' + value },
                             grid: { color: 'rgba(255, 255, 255, 0.05)' }
                         },
                         x: {
@@ -1411,7 +1508,40 @@
                 }
             });
 
-            // Renderizar Lista do "Onde Você Mais Gastou"
+            // 2. Gráfico de Rosca: Distribuição de Categorias
+            const ctxCat = document.getElementById('chart-categories').getContext('2d');
+            if (chartCategoriesInstance) chartCategoriesInstance.destroy();
+
+            const catLabels = Object.keys(gastosPorCategoria);
+            const catData = Object.values(gastosPorCategoria);
+            const palette = ['#4ea8de', '#ffb86c', '#f75a68', '#00b37e', '#bd93f9', '#ff79c6', '#f1fa8c', '#8be9fd'];
+
+            chartCategoriesInstance = new Chart(ctxCat, {
+                type: 'doughnut',
+                data: {
+                    labels: catLabels,
+                    datasets: [{
+                        data: catData,
+                        backgroundColor: palette.slice(0, catLabels.length),
+                        borderWidth: 2,
+                        borderColor: '#1d1d22'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { color: '#e1e1e6', font: { size: 10 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => ` ${context.label}: R$ ${context.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 3. Lista do "Onde Você Mais Gastou" (Com barras de progresso)
             const topListEl = document.getElementById('top-expenses-list');
             topListEl.innerHTML = '';
 
@@ -1420,7 +1550,7 @@
                 .sort((a, b) => b.value - a.value);
 
             if (ordenados.length === 0) {
-                topListEl.innerHTML = `<div class="empty-state">Sem despesas registradas neste mês.</div>`;
+                topListEl.innerHTML = `<div class="empty-state">Sem despesas registradas no período.</div>`;
                 return;
             }
 
@@ -1431,7 +1561,7 @@
                 itemEl.className = 'expense-bar-item';
                 itemEl.innerHTML = `
                     <div class="expense-bar-info">
-                        <span class="name">${item.name}</span>
+                        <span class="name">🏷️ ${item.name}</span>
                         <span class="val">${formatCurrency(item.value)} (${percent}%)</span>
                     </div>
                     <div class="progress-track">
@@ -1467,12 +1597,14 @@
                 } else {
                     const method = document.querySelector('input[name="method"]:checked').value;
                     const cardOrigin = cardOriginInput.value.trim();
+                    const category = categoryInput.value.trim();
                     
                     if (method === 'debito') {
                         db.push({
                             type: 'pagar',
                             method: 'debito',
                             cardOrigin,
+                            category,
                             description,
                             amount: totalAmount,
                             date: baseDate,
@@ -1505,6 +1637,7 @@
                                 type: 'pagar',
                                 method: 'credito',
                                 cardOrigin,
+                                category,
                                 description: `${description} (${i + 1}/${numInstallments})`,
                                 amount: valorParcela,
                                 date: dateParcela,
@@ -1521,6 +1654,7 @@
             descInput.value = '';
             amountInput.value = '';
             cardOriginInput.value = '';
+            categoryInput.value = '';
             document.getElementById('installments').value = '1';
             
             formAccordion.removeAttribute('open');
