@@ -461,6 +461,13 @@
 
         dateInput.value = new Date().toISOString().split('T')[0];
 
+        // Timeout de segurança: se o carregamento demorar mais de 3 segundos, remove o overlay de loading à força
+        const safetyTimeout = setTimeout(() => {
+            if (loadingEl.style.display !== 'none') {
+                loadingEl.style.display = 'none';
+            }
+        }, 3000);
+
         window.addEventListener('DOMContentLoaded', () => {
             if (!firebase.apps.length) {
                 firebase.initializeApp(firebaseConfig);
@@ -476,7 +483,6 @@
             if (senhaSalva) loginPassword.value = senhaSalva;
             rememberMeCheckbox.checked = localStorage.getItem('remember_active') === 'true' || localStorage.getItem('remember_active') === null;
 
-            // Validação imediata de sessão salva ANTES de escutar a nuvem para evitar piscar o login
             const jaLogado = localStorage.getItem('user_authenticated') === 'true';
             const chaveAtiva = localStorage.getItem('active_user_key');
 
@@ -486,6 +492,7 @@
             }
 
             dbRoot.child('config_perfis').on('value', (snapshot) => {
+                clearTimeout(safetyTimeout);
                 const dadosNuvent = snapshot.val();
                 if (!dadosNuvent) {
                     dbRoot.child('config_perfis').set(DEFAULT_PROFILES);
@@ -494,6 +501,10 @@
                     perfisCadastrados = dadosNuvent;
                 }
                 
+                verificarSessaoSalva();
+            }, (error) => {
+                clearTimeout(safetyTimeout);
+                loadingEl.style.display = 'none';
                 verificarSessaoSalva();
             });
         });
