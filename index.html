@@ -419,9 +419,10 @@
         let dbTransactions;
         let perfisCadastrados = DEFAULT_PROFILES;
         let transactions = [];
-        let currentTab = 'pending';
-        let selectedMonthKey = '';
-        let reportMode = 'month';
+        
+        let currentTab = localStorage.getItem('active_tab') || 'pending';
+        let selectedMonthKey = localStorage.getItem('selected_month_key') || '';
+        let reportMode = localStorage.getItem('report_mode') || 'month';
         
         let chartComparisonInstance = null;
         let chartIncomesPieInstance = null;
@@ -730,6 +731,9 @@
         window.fazerLogout = function() {
             localStorage.removeItem('user_authenticated');
             localStorage.removeItem('active_user_key');
+            localStorage.removeItem('active_tab');
+            localStorage.removeItem('selected_month_key');
+            localStorage.removeItem('report_mode');
             window.location.reload();
         }
 
@@ -764,6 +768,7 @@
 
             if (!selectedMonthKey || !mesesSet.has(selectedMonthKey)) {
                 selectedMonthKey = mesesSet.has(mesAtualKey) ? mesAtualKey : mesesOrdenados[mesesOrdenados.length - 1];
+                localStorage.setItem('selected_month_key', selectedMonthKey);
             }
 
             const assinaturaAtual = mesesOrdenados.join(',');
@@ -790,6 +795,7 @@
 
         function selectMonth(key) {
             selectedMonthKey = key;
+            localStorage.setItem('selected_month_key', key);
             monthSelector.querySelectorAll('.month-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.monthKey === key);
             });
@@ -829,6 +835,7 @@
 
         window.switchTab = function(tab) {
             currentTab = tab;
+            localStorage.setItem('active_tab', tab);
             document.getElementById('tab-pending').classList.toggle('active', tab === 'pending');
             document.getElementById('tab-done').classList.toggle('active', tab === 'done');
             document.getElementById('tab-report').classList.toggle('active', tab === 'report');
@@ -837,12 +844,17 @@
 
         window.setReportMode = function(mode) {
             reportMode = mode;
+            localStorage.setItem('report_mode', mode);
             document.getElementById('rep-mode-month').classList.toggle('active', mode === 'month');
             document.getElementById('rep-mode-year').classList.toggle('active', mode === 'year');
             renderReport();
         }
 
         function renderView() {
+            document.getElementById('tab-pending').classList.toggle('active', currentTab === 'pending');
+            document.getElementById('tab-done').classList.toggle('active', currentTab === 'done');
+            document.getElementById('tab-report').classList.toggle('active', currentTab === 'report');
+
             const wrapper = document.getElementById('transactions-wrapper');
             const reportSection = document.getElementById('report-section');
 
