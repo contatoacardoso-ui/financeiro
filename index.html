@@ -30,10 +30,33 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-color); color: var(--text-color); padding: 16px; padding-bottom: 60px; }
 
-        /* Tela de login completamente oculta ou removida da lógica padrão */
-        #login-screen { display: none !important; }
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-color); display: none; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 10000; padding: 24px;
+        }
+        .login-card {
+            width: 100%; max-width: 320px; background-color: var(--card-bg);
+            border: 1px solid var(--border); padding: 30px 24px; border-radius: 16px;
+            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        .login-icon { font-size: 3rem; margin-bottom: 16px; }
+        .login-card h2 { font-size: 1.2rem; margin-bottom: 8px; }
+        .login-card p { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px; }
+        .login-card input {
+            text-align: center; font-size: 1rem; padding: 12px; margin-bottom: 14px;
+            width: 100%; background-color: #121214; border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text-color); outline: none;
+        }
+        .login-card input:focus { border-color: var(--primary); }
+        .remember-container {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+            font-size: 0.82rem; color: var(--text-secondary); text-align: left; cursor: pointer;
+        }
+        .remember-container input { width: auto; margin-bottom: 0; cursor: pointer; }
+        .login-error { color: var(--expense); font-size: 0.8rem; margin-bottom: 12px; display: none; }
 
-        #app-container { display: block; }
+        #app-container { display: none; }
         header { margin-bottom: 20px; text-align: center; }
         header h1 { font-size: 1.4rem; }
         .profile-badge {
@@ -41,6 +64,13 @@
             color: var(--primary); padding: 4px 10px; border-radius: 12px;
             font-size: 0.75rem; font-weight: 700; margin-top: 6px;
             border: 1px solid rgba(78, 168, 222, 0.3);
+        }
+        
+        #loading {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(18, 18, 20, 0.95); display: none; flex-direction: column;
+            gap: 12px; justify-content: center; align-items: center; z-index: 9999;
+            font-weight: bold; font-size: 1.1rem;
         }
 
         .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
@@ -171,11 +201,36 @@
 </head>
 <body>
 
-    <!-- Aplicativo Principal Direto -->
+    <!-- Tela de Login -->
+    <div id="login-screen">
+        <div class="login-card">
+            <div class="login-icon">🔒</div>
+            <h2>Acesso Restrito</h2>
+            <p>Informe seu usuário e senha</p>
+            <form id="login-form">
+                <input type="text" id="login-username" placeholder="Nome do Usuário" required autocomplete="username">
+                <input type="password" id="login-password" placeholder="Sua Senha" required autocomplete="current-password">
+                
+                <label class="remember-container">
+                    <input type="checkbox" id="remember-me" checked> Lembrar senha neste aparelho
+                </label>
+
+                <div class="login-error" id="login-error">Usuário ou senha incorretos.</div>
+                <button type="submit" class="submit-btn">Entrar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Overlay de carregamento -->
+    <div id="loading">
+        <span id="loading-text">Conectando ao banco de dados...</span>
+    </div>
+
+    <!-- Aplicativo Principal -->
     <div id="app-container">
         <header>
             <h1>Controle Financeiro</h1>
-            <span class="profile-badge" id="profile-name-badge">Perfil: Principal</span>
+            <span class="profile-badge" id="profile-name-badge">Perfil Ativo</span>
         </header>
 
         <div class="dashboard">
@@ -333,7 +388,7 @@
                     <span>⚙️</span> Configurações de Segurança
                 </button>
                 <div class="security-panel-content" id="security-panel-content">
-                    <button class="master-btn" id="btn-master-panel" onclick="abrirPainelMaster()">
+                    <button class="master-btn" id="btn-master-panel" onclick="abrirPainelMaster()" style="display: none;">
                         <span>👑</span> Gerenciar Perfis (Painel Master)
                     </button>
                     <button onclick="fazerBackup()"><span>📥</span> Exportar Dados (Backup)</button>
@@ -342,8 +397,8 @@
                 </div>
             </div>
 
-            <button class="logout-outer-btn" onclick="trocarDePerfil()">
-                <span>👤</span> Selecionar / Trocar Perfil
+            <button class="logout-outer-btn" onclick="fazerLogout()">
+                <span>🔒</span> Trocar de Perfil / Sair
             </button>
         </div>
     </div>
@@ -384,6 +439,14 @@
         let chartIncomesPieInstance = null;
         let chartExpensesPieInstance = null;
 
+        const loginScreen = document.getElementById('login-screen');
+        const loginForm = document.getElementById('login-form');
+        const loginUsernameInput = document.getElementById('login-username');
+        const loginPassword = document.getElementById('login-password');
+        const rememberMeCheckbox = document.getElementById('remember-me');
+        const loginError = document.getElementById('login-error');
+        const loadingOverlay = document.getElementById('loading');
+        const appContainer = document.getElementById('app-container');
         const profileBadge = document.getElementById('profile-name-badge');
         const btnMasterPanel = document.getElementById('btn-master-panel');
         const securityPanelContent = document.getElementById('security-panel-content');
@@ -405,29 +468,6 @@
 
         dateInput.value = new Date().toISOString().split('T')[0];
 
-        window.addEventListener('DOMContentLoaded', () => {
-            if (!firebase.apps.length) {
-                firebase.initializeApp(firebaseConfig);
-            }
-            try { firebase.database().goOnline(); } catch(e){}
-
-            dbRoot = firebase.database().ref();
-
-            dbRoot.child('config_perfis').on('value', (snapshot) => {
-                const dadosNuvent = snapshot.val();
-                if (!dadosNuvent) {
-                    dbRoot.child('config_perfis').set(DEFAULT_PROFILES);
-                    perfisCadastrados = DEFAULT_PROFILES;
-                } else {
-                    perfisCadastrados = dadosNuvent;
-                }
-                
-                iniciarConexaoDireta();
-            }, (error) => {
-                iniciarConexaoDireta();
-            });
-        });
-
         // Agrupa (debounce) várias atualizações rápidas do Firebase em um único
         // repaint, usando requestAnimationFrame. Evita que a tela "pule" quando
         // chegam vários eventos 'value' em sequência (ex: escrita otimista + confirmação do servidor).
@@ -443,26 +483,123 @@
             });
         }
 
-        function iniciarConexaoDireta() {
-            let chaveAtiva = localStorage.getItem('active_user_key');
-            if (!chaveAtiva || !perfisCadastrados[chaveAtiva]) {
-                chaveAtiva = 'user_master';
-                localStorage.setItem('active_user_key', chaveAtiva);
+        window.addEventListener('DOMContentLoaded', () => {
+            // Mostra o overlay de carregamento imediatamente. Só decidimos entre
+            // "tela de login" ou "app" depois que os perfis chegarem do Firebase,
+            // assim evitamos o flash de tela errada (app aparecendo em branco
+            // antes de estar realmente pronto).
+            loadingOverlay.style.display = 'flex';
+
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            try { firebase.database().goOnline(); } catch(e){}
+
+            dbRoot = firebase.database().ref();
+
+            // Preenche dados salvos no formulário de login (recurso "lembrar senha")
+            const usuarioSalvo = localStorage.getItem('saved_username');
+            const senhaSalva = localStorage.getItem('saved_password');
+            if (usuarioSalvo) loginUsernameInput.value = usuarioSalvo;
+            if (senhaSalva) loginPassword.value = senhaSalva;
+            rememberMeCheckbox.checked = localStorage.getItem('remember_active') !== 'false';
+
+            dbRoot.child('config_perfis').on('value', (snapshot) => {
+                const dadosNuvem = snapshot.val();
+                if (!dadosNuvem) {
+                    dbRoot.child('config_perfis').set(DEFAULT_PROFILES);
+                    perfisCadastrados = DEFAULT_PROFILES;
+                } else {
+                    perfisCadastrados = dadosNuvem;
+                }
+                
+                verificarSessaoSalva();
+            }, (error) => {
+                verificarSessaoSalva();
+            });
+        });
+
+        function verificarSessaoSalva() {
+            loadingOverlay.style.display = 'none';
+
+            const jaLogado = localStorage.getItem('user_authenticated') === 'true';
+            const chaveAtiva = localStorage.getItem('active_user_key');
+
+            if (jaLogado && chaveAtiva && perfisCadastrados[chaveAtiva]) {
+                entrarNoAplicativo(perfisCadastrados[chaveAtiva], chaveAtiva);
+            } else {
+                loginScreen.style.display = 'flex';
+                appContainer.style.display = 'none';
+            }
+        }
+
+        // NOTA DE SEGURANÇA: removida a funcionalidade que preenchia
+        // automaticamente a senha de QUALQUER perfil só de o usuário digitar
+        // o nome. Em um app com múltiplos perfis (família), isso permitia que
+        // qualquer pessoa com acesso ao aparelho lesse/usasse a senha de
+        // outro perfil apenas digitando o nome dele — sem saber a senha real.
+        // Agora o autopreenchimento só existe para o ÚLTIMO perfil que de fato
+        // fez login neste aparelho com "lembrar senha" marcado (ver bloco acima).
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const usernameInput = loginUsernameInput.value.trim();
+            const passwordInput = loginPassword.value.trim();
+            const nomeNorm = sanitizarChaveNode(usernameInput);
+
+            let perfilEncontradoKey = null;
+            let perfilEncontradoObj = null;
+
+            for (const key in perfisCadastrados) {
+                const p = perfisCadastrados[key];
+                const pNameNorm = sanitizarChaveNode(p.name);
+                const keyNorm = sanitizarChaveNode(key);
+
+                const ehMasterAlias = p.isMaster && (nomeNorm === 'principal' || nomeNorm === 'master' || nomeNorm === 'user_master');
+                const ehNomeMatch = pNameNorm === nomeNorm || keyNorm === nomeNorm;
+
+                if ((ehMasterAlias || ehNomeMatch) && p.pwd === passwordInput) {
+                    perfilEncontradoKey = key;
+                    perfilEncontradoObj = p;
+                    break;
+                }
             }
 
-            const perfil = perfisCadastrados[chaveAtiva] || DEFAULT_PROFILES['user_master'];
+            if (perfilEncontradoObj) {
+                localStorage.setItem('user_authenticated', 'true');
+                localStorage.setItem('active_user_key', perfilEncontradoKey);
+
+                if (rememberMeCheckbox.checked) {
+                    localStorage.setItem('remember_active', 'true');
+                    localStorage.setItem('saved_username', usernameInput);
+                    localStorage.setItem('saved_password', passwordInput);
+                } else {
+                    localStorage.setItem('remember_active', 'false');
+                    localStorage.removeItem('saved_username');
+                    localStorage.removeItem('saved_password');
+                }
+
+                loginError.style.display = 'none';
+                entrarNoAplicativo(perfilEncontradoObj, perfilEncontradoKey);
+            } else {
+                loginError.style.display = 'block';
+                loginPassword.value = '';
+            }
+        });
+
+        function entrarNoAplicativo(perfil, chaveKey) {
+            loginScreen.style.display = 'none';
+            appContainer.style.display = 'block';
             profileBadge.textContent = `👤 Perfil: ${perfil.name}${perfil.isMaster ? ' (Master)' : ''}`;
             btnMasterPanel.style.display = perfil.isMaster ? 'flex' : 'none';
 
             const nodeTarget = perfil.isMaster ? NO_MASTER_ORIGINAL : ('lancamentos_' + sanitizarChaveNode(perfil.name));
-            
+
             if (dbTransactions) {
                 dbTransactions.off();
             }
-
             dbTransactions = dbRoot.child(nodeTarget);
 
-            // Ouvinte em tempo real: qualquer alteração no banco atualiza a interface instantaneamente sem piscar e sem ir para a tela de login
             dbTransactions.on('value', (snapshot) => {
                 const data = snapshot.val();
                 let novasTransacoes = [];
@@ -478,36 +615,15 @@
             });
         }
 
-        window.trocarDePerfil = function() {
-            let listaPerfisTexto = "--- SELECIONE O PERFIL ---\n";
-            let index = 1;
-            const chaves = Object.keys(perfisCadastrados);
-
-            chaves.forEach(key => {
-                const p = perfisCadastrados[key];
-                listaPerfisTexto += `${index}. ${p.name} ${p.isMaster ? '(Master)' : ''}\n`;
-                index++;
-            });
-
-            const escolha = prompt(`${listaPerfisTexto}\nDigite o NÚMERO do perfil que deseja abrir:`);
-            const idx = parseInt(escolha) - 1;
-
-            if (!isNaN(idx) && idx >= 0 && idx < chaves.length) {
-                const novaChave = chaves[idx];
-                const perfilEscolhido = perfisCadastrados[novaChave];
-                
-                const senhaDigitada = prompt(`Digite a senha para o perfil "${perfilEscolhido.name}":`);
-                if (senhaDigitada && senhaDigitada.trim() === perfilEscolhido.pwd) {
-                    localStorage.setItem('active_user_key', novaChave);
-                    iniciarConexaoDireta();
-                } else if (senhaDigitada !== null) {
-                    alert("Senha incorreta.");
-                }
-            }
-        }
-
         window.abrirPainelMaster = function() {
-            let listaPerfisTexto = "--- GERENCIAR PERFIS ---\n";
+            const chaveAtiva = localStorage.getItem('active_user_key');
+            const perfilAtivo = perfisCadastrados[chaveAtiva];
+            if (!perfilAtivo || !perfilAtivo.isMaster) {
+                alert("Acesso restrito ao Administrador Master.");
+                return;
+            }
+
+            let listaPerfisTexto = "--- PERFIS CADASTRADOS ---\n";
             let index = 1;
             const chaves = Object.keys(perfisCadastrados);
 
@@ -590,8 +706,14 @@
             if (!perfil) return;
             const novaSenha = prompt("Digite a SUA NOVA senha:");
             if (novaSenha && novaSenha.trim().length >= 4) {
-                perfisCadastrados[chaveAtiva].pwd = novaSenha.trim();
+                const novaSenhaTrim = novaSenha.trim();
+                perfisCadastrados[chaveAtiva].pwd = novaSenhaTrim;
                 dbRoot.child('config_perfis').set(perfisCadastrados).then(() => {
+                    // Só atualiza a senha lembrada localmente se este era o perfil
+                    // que já estava com "lembrar senha" ativo neste aparelho.
+                    if (localStorage.getItem('remember_active') === 'true' && localStorage.getItem('active_user_key') === chaveAtiva) {
+                        localStorage.setItem('saved_password', novaSenhaTrim);
+                    }
                     alert("Senha alterada com sucesso!");
                 });
             }
@@ -609,6 +731,12 @@
                     });
                 }
             }
+        }
+
+        window.fazerLogout = function() {
+            localStorage.removeItem('user_authenticated');
+            localStorage.removeItem('active_user_key');
+            window.location.reload();
         }
 
         window.fazerBackup = function() {
@@ -648,8 +776,8 @@
             const assinaturaAtual = mesesOrdenados.join(',');
 
             // Só reconstrói os botões se a lista de meses realmente mudou.
-            // Caso contrário, apenas atualiza qual botão está "ativo",
-            // sem apagar/recriar o DOM (o que causava o salto visual).
+            // Caso contrário, apenas atualiza qual botão está "ativo", sem
+            // apagar/recriar o DOM (o que causava o salto visual).
             if (assinaturaAtual !== ultimaAssinaturaDeMeses) {
                 ultimaAssinaturaDeMeses = assinaturaAtual;
                 monthSelector.innerHTML = '';
@@ -849,7 +977,6 @@
             });
             const groupKeysOrdenados = Object.keys(grouped).sort();
 
-            // Mapeia grupos já renderizados
             const gruposExistentes = {};
             listContainer.querySelectorAll(':scope > .group-container').forEach(g => {
                 gruposExistentes[g.dataset.groupKey] = g;
@@ -873,7 +1000,6 @@
                     delete gruposExistentes[groupKey];
                 }
 
-                // Reordena o grupo na posição correta sem recriá-lo
                 if (nodeGrupoAnterior) {
                     if (nodeGrupoAnterior.nextElementSibling !== groupDiv) nodeGrupoAnterior.after(groupDiv);
                 } else if (listContainer.firstElementChild !== groupDiv) {
@@ -881,7 +1007,6 @@
                 }
                 nodeGrupoAnterior = groupDiv;
 
-                // Diff dos itens dentro do grupo
                 const itensExistentes = {};
                 listSubContainer.querySelectorAll(':scope > .transaction-item').forEach(el => {
                     itensExistentes[el.dataset.txId] = el;
@@ -915,14 +1040,12 @@
                     nodeItemAnterior = item;
                 });
 
-                // Remove (com fade-out) itens que não existem mais neste grupo
                 Object.values(itensExistentes).forEach(el => {
                     el.classList.add('tx-leaving');
                     setTimeout(() => el.remove(), 300);
                 });
             });
 
-            // Remove (com fade-out) grupos que não existem mais
             Object.values(gruposExistentes).forEach(g => {
                 g.style.transition = 'opacity 0.3s ease';
                 g.style.opacity = '0';
