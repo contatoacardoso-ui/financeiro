@@ -110,7 +110,7 @@
             color: var(--text-secondary);
             margin-bottom: 20px;
         }
-        .login-card select, .login-card input {
+        .login-card input {
             text-align: center;
             font-size: 1rem;
             padding: 12px;
@@ -122,7 +122,7 @@
             color: var(--text-color);
             outline: none;
         }
-        .login-card select:focus, .login-card input:focus {
+        .login-card input:focus {
             border-color: var(--primary);
         }
         .login-error {
@@ -763,13 +763,11 @@
         <div class="login-card">
             <div class="login-icon">🔒</div>
             <h2>Acesso Restrito</h2>
-            <p>Selecione seu usuário e insira sua senha</p>
+            <p>Informe seu usuário e senha</p>
             <form id="login-form">
-                <select id="login-user-select" required>
-                    <option value="" disabled selected>Selecione o Usuário...</option>
-                </select>
+                <input type="text" id="login-username" placeholder="Nome do Usuário" required autocomplete="username">
                 <input type="password" id="login-password" placeholder="Sua Senha" required autocomplete="current-password">
-                <div class="login-error" id="login-error">Senha incorreta para o perfil selecionado.</div>
+                <div class="login-error" id="login-error">Usuário ou senha incorretos.</div>
                 <button type="submit" class="submit-btn">Entrar</button>
             </form>
         </div>
@@ -969,9 +967,12 @@
         const CHAVE_DE_RECUPERACAO = "uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         
-        // Função auxiliar para garantir que o nome do nó do Firebase seja 100% válido (sem espaços)
+        // Função para sanitizar e remover acentos/espaços para os nós do Firebase
         function sanitizarChaveNode(str) {
-            return str.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            return str.toLowerCase()
+                      .normalize("NFD")
+                      .replace(/[\u0300-\u036f]/g, "")
+                      .replace(/[^a-z0-9]/g, '_');
         }
 
         // Definição Inicial dos Perfis
@@ -994,10 +995,10 @@
             const salvas = localStorage.getItem('finance_app_profiles');
             if (salvas) {
                 const parsed = JSON.parse(salvas);
-                // Higienização automática de nós antigos com espaço
+                // Higienização automática de nós antigos
                 Object.keys(parsed).forEach(k => {
-                    if (parsed[k].node && parsed[k].node.includes(' ')) {
-                        parsed[k].node = parsed[k].node.replace(/\s+/g, '_');
+                    if (parsed[k].node && (parsed[k].node.includes(' ') || parsed[k].node.includes('%'))) {
+                        parsed[k].node = sanitizarChaveNode(parsed[k].node);
                     }
                 });
                 return parsed;
@@ -1009,10 +1010,15 @@
             localStorage.setItem('finance_app_profiles', JSON.stringify(profiles));
         }
 
-        function autenticarUsuario(keyPerfil, senhaInput) {
+        function autenticarUsuario(nomeInput, senhaInput) {
             const profiles = obterConfigPerfis();
-            if (profiles[keyPerfil] && profiles[keyPerfil].pwd === senhaInput) {
-                return { key: keyPerfil, ...profiles[keyPerfil] };
+            const nomeNorm = sanitizarChaveNode(nomeInput);
+            
+            for (const key in profiles) {
+                const profileNameNorm = sanitizarChaveNode(profiles[key].name);
+                if ((profileNameNorm === nomeNorm || key.toLowerCase() === nomeNorm) && profiles[key].pwd === senhaInput) {
+                    return { key, ...profiles[key] };
+                }
             }
             return null;
         }
@@ -1024,22 +1030,9 @@
             return profiles[key] ? { key, ...profiles[key] } : null;
         }
 
-        function preencherSelectUsuariosLogin() {
-            const profiles = obterConfigPerfis();
-            const selectEl = document.getElementById('login-user-select');
-            selectEl.innerHTML = '<option value="" disabled selected>Selecione o Usuário...</option>';
-            
-            Object.keys(profiles).forEach(key => {
-                const option = document.createElement('option');
-                option.value = key;
-                option.textContent = profiles[key].name + (profiles[key].isMaster ? ' (Master)' : '');
-                selectEl.appendChild(option);
-            });
-        }
-
         const loginScreen = document.getElementById('login-screen');
         const loginForm = document.getElementById('login-form');
-        const loginUserSelect = document.getElementById('login-user-select');
+        const loginUsernameInput = document.getElementById('login-username');
         const loginPassword = document.getElementById('login-password');
         const loginError = document.getElementById('login-error');
         const appContainer = document.getElementById('app-container');
@@ -1090,7 +1083,6 @@
                     };
 
                     salvarConfigPerfis(profiles);
-                    preencherSelectUsuariosLogin();
                     alert(`✅ Perfil "${nomeTrimmed}" criado com sucesso!\n\n🔑 Senha inicial de acesso: 12345\nOrientação: O usuário pode alterar a senha a qualquer momento no menu de configurações.`);
                 }
             } else if (acao === '2') {
@@ -1109,7 +1101,6 @@
                     if (confirm(`⚠️ Tem certeza que deseja apagar o perfil "${perfilExcluir.name}"?\nOs dados dele deixarão de ser acessíveis.`)) {
                         delete profiles[chaveExcluir];
                         salvarConfigPerfis(profiles);
-                        preencherSelectUsuariosLogin();
                         alert(`Perfil "${perfilExcluir.name}" foi removido com sucesso.`);
                     }
                 } else if (numExcluir !== null && numExcluir !== '0') {
@@ -1254,7 +1245,6 @@
         // --- AUTENTICAÇÃO ---
         window.addEventListener('DOMContentLoaded', () => {
             toggleMethodFields();
-            preencherSelectUsuariosLogin();
             
             const jaLogado = localStorage.getItem('user_authenticated') === 'true';
             const perfil = obterPerfilLogado();
@@ -1273,15 +1263,15 @@
 
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const selectedUserKey = loginUserSelect.value;
+            const usernameInput = loginUsernameInput.value.trim();
             const passwordInput = loginPassword.value;
 
-            if (!selectedUserKey) {
-                alert("Por favor, selecione um usuário.");
+            if (!usernameInput) {
+                alert("Por favor, digite o nome do usuário.");
                 return;
             }
 
-            const perfilEncontrado = autenticarUsuario(selectedUserKey, passwordInput);
+            const perfilEncontrado = autenticarUsuario(usernameInput, passwordInput);
 
             if (perfilEncontrado) {
                 localStorage.setItem('user_authenticated', 'true');
@@ -1334,15 +1324,14 @@
         dateInput.value = new Date().toISOString().split('T')[0];
 
         function inicializarFirebase(rawNodeName) {
-            // Garantia adicional de sanitização de nós com espaço
-            const nodeName = rawNodeName ? rawNodeName.replace(/\s+/g, '_') : 'lancamentos_default';
+            const nodeName = rawNodeName ? sanitizarChaveNode(rawNodeName) : 'lancamentos_default';
             
             if (!firebase.apps.length) {
                 firebase.initializeApp(firebaseConfig);
             }
             db = firebase.database().ref(nodeName);
 
-            // Timeout de segurança para travar se o Firebase não responder em 5 segundos
+            // Timeout de segurança
             const loadingTimeout = setTimeout(() => {
                 if (loadingEl.style.display === 'flex' && transactions.length === 0) {
                     loadingText.textContent = "Erro na conexão com o banco do perfil.";
