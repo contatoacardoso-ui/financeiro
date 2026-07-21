@@ -207,24 +207,28 @@
             cursor: pointer;
             list-style: none;
             display: flex;
-            justify-content: space-between;
             align-items: center;
         }
         .form-accordion summary::-webkit-details-marker {
             display: none;
         }
-        .form-accordion summary::after {
-            content: "➕";
-            font-size: 0.85rem;
+        .form-accordion summary::before {
+            content: "+";
+            font-size: 1.1rem;
+            font-weight: bold;
             color: var(--primary);
-            transition: transform 0.2s;
+            margin-right: 8px;
+            display: inline-block;
+        }
+        .form-accordion summary::after {
+            display: none;
         }
         .form-accordion[open] summary {
             border-bottom: 1px solid var(--border);
             background-color: rgba(255, 255, 255, 0.02);
         }
-        .form-accordion[open] summary::after {
-            content: "➖";
+        .form-accordion[open] summary::before {
+            content: "-";
         }
         .form-content {
             padding: 16px;
@@ -630,7 +634,7 @@
 
         <!-- ACORDEÃO DE CADASTRO -->
         <details class="form-accordion" id="form-accordion">
-            <summary>➕ Novo Lançamento</summary>
+            <summary>Novo Lançamento</summary>
             <div class="form-content">
                 <form id="finance-form">
                     
@@ -1029,7 +1033,6 @@
         }
 
         function formatCurrency(value) {
-            // Garante que o valor exibido seja sempre absoluto (sem o sinal de menos nativo do toLocaleString)
             return Math.abs(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
 
@@ -1145,7 +1148,6 @@
                     `;
                 }
 
-                // Removido os caracteres '+' e '-' antes do valor, confiando 100% na cor definida pelas classes de estilo
                 item.innerHTML = `
                     <div class="item-details">
                         <h4>${t.description} ${atrasoMarkup}</h4>
