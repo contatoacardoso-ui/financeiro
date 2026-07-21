@@ -1127,9 +1127,12 @@
 
             if (dbTransactions) {
                 if (editId) {
+                    const transAntiga = transactions.find(item => item.id === editId);
+                    const statusDone = transAntiga ? !!transAntiga.done : false;
+
                     let transData = {
                         type: selectedType, description, amount: totalAmount, date: baseDate, cardOrigin: cardOrigin || '',
-                        method: methodVal, installmentsNum: 1, installmentsTotal: 1, done: false
+                        method: methodVal, installmentsNum: 1, installmentsTotal: 1, done: statusDone
                     };
                     dbTransactions.child(editId).update(transData);
                 } else {
