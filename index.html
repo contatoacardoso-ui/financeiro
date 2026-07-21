@@ -359,7 +359,7 @@
 
         .report-card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
         .report-card h3 { font-size: 0.95rem; color: var(--text-color); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .chart-container { position: relative; width: 100%; height: 200px; }
+        .chart-container { position: relative; width: 100%; height: 220px; }
         
         .analysis-box { background: rgba(78, 168, 222, 0.08); border: 1px solid rgba(78, 168, 222, 0.2); border-radius: 8px; padding: 12px; margin-bottom: 12px; font-size: 0.85rem; line-height: 1.4; }
         .analysis-box strong { color: var(--primary); }
@@ -1273,7 +1273,6 @@
                 }
             });
 
-            // Atualiza o título do relatório indicando claramente o período
             const reportHeaderTitle = document.getElementById('report-title-header');
             if (reportMode === 'month') {
                 const [ano, mes] = selectedMonthKey.split('-');
@@ -1283,7 +1282,6 @@
                 reportHeaderTitle.innerHTML = `💡 Análise de Entradas e Saídas (Visão Anual)`;
             }
 
-            // Análise Inteligente
             const summaryBox = document.getElementById('analysis-summary-text');
             const diff = totalEntradas - totalSaidas;
             let statusTexto = diff >= 0 
@@ -1292,7 +1290,6 @@
 
             summaryBox.innerHTML = `Total de Entradas: <strong class="income-text">${formatCurrency(totalEntradas)}</strong> | Total de Saídas: <strong class="expense-text">${formatCurrency(totalSaidas)}</strong><br><br>${statusTexto}`;
 
-            // Ranking Saídas
             const topExpRanking = document.getElementById('top-expenses-ranking');
             topExpRanking.innerHTML = '';
             const sortedExp = Object.entries(agrupaSaidasDesc).sort((a, b) => b[1] - a[1]);
@@ -1308,7 +1305,6 @@
                 });
             }
 
-            // Ranking Entradas
             const topIncRanking = document.getElementById('top-incomes-ranking');
             topIncRanking.innerHTML = '';
             const sortedInc = Object.entries(agrupaEntradasOrigem).sort((a, b) => b[1] - a[1]);
@@ -1324,9 +1320,14 @@
                 });
             }
 
-            const paletaCores = ['#4ea8de', '#00b37e', '#ffb86c', '#f75a68', '#9370db', '#20b2aa', '#ff69b4', '#ffd700'];
+            // Paleta de cores de alta distinção (Cores vibrantes e bem contrastantes entre si)
+            const paletaCoresAltas = [
+                '#3366CC', '#DC3912', '#FF9900', '#109618', '#990099', 
+                '#0099C6', '#DD4477', '#66AA00', '#B82E2E', '#316395', 
+                '#994499', '#22AA99', '#AAAA11', '#6633CC', '#E67300', 
+                '#8B0707', '#329262', '#5574A6', '#3B3EAC', '#B77322'
+            ];
 
-            // Gráfico Comparativo
             const ctxComp = document.getElementById('chart-comparison').getContext('2d');
             if (chartComparisonInstance) chartComparisonInstance.destroy();
             chartComparisonInstance = new Chart(ctxComp, {
@@ -1338,7 +1339,6 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
-            // Gráfico Pizza Entradas
             const ctxIncPie = document.getElementById('chart-incomes-pie').getContext('2d');
             if (chartIncomesPieInstance) chartIncomesPieInstance.destroy();
             const incKeys = Object.keys(agrupaEntradasOrigem);
@@ -1347,12 +1347,11 @@
                 type: 'doughnut',
                 data: {
                     labels: incKeys.length > 0 ? incKeys : ['Nenhuma entrada'],
-                    datasets: [{ data: incVals.length > 0 ? incVals : [1], backgroundColor: paletaCores }]
+                    datasets: [{ data: incVals.length > 0 ? incVals : [1], backgroundColor: paletaCoresAltas }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
             });
 
-            // Gráfico Pizza Saídas
             const ctxExpPie = document.getElementById('chart-expenses-pie').getContext('2d');
             if (chartExpensesPieInstance) chartExpensesPieInstance.destroy();
             const expKeys = Object.keys(agrupaSaidasDesc);
@@ -1361,12 +1360,11 @@
                 type: 'doughnut',
                 data: {
                     labels: expKeys.length > 0 ? expKeys : ['Nenhuma saída'],
-                    datasets: [{ data: expVals.length > 0 ? expVals : [1], backgroundColor: paletaCores }]
+                    datasets: [{ data: expVals.length > 0 ? expVals : [1], backgroundColor: paletaCoresAltas }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
             });
 
-            // Detalhamento de Entradas
             const detailedIncList = document.getElementById('detailed-incomes-list');
             detailedIncList.innerHTML = '';
             if (entradasDetalhadas.length === 0) {
@@ -1387,7 +1385,6 @@
                 });
             }
 
-            // Detalhamento de Saídas
             const detailedExpList = document.getElementById('detailed-expenses-list');
             detailedExpList.innerHTML = '';
             if (saidasDetalhadas.length === 0) {
