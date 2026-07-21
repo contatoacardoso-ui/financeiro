@@ -656,12 +656,7 @@
             if (!isCredito) {
                 dateLabel.textContent = "Data de Pagamento";
             } else {
-                const parcelas = parseInt(document.getElementById('installments').value) || 1;
-                if (parcelas <= 1) {
-                    dateLabel.textContent = "Data de Vencimento";
-                } else {
-                    dateLabel.textContent = "Data 1ª Parcela";
-                }
+                dateLabel.textContent = "Data de Vencimento";
             }
         }
 
