@@ -995,7 +995,6 @@
             const salvas = localStorage.getItem('finance_app_profiles');
             if (salvas) {
                 const parsed = JSON.parse(salvas);
-                // Higienização automática de nós antigos
                 Object.keys(parsed).forEach(k => {
                     if (parsed[k].node && (parsed[k].node.includes(' ') || parsed[k].node.includes('%'))) {
                         parsed[k].node = sanitizarChaveNode(parsed[k].node);
@@ -1014,9 +1013,15 @@
             const profiles = obterConfigPerfis();
             const nomeNorm = sanitizarChaveNode(nomeInput);
             
+            // Busca permissiva para aceitar "principal", "master", "user_master" ou qualquer perfil criado
             for (const key in profiles) {
                 const profileNameNorm = sanitizarChaveNode(profiles[key].name);
-                if ((profileNameNorm === nomeNorm || key.toLowerCase() === nomeNorm) && profiles[key].pwd === senhaInput) {
+                const keyNorm = sanitizarChaveNode(key);
+
+                const ehMasterAlias = profiles[key].isMaster && (nomeNorm === 'principal' || nomeNorm === 'master' || nomeNorm === 'user_master');
+                const ehNomeMatch = profileNameNorm === nomeNorm || keyNorm === nomeNorm;
+
+                if ((ehMasterAlias || ehNomeMatch) && profiles[key].pwd === senhaInput) {
                     return { key, ...profiles[key] };
                 }
             }
