@@ -32,7 +32,7 @@
 
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--bg-color); display: none; flex-direction: column;
+            background-color: var(--bg-color); display: flex; flex-direction: column;
             justify-content: center; align-items: center; z-index: 10000; padding: 24px;
         }
         .login-card {
@@ -73,12 +73,7 @@
             border: 1px solid rgba(78, 168, 222, 0.3);
         }
         
-        #loading {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(18, 18, 20, 0.95); display: none; flex-direction: column;
-            gap: 12px; justify-content: center; align-items: center; z-index: 9999;
-            font-weight: bold; font-size: 1.1rem;
-        }
+        #loading { display: none; }
 
         .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .balance-card {
@@ -222,11 +217,6 @@
                 📱 Instala
             </button>
         </div>
-    </div>
-
-    <!-- Overlay de carregamento ocultado -->
-    <div id="loading">
-        <span id="loading-text">Conectando ao banco de dados...</span>
     </div>
 
     <!-- Aplicativo Principal -->
@@ -472,9 +462,10 @@
 
         dateInput.value = new Date().toISOString().split('T')[0];
 
-        // Inicialização instantânea dos dados salvos no aparelho
+        // Inicialização instantânea dos dados salvos no aparelho para garantir interatividade imediata
         const jaLogadoInstantaneo = localStorage.getItem('user_authenticated') === 'true';
         const chaveAtivaInstantanea = localStorage.getItem('active_user_key');
+
         if (jaLogadoInstantaneo && chaveAtivaInstantanea) {
             loginScreen.style.display = 'none';
             appContainer.style.display = 'block';
@@ -484,7 +475,7 @@
             } else if (chaveAtivaInstantanea === 'user_suelen_winnie') {
                 profileBadge.textContent = "👤 Perfil: Suelen Winnie";
             } else {
-                profileBadge.textContent = "👤 Perfil: " + chaveAtiva;
+                profileBadge.textContent = "👤 Perfil: " + chaveAtiva.replace('user_', '');
             }
             gerarFiltroDeMeses();
             updateDashboard();
@@ -524,38 +515,39 @@
             if (senhaSalva) loginPassword.value = senhaSalva;
             rememberMeCheckbox.checked = localStorage.getItem('remember_active') === 'true' || localStorage.getItem('remember_active') === null;
 
+            // Conecta em segundo plano para atualizar perfis e dados sem bloquear cliques
             dbRoot.child('config_perfis').on('value', (snapshot) => {
                 const dadosNuvent = snapshot.val();
-                if (!dadosNuvent) {
-                    dbRoot.child('config_perfis').set(DEFAULT_PROFILES);
-                    perfisCadastrados = DEFAULT_PROFILES;
-                } else {
+                if (dadosNuvent) {
                     perfisCadastrados = dadosNuvent;
                 }
-                
-                verificarSessaoSalva();
-            }, (error) => {
-                verificarSessaoSalva();
-            });
+            }, (error) => {});
+
+            if (jaLogadoInstantaneo && chaveAtivaInstantanea) {
+                conectarBancoSilencioso(chaveAtivaInstantanea);
+            }
         });
 
-        function verificarSessaoSalva() {
-            const jaLogado = localStorage.getItem('user_authenticated') === 'true';
-            const chaveAtiva = localStorage.getItem('active_user_key');
+        function conectarBancoSilencioso(chaveKey) {
+            const perfilObj = DEFAULT_PROFILES[chaveKey] || { name: chaveKey.replace('user_', ''), isMaster: chaveKey === 'user_master' };
+            const nodeTarget = perfilObj.isMaster ? NO_MASTER_ORIGINAL : ('lancamentos_' + sanitizarChaveNode(perfilObj.name));
+            dbTransactions = dbRoot.child(nodeTarget);
 
-            if (jaLogado && chaveAtiva) {
-                if (perfisCadastrados[chaveAtiva]) {
-                    if (appContainer.style.display !== 'block') {
-                        entrarNoAplicativo(perfisCadastrados[chaveAtiva], chaveAtiva);
-                    }
-                } else {
-                    // Caso o perfil exista no cache mas o firebase demore, reconecta com o nome salvo
-                    entrarNoAplicativo({ name: chaveAtiva.replace('user_', ''), isMaster: chaveAtiva === 'user_master' }, chaveAtiva);
+            dbTransactions.on('value', (snapshot) => {
+                const data = snapshot.val();
+                let novasTransacoes = [];
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        novasTransacoes.push({ id: key, ...data[key] });
+                    });
                 }
-            } else {
-                loginScreen.style.display = 'flex';
-                appContainer.style.display = 'none';
-            }
+                transactions = novasTransacoes;
+                localStorage.setItem('cached_transactions', JSON.stringify(transactions));
+                
+                gerarFiltroDeMeses();
+                updateDashboard();
+                renderView();
+            }, (error) => {});
         }
 
         loginUsernameInput.addEventListener('input', () => {
@@ -626,26 +618,7 @@
             profileBadge.textContent = `👤 Perfil: ${perfil.name}${perfil.isMaster ? ' (Master)' : ''}`;
             btnMasterPanel.style.display = perfil.isMaster ? 'flex' : 'none';
 
-            const nodeTarget = perfil.isMaster ? NO_MASTER_ORIGINAL : ('lancamentos_' + sanitizarChaveNode(perfil.name));
-            dbTransactions = dbRoot.child(nodeTarget);
-
-            dbTransactions.on('value', (snapshot) => {
-                const data = snapshot.val();
-                let novasTransacoes = [];
-                if (data) {
-                    Object.keys(data).forEach(key => {
-                        novasTransacoes.push({ id: key, ...data[key] });
-                    });
-                }
-                transactions = novasTransacoes;
-                localStorage.setItem('cached_transactions', JSON.stringify(transactions));
-                
-                gerarFiltroDeMeses();
-                updateDashboard();
-                renderView();
-            }, (error) => {
-                // Mantém os dados atuais em caso de falha momentânea de rede
-            });
+            conectarBancoSilencioso(chaveKey);
         }
 
         window.abrirPainelMaster = function() {
