@@ -108,13 +108,22 @@
         .login-card p {
             font-size: 0.85rem;
             color: var(--text-secondary);
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
-        .login-card input {
+        .login-card select, .login-card input {
             text-align: center;
-            font-size: 1.1rem;
+            font-size: 1rem;
             padding: 12px;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
+            width: 100%;
+            background-color: #121214;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-color);
+            outline: none;
+        }
+        .login-card select:focus, .login-card input:focus {
+            border-color: var(--primary);
         }
         .login-error {
             color: var(--expense);
@@ -718,10 +727,13 @@
         <div class="login-card">
             <div class="login-icon">🔒</div>
             <h2>Acesso Restrito</h2>
-            <p>Insira sua senha para acessar seu perfil</p>
+            <p>Selecione seu usuário e insira sua senha</p>
             <form id="login-form">
-                <input type="password" id="login-password" placeholder="Senha do App" required autocomplete="current-password">
-                <div class="login-error" id="login-error">Senha incorreta. Tente novamente.</div>
+                <select id="login-user-select" required>
+                    <option value="" disabled selected>Selecione o Usuário...</option>
+                </select>
+                <input type="password" id="login-password" placeholder="Sua Senha" required autocomplete="current-password">
+                <div class="login-error" id="login-error">Senha incorreta para o perfil selecionado.</div>
                 <button type="submit" class="submit-btn">Entrar</button>
             </form>
         </div>
@@ -942,12 +954,10 @@
             localStorage.setItem('finance_app_profiles', JSON.stringify(profiles));
         }
 
-        function autenticarSenha(senhaInput) {
+        function autenticarUsuario(keyPerfil, senhaInput) {
             const profiles = obterConfigPerfis();
-            for (const key in profiles) {
-                if (profiles[key].pwd === senhaInput) {
-                    return { key, ...profiles[key] };
-                }
+            if (profiles[keyPerfil] && profiles[keyPerfil].pwd === senhaInput) {
+                return { key: keyPerfil, ...profiles[keyPerfil] };
             }
             return null;
         }
@@ -959,8 +969,22 @@
             return profiles[key] ? { key, ...profiles[key] } : null;
         }
 
+        function preencherSelectUsuariosLogin() {
+            const profiles = obterConfigPerfis();
+            const selectEl = document.getElementById('login-user-select');
+            selectEl.innerHTML = '<option value="" disabled selected>Selecione o Usuário...</option>';
+            
+            Object.keys(profiles).forEach(key => {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = profiles[key].name + (profiles[key].isMaster ? ' (Master)' : '');
+                selectEl.appendChild(option);
+            });
+        }
+
         const loginScreen = document.getElementById('login-screen');
         const loginForm = document.getElementById('login-form');
+        const loginUserSelect = document.getElementById('login-user-select');
         const loginPassword = document.getElementById('login-password');
         const loginError = document.getElementById('login-error');
         const appContainer = document.getElementById('app-container');
@@ -1009,6 +1033,7 @@
                     };
 
                     salvarConfigPerfis(profiles);
+                    preencherSelectUsuariosLogin();
                     alert(`✅ Perfil "${nomeTrimmed}" criado com sucesso!\n\n🔑 Senha inicial de acesso: 12345\nOrientação: O usuário pode alterar a senha a qualquer momento no menu de configurações.`);
                 }
             } else if (acao === '2') {
@@ -1027,6 +1052,7 @@
                     if (confirm(`⚠️ Tem certeza que deseja apagar o perfil "${perfilExcluir.name}"?\nOs dados dele deixarão de ser acessíveis.`)) {
                         delete profiles[chaveExcluir];
                         salvarConfigPerfis(profiles);
+                        preencherSelectUsuariosLogin();
                         alert(`Perfil "${perfilExcluir.name}" foi removido com sucesso.`);
                     }
                 } else if (numExcluir !== null && numExcluir !== '0') {
@@ -1173,6 +1199,8 @@
         // --- AUTENTICAÇÃO ---
         window.addEventListener('DOMContentLoaded', () => {
             toggleMethodFields();
+            preencherSelectUsuariosLogin();
+            
             const jaLogado = localStorage.getItem('user_authenticated') === 'true';
             const perfil = obterPerfilLogado();
 
@@ -1190,7 +1218,15 @@
 
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const perfilEncontrado = autenticarSenha(loginPassword.value);
+            const selectedUserKey = loginUserSelect.value;
+            const passwordInput = loginPassword.value;
+
+            if (!selectedUserKey) {
+                alert("Por favor, selecione um usuário.");
+                return;
+            }
+
+            const perfilEncontrado = autenticarUsuario(selectedUserKey, passwordInput);
 
             if (perfilEncontrado) {
                 localStorage.setItem('user_authenticated', 'true');
