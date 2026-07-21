@@ -472,7 +472,7 @@
 
         dateInput.value = new Date().toISOString().split('T')[0];
 
-        // Carrega instantaneamente o perfil e dados salvos no aparelho para evitar qualquer tela em branco ou "zerada"
+        // Inicialização instantânea dos dados salvos no aparelho
         const jaLogadoInstantaneo = localStorage.getItem('user_authenticated') === 'true';
         const chaveAtivaInstantanea = localStorage.getItem('active_user_key');
         if (jaLogadoInstantaneo && chaveAtivaInstantanea) {
@@ -483,8 +483,9 @@
                 btnMasterPanel.style.display = 'flex';
             } else if (chaveAtivaInstantanea === 'user_suelen_winnie') {
                 profileBadge.textContent = "👤 Perfil: Suelen Winnie";
+            } else {
+                profileBadge.textContent = "👤 Perfil: " + chaveAtiva;
             }
-            // Renderiza imediatamente com o cache local para a tela nunca nascer vazia
             gerarFiltroDeMeses();
             updateDashboard();
             renderView();
@@ -542,9 +543,14 @@
             const jaLogado = localStorage.getItem('user_authenticated') === 'true';
             const chaveAtiva = localStorage.getItem('active_user_key');
 
-            if (jaLogado && chaveAtiva && perfisCadastrados[chaveAtiva]) {
-                if (appContainer.style.display !== 'block') {
-                    entrarNoAplicativo(perfisCadastrados[chaveAtiva], chaveAtiva);
+            if (jaLogado && chaveAtiva) {
+                if (perfisCadastrados[chaveAtiva]) {
+                    if (appContainer.style.display !== 'block') {
+                        entrarNoAplicativo(perfisCadastrados[chaveAtiva], chaveAtiva);
+                    }
+                } else {
+                    // Caso o perfil exista no cache mas o firebase demore, reconecta com o nome salvo
+                    entrarNoAplicativo({ name: chaveAtiva.replace('user_', ''), isMaster: chaveAtiva === 'user_master' }, chaveAtiva);
                 }
             } else {
                 loginScreen.style.display = 'flex';
@@ -644,8 +650,8 @@
 
         window.abrirPainelMaster = function() {
             const chaveAtiva = localStorage.getItem('active_user_key');
-            const perfilAtivo = perfisCadastrados[chaveAtiva];
-            if (!perfilAtivo || !perfilAtivo.isMaster) {
+            const perfilAtivo = perfisCadastrados[chaveAtiva] || { isMaster: chaveAtiva === 'user_master' };
+            if (!perfilAtivo.isMaster) {
                 alert("Acesso restrito ao Administrador Master.");
                 return;
             }
@@ -718,9 +724,9 @@
                 return;
             }
             const chaveAtiva = localStorage.getItem('active_user_key');
-            const perfil = perfisCadastrados[chaveAtiva];
-            const senhaDigitada = prompt(`Insira a Senha do Perfil (${perfil ? perfil.name : ''}):`);
-            if (perfil && senhaDigitada && senhaDigitada.trim() === perfil.pwd) {
+            const perfil = perfisCadastrados[chaveAtiva] || { name: 'Perfil', pwd: '12345' };
+            const senhaDigitada = prompt(`Insira a Senha do Perfil (${perfil.name}):`);
+            if (senhaDigitada && senhaDigitada.trim() === perfil.pwd) {
                 securityPanelContent.style.display = 'flex';
             } else if (senhaDigitada !== null) {
                 alert("Erro: Senha incorreta.");
@@ -729,11 +735,14 @@
 
         window.alterarSenhaDoSistema = function() {
             const chaveAtiva = localStorage.getItem('active_user_key');
-            const perfil = perfisCadastrados[chaveAtiva];
-            if (!perfil) return;
+            const perfil = perfisCadastrados[chaveAtiva] || { name: 'Perfil', pwd: '12345' };
             const novaSenha = prompt("Digite a SUA NOVA senha:");
             if (novaSenha && novaSenha.trim().length >= 4) {
-                perfisCadastrados[chaveAtiva].pwd = novaSenha.trim();
+                if (!perfisCadastrados[chaveAtiva]) {
+                    perfisCadastrados[chaveAtiva] = { name: chaveAtiva.replace('user_', ''), pwd: novaSenha.trim(), isMaster: chaveAtiva === 'user_master' };
+                } else {
+                    perfisCadastrados[chaveAtiva].pwd = novaSenha.trim();
+                }
                 dbRoot.child('config_perfis').set(perfisCadastrados).then(() => {
                     localStorage.setItem('saved_password', novaSenha.trim());
                     localStorage.setItem('pwd_' + chaveAtiva, novaSenha.trim());
@@ -745,8 +754,7 @@
 
         window.limparBancoDeDados = function() {
             const chaveAtiva = localStorage.getItem('active_user_key');
-            const perfil = perfisCadastrados[chaveAtiva];
-            if (!perfil) return;
+            const perfil = perfisCadastrados[chaveAtiva] || { pwd: '12345' };
             if (confirm("⚠️ APAGAR todos os lançamentos deste perfil?")) {
                 const senha = prompt("Digite sua SENHA:");
                 if (senha && senha.trim() === perfil.pwd && dbTransactions) {
@@ -769,11 +777,11 @@
         window.fazerBackup = function() {
             if (transactions.length === 0) return alert("Banco de dados vazio.");
             const chaveAtiva = localStorage.getItem('active_user_key');
-            const perfil = perfisCadastrados[chaveAtiva];
+            const perfil = perfisCadastrados[chaveAtiva] || { name: 'financeiro' };
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(transactions, null, 2));
             const a = document.createElement('a');
             a.setAttribute("href", dataStr);
-            a.setAttribute("download", `backup_${perfil ? perfil.name : 'financeiro'}.json`);
+            a.setAttribute("download", `backup_${perfil.name}.json`);
             a.click();
         }
 
