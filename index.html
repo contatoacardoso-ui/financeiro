@@ -446,7 +446,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.0.5"; 
+        const VERSAO_CODIGO = "1.0.6"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -527,6 +527,7 @@
                 if (!versaoNuvem) {
                     dbRoot.child('versao_sistema').set(VERSAO_CODIGO);
                 } else if (versaoNuvem !== VERSAO_CODIGO) {
+                    // Verifica se esta versão específica já foi dispensada nesta sessão/aparelho
                     const versaoDispensada = localStorage.getItem('versao_dispensada');
                     if (versaoDispensada !== versaoNuvem) {
                         document.getElementById('update-modal').style.display = 'flex';
@@ -555,9 +556,16 @@
             });
         });
 
+        // Salva a versão atual no localStorage para que o pop-up só apareça uma única vez por atualização
         window.fecharAvisoAtualizacao = function() {
-            localStorage.setItem('versao_dispensada', VERSAO_CODIGO);
-            document.getElementById('update-modal').style.display = 'none';
+            dbRoot.child('versao_sistema').once('value').then((snapshot) => {
+                const versaoNuvem = snapshot.val() || VERSAO_CODIGO;
+                localStorage.setItem('versao_dispensada', versaoNuvem);
+                document.getElementById('update-modal').style.display = 'none';
+            }).catch(() => {
+                localStorage.setItem('versao_dispensada', VERSAO_CODIGO);
+                document.getElementById('update-modal').style.display = 'none';
+            });
         }
 
         function verificarSessaoSalva() {
