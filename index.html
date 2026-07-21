@@ -397,6 +397,31 @@
             background-color: rgba(78, 168, 222, 0.1);
         }
 
+        /* Estilos do Agrupamento da Lista */
+        .group-container {
+            margin-bottom: 16px;
+        }
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+        .group-header h3 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+        .group-header .group-subtotal {
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
         /* Lista de Lançamentos */
         .transaction-list {
             display: flex;
@@ -1099,6 +1124,15 @@
             realBalanceEl.style.color = realBalance < 0 ? 'var(--expense)' : 'var(--income)';
         }
 
+        // Função de nome de grupo para agrupamento inteligente
+        function getGroupTitle(t) {
+            if (t.type === 'receber') return 'A Receber';
+            const complementoOrigem = t.cardOrigin ? ` (${t.cardOrigin})` : '';
+            return t.method === 'credito' 
+                ? `Crédito${complementoOrigem}` 
+                : `Débito/Dinheiro${complementoOrigem}`;
+        }
+
         function renderList() {
             listContainer.innerHTML = '';
             const filteredByMonth = transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey));
@@ -1109,59 +1143,97 @@
                 return;
             }
 
-            const sorted = [...filtered].sort((a, b) => new Date(a.date) - new Date(b.date));
-
-            sorted.forEach(t => {
-                const item = document.createElement('div');
-                item.className = 'transaction-item';
-                const isRec = t.type === 'receber';
-                
-                const diasAtraso = obterDiasDeAtraso(t);
-                let atrasoMarkup = (diasAtraso > 0 && t.type === 'pagar') ? `<span class="delay-tag">⚠️ Atrasado ${diasAtraso}d</span>` : '';
-                
-                let métodoText = "";
-                if (t.type === 'pagar') {
-                    const complementoOrigem = t.cardOrigin ? ` (${t.cardOrigin})` : "";
-                    métodoText = t.method === 'credito' 
-                        ? `Crédito${complementoOrigem} ${t.installmentText || ''}` 
-                        : `Débito/Dinheiro${complementoOrigem}`;
-                } else {
-                    métodoText = 'Recebimento';
+            // Agrupa os lançamentos por Forma de Pagamento e Banco/Origem
+            const groups = {};
+            filtered.forEach(t => {
+                const groupTitle = getGroupTitle(t);
+                if (!groups[groupTitle]) {
+                    groups[groupTitle] = {
+                        items: [],
+                        subtotal: 0,
+                        type: t.type
+                    };
                 }
+                groups[groupTitle].items.push(t);
+                groups[groupTitle].subtotal += t.amount;
+            });
 
-                let actionMarkup = "";
-                if (!t.done) {
-                    actionMarkup = `
-                        <div class="item-actions-group">
-                            <button class="action-btn delete-btn" onclick="deleteTransaction('${t.id}')" title="Excluir item">×</button>
-                            <button class="action-btn confirm-btn" onclick="confirmTransaction('${t.id}')" title="Confirmar pagamento">✓</button>
-                        </div>
-                    `;
-                } else {
-                    actionMarkup = `
-                        <div class="item-actions-group">
-                            <button class="action-btn delete-btn" onclick="deleteTransaction('${t.id}')" title="Excluir item">×</button>
-                        </div>
-                    `;
-                }
+            // Ordena os grupos
+            Object.keys(groups).sort().forEach(groupTitle => {
+                const groupData = groups[groupTitle];
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'group-container';
 
-                item.innerHTML = `
-                    <div class="item-details">
-                        <h4>${t.description} ${atrasoMarkup}</h4>
-                        <span>${t.done ? 'Realizado em' : 'Vence em'}: ${formatDate(t.date)}</span>
-                        <span class="method-badge">${métodoText}</span>
-                    </div>
-                    <div class="item-right">
-                        <div class="value-wrapper">
-                            <div class="value-container">
-                                <button class="edit-value-btn" onclick="editTransactionAmount('${t.id}')" title="Corrigir valor">✏️</button>
-                                <span class="item-value ${isRec ? 'income-text' : 'expense-text'}">${formatCurrency(t.amount)}</span>
-                            </div>
-                        </div>
-                        ${actionMarkup}
-                    </div>
+                const isReceberGroup = groupData.type === 'receber';
+                
+                // Cabeçalho do Grupo com Subtotal
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'group-header';
+                headerDiv.innerHTML = `
+                    <h3>${groupTitle}</h3>
+                    <span class="group-subtotal ${isReceberGroup ? 'income-text' : 'expense-text'}">
+                        ${formatCurrency(groupData.subtotal)}
+                    </span>
                 `;
-                listContainer.appendChild(item);
+                groupDiv.appendChild(headerDiv);
+
+                // Ordena os itens do grupo por data
+                const sortedItems = [...groupData.items].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                sortedItems.forEach(t => {
+                    const item = document.createElement('div');
+                    item.className = 'transaction-item';
+                    const isRec = t.type === 'receber';
+                    
+                    const diasAtraso = obterDiasDeAtraso(t);
+                    let atrasoMarkup = (diasAtraso > 0 && t.type === 'pagar') ? `<span class="delay-tag">⚠️ Atrasado ${diasAtraso}d</span>` : '';
+                    
+                    let métodoText = "";
+                    if (t.type === 'pagar') {
+                        const complementoOrigem = t.cardOrigin ? ` (${t.cardOrigin})` : "";
+                        métodoText = t.method === 'credito' 
+                            ? `Crédito${complementoOrigem} ${t.installmentText || ''}` 
+                            : `Débito/Dinheiro${complementoOrigem}`;
+                    } else {
+                        métodoText = 'Recebimento';
+                    }
+
+                    let actionMarkup = "";
+                    if (!t.done) {
+                        actionMarkup = `
+                            <div class="item-actions-group">
+                                <button class="action-btn delete-btn" onclick="deleteTransaction('${t.id}')" title="Excluir item">×</button>
+                                <button class="action-btn confirm-btn" onclick="confirmTransaction('${t.id}')" title="Confirmar pagamento">✓</button>
+                            </div>
+                        `;
+                    } else {
+                        actionMarkup = `
+                            <div class="item-actions-group">
+                                <button class="action-btn delete-btn" onclick="deleteTransaction('${t.id}')" title="Excluir item">×</button>
+                            </div>
+                        `;
+                    }
+
+                    item.innerHTML = `
+                        <div class="item-details">
+                            <h4>${t.description} ${atrasoMarkup}</h4>
+                            <span>${t.done ? 'Realizado em' : 'Vence em'}: ${formatDate(t.date)}</span>
+                            <span class="method-badge">${métodoText}</span>
+                        </div>
+                        <div class="item-right">
+                            <div class="value-wrapper">
+                                <div class="value-container">
+                                    <button class="edit-value-btn" onclick="editTransactionAmount('${t.id}')" title="Corrigir valor">✏️</button>
+                                    <span class="item-value ${isRec ? 'income-text' : 'expense-text'}">${formatCurrency(t.amount)}</span>
+                                </div>
+                            </div>
+                            ${actionMarkup}
+                        </div>
+                    `;
+                    groupDiv.appendChild(item);
+                });
+
+                listContainer.appendChild(groupDiv);
             });
         }
 
