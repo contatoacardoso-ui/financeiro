@@ -385,9 +385,6 @@
                 <div class="login-error" id="login-error">Usuário ou senha incorretos.</div>
                 <button type="submit" class="submit-btn">Entrar</button>
             </form>
-            <button type="button" onclick="resetarPerfisPadrao()" style="background:none; border:none; color:var(--primary); font-size:0.75rem; text-decoration:underline; cursor:pointer; margin-top:16px;">
-                🔄 Redefinir Perfis Padronizados
-            </button>
         </div>
     </div>
 
@@ -573,7 +570,6 @@
                       .replace(/^_+|_+$/g, '');
         }
 
-        // PERFIL MASTER APONTADO DE VOLTA PARA O SEU NÓ ORIGINAL
         const DEFAULT_PROFILES = {
             'user_master': {
                 name: 'Principal',
@@ -630,12 +626,6 @@
                 }
             }
             return null;
-        }
-
-        window.resetarPerfisPadrao = function() {
-            localStorage.clear();
-            alert("Perfis resetados para o padrão original!\n\nUtilize:\nUsuário: Principal\nSenha: Touchrio@8512@");
-            window.location.reload();
         }
 
         function obterPerfilLogado() {
