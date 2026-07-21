@@ -433,7 +433,7 @@
         let dbRoot;
         let dbTransactions;
         let perfisCadastrados = DEFAULT_PROFILES;
-        let transactions = [];
+        let transactions = JSON.parse(localStorage.getItem('cached_transactions') || '[]');
         let currentTab = 'pending';
         let selectedMonthKey = '';
         let reportMode = 'month';
@@ -472,7 +472,7 @@
 
         dateInput.value = new Date().toISOString().split('T')[0];
 
-        // Se já estiver logado, exibe instantaneamente o nome do perfil salvo para evitar qualquer piscar na tela
+        // Carrega instantaneamente o perfil e dados salvos no aparelho para evitar qualquer tela em branco ou "zerada"
         const jaLogadoInstantaneo = localStorage.getItem('user_authenticated') === 'true';
         const chaveAtivaInstantanea = localStorage.getItem('active_user_key');
         if (jaLogadoInstantaneo && chaveAtivaInstantanea) {
@@ -484,6 +484,10 @@
             } else if (chaveAtivaInstantanea === 'user_suelen_winnie') {
                 profileBadge.textContent = "👤 Perfil: Suelen Winnie";
             }
+            // Renderiza imediatamente com o cache local para a tela nunca nascer vazia
+            gerarFiltroDeMeses();
+            updateDashboard();
+            renderView();
         }
 
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -539,7 +543,9 @@
             const chaveAtiva = localStorage.getItem('active_user_key');
 
             if (jaLogado && chaveAtiva && perfisCadastrados[chaveAtiva]) {
-                entrarNoAplicativo(perfisCadastrados[chaveAtiva], chaveAtiva);
+                if (appContainer.style.display !== 'block') {
+                    entrarNoAplicativo(perfisCadastrados[chaveAtiva], chaveAtiva);
+                }
             } else {
                 loginScreen.style.display = 'flex';
                 appContainer.style.display = 'none';
@@ -619,19 +625,20 @@
 
             dbTransactions.on('value', (snapshot) => {
                 const data = snapshot.val();
-                transactions = [];
+                let novasTransacoes = [];
                 if (data) {
                     Object.keys(data).forEach(key => {
-                        transactions.push({ id: key, ...data[key] });
+                        novasTransacoes.push({ id: key, ...data[key] });
                     });
                 }
+                transactions = novasTransacoes;
+                localStorage.setItem('cached_transactions', JSON.stringify(transactions));
+                
                 gerarFiltroDeMeses();
                 updateDashboard();
                 renderView();
             }, (error) => {
-                gerarFiltroDeMeses();
-                updateDashboard();
-                renderView();
+                // Mantém os dados atuais em caso de falha momentânea de rede
             });
         }
 
@@ -744,6 +751,7 @@
                 const senha = prompt("Digite sua SENHA:");
                 if (senha && senha.trim() === perfil.pwd && dbTransactions) {
                     dbTransactions.remove().then(() => {
+                        localStorage.removeItem('cached_transactions');
                         alert("Banco de dados zerado.");
                         window.location.reload();
                     });
@@ -754,6 +762,7 @@
         window.fazerLogout = function() {
             localStorage.removeItem('user_authenticated');
             localStorage.removeItem('active_user_key');
+            localStorage.removeItem('cached_transactions');
             window.location.reload();
         }
 
