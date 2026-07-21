@@ -135,6 +135,17 @@
         header h1 {
             font-size: 1.4rem;
         }
+        .profile-badge {
+            display: inline-block;
+            background-color: rgba(78, 168, 222, 0.15);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-top: 6px;
+            border: 1px solid rgba(78, 168, 222, 0.3);
+        }
         
         /* Overlay de carregamento inicial */
         #loading {
@@ -694,6 +705,10 @@
         .security-panel-content button.danger-btn {
             color: var(--expense);
         }
+        .security-panel-content button.master-btn {
+            color: var(--income);
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -703,7 +718,7 @@
         <div class="login-card">
             <div class="login-icon">🔒</div>
             <h2>Acesso Restrito</h2>
-            <p>Insira a senha para acessar o Financeiro</p>
+            <p>Insira sua senha para acessar seu perfil</p>
             <form id="login-form">
                 <input type="password" id="login-password" placeholder="Senha do App" required autocomplete="current-password">
                 <div class="login-error" id="login-error">Senha incorreta. Tente novamente.</div>
@@ -726,6 +741,7 @@
 
         <header>
             <h1>Controle Financeiro</h1>
+            <span class="profile-badge" id="profile-name-badge">Perfil Ativo</span>
         </header>
 
         <!-- Dashboard GLOBAL -->
@@ -875,17 +891,20 @@
                     <span>⚙️</span> Configurações de Segurança
                 </button>
                 <div class="security-panel-content" id="security-panel-content">
+                    <button class="master-btn" id="btn-master-panel" onclick="abrirPainelMaster()" style="display: none;">
+                        <span>👑</span> Gerenciar Perfis (Painel Master)
+                    </button>
                     <button onclick="fazerBackup()">
                         <span>📥</span> Exportar Dados (Backup)
                     </button>
                     <button onclick="alterarSenhaDoSistema()">
-                        <span>🔑</span> Alterar Senha
+                        <span>🔑</span> Alterar Minha Senha
                     </button>
                     <button onclick="fazerLogout()">
-                        <span>🔒</span> Bloquear App
+                        <span>🔒</span> Trocar de Perfil / Sair
                     </button>
                     <button class="danger-btn" onclick="limparBancoDeDados()">
-                        <span>🗑️</span> Zerar Banco de Dados
+                        <span>🗑️</span> Zerar Banco de Dados deste Perfil
                     </button>
                 </div>
             </div>
@@ -893,22 +912,127 @@
     </div>
 
     <script>
-        // --- CONSTANTES DE SEGURANÇA ---
-        const SENHA_PADRAO = "Touchrio@8512@";
+        // --- CONSTANTES E GERENCIAMENTO DE PERFIS ---
         const CHAVE_DE_RECUPERACAO = "uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
+        const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         
+        // Definição Inicial dos Perfis
+        const DEFAULT_PROFILES = {
+            'user_master': {
+                name: 'Principal',
+                pwd: 'Touchrio@8512@',
+                isMaster: true,
+                node: 'lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM'
+            },
+            'user_esposa': {
+                name: 'Esposa',
+                pwd: 'Esposa123',
+                isMaster: false,
+                node: 'lancamentos_esposa_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM'
+            }
+        };
+
+        function obterConfigPerfis() {
+            const salvas = localStorage.getItem('finance_app_profiles');
+            if (salvas) return JSON.parse(salvas);
+            return DEFAULT_PROFILES;
+        }
+
+        function salvarConfigPerfis(profiles) {
+            localStorage.setItem('finance_app_profiles', JSON.stringify(profiles));
+        }
+
+        function autenticarSenha(senhaInput) {
+            const profiles = obterConfigPerfis();
+            for (const key in profiles) {
+                if (profiles[key].pwd === senhaInput) {
+                    return { key, ...profiles[key] };
+                }
+            }
+            return null;
+        }
+
+        function obterPerfilLogado() {
+            const key = localStorage.getItem('active_user_key');
+            if (!key) return null;
+            const profiles = obterConfigPerfis();
+            return profiles[key] ? { key, ...profiles[key] } : null;
+        }
+
         const loginScreen = document.getElementById('login-screen');
         const loginForm = document.getElementById('login-form');
         const loginPassword = document.getElementById('login-password');
         const loginError = document.getElementById('login-error');
         const appContainer = document.getElementById('app-container');
         const loadingEl = document.getElementById('loading');
+        const profileBadge = document.getElementById('profile-name-badge');
+        const btnMasterPanel = document.getElementById('btn-master-panel');
         
         const securityToggleBtn = document.getElementById('security-toggle-btn');
         const securityPanelContent = document.getElementById('security-panel-content');
 
-        function obterSenhaAtual() {
-            return localStorage.getItem('finance_app_pwd') || SENHA_PADRAO;
+        // --- PAINEL MASTER: CRIAR E EXCLUIR PERFIS ---
+        window.abrirPainelMaster = function() {
+            const perfilAtivo = obterPerfilLogado();
+            if (!perfilAtivo || !perfilAtivo.isMaster) {
+                alert("Acesso restrito ao Administrador Master.");
+                return;
+            }
+
+            const profiles = obterConfigPerfis();
+            let listaPerfisTexto = "--- PERFIS CADASTRADOS ---\n";
+            let index = 1;
+            const chaves = Object.keys(profiles);
+
+            chaves.forEach(key => {
+                const p = profiles[key];
+                listaPerfisTexto += `${index}. ${p.name} ${p.isMaster ? '(Master)' : ''}\n`;
+                index++;
+            });
+
+            const acao = prompt(
+                `${listaPerfisTexto}\nDigite o número da ação desejada:\n1 - Criar Novo Perfil\n2 - Excluir um Perfil\n0 - Cancelar`
+            );
+
+            if (acao === '1') {
+                const nomeNovoPerfil = prompt("Digite o NOME do novo perfil (Ex: Filho, Sócio, Maria):");
+                if (nomeNovoPerfil && nomeNovoPerfil.trim() !== "") {
+                    const nomeTrimmed = nomeNovoPerfil.trim();
+                    const keyNova = 'user_' + Date.now();
+                    const nodeNovo = 'lancamentos_' + keyNova + '_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM';
+
+                    profiles[keyNova] = {
+                        name: nomeTrimmed,
+                        pwd: SENHA_PADRAO_NOVOS_PERFIS,
+                        isMaster: false,
+                        node: nodeNovo
+                    };
+
+                    salvarConfigPerfis(profiles);
+                    alert(`✅ Perfil "${nomeTrimmed}" criado com sucesso!\n\n🔑 Senha inicial de acesso: 12345\nOrientação: O usuário pode alterar a senha a qualquer momento no menu de configurações.`);
+                }
+            } else if (acao === '2') {
+                const numExcluir = prompt(`${listaPerfisTexto}\nDigite o NÚMERO do perfil que deseja excluir:`);
+                const idx = parseInt(numExcluir) - 1;
+                
+                if (!isNaN(idx) && idx >= 0 && idx < chaves.length) {
+                    const chaveExcluir = chaves[idx];
+                    const perfilExcluir = profiles[chaveExcluir];
+
+                    if (perfilExcluir.isMaster) {
+                        alert("❌ Não é possível excluir o perfil Master Principal.");
+                        return;
+                    }
+
+                    if (confirm(`⚠️ Tem certeza que deseja apagar o perfil "${perfilExcluir.name}"?\nOs dados dele deixarão de ser acessíveis.`)) {
+                        delete profiles[chaveExcluir];
+                        salvarConfigPerfis(profiles);
+                        alert(`Perfil "${perfilExcluir.name}" foi removido com sucesso.`);
+                    }
+                } else if (numExcluir !== null && numExcluir !== '0') {
+                    alert("Opção inválida.");
+                }
+            }
         }
 
         // --- CONTROLE DINÂMICO DOS CAMPOS ---
@@ -948,8 +1072,9 @@
                 fecharPainelDeSeguranca();
                 return;
             }
-            const senhaDigitada = prompt("Insira a Senha do App para gerenciar as Configurações de Segurança:");
-            if (senhaDigitada === obterSenhaAtual()) {
+            const perfil = obterPerfilLogado();
+            const senhaDigitada = prompt(`Insira a Senha do Perfil (${perfil ? perfil.name : ''}) para acessar as Configurações:`);
+            if (perfil && senhaDigitada === perfil.pwd) {
                 abrirPainelDeSeguranca();
             } else if (senhaDigitada !== null) {
                 alert("Erro: Senha incorreta. Acesso negado.");
@@ -969,30 +1094,32 @@
 
         // --- SEGURANÇA E ADMINISTRAÇÃO ---
         window.alterarSenhaDoSistema = function() {
-            const chave = prompt("Insira a Chave de Recuperação (Database Secret) para liberar a alteração:");
-            if (!chave) return;
-            if (chave.trim() === CHAVE_DE_RECUPERACAO) {
-                const novaSenha = prompt("Acesso autorizado! Digite a sua NOVA senha de login:");
-                if (novaSenha && novaSenha.trim().length >= 4) {
-                    localStorage.setItem('finance_app_pwd', novaSenha.trim());
-                    alert("Senha alterada com sucesso! O aplicativo será reiniciado.");
-                    window.location.reload();
-                } else if (novaSenha) {
-                    alert("Erro: A senha precisa ter pelo menos 4 caracteres.");
-                }
-            } else {
-                alert("Erro: Chave de recuperação inválida. Acesso negado.");
+            const perfil = obterPerfilLogado();
+            if (!perfil) return;
+
+            const novaSenha = prompt(`Digite a SUA NOVA senha de login para o perfil "${perfil.name}":`);
+            if (novaSenha && novaSenha.trim().length >= 4) {
+                const profiles = obterConfigPerfis();
+                profiles[perfil.key].pwd = novaSenha.trim();
+                salvarConfigPerfis(profiles);
+                alert("Sua senha foi alterada com sucesso! O aplicativo será reiniciado.");
+                window.location.reload();
+            } else if (novaSenha) {
+                alert("Erro: A senha precisa ter pelo menos 4 caracteres.");
             }
         }
 
         window.limparBancoDeDados = function() {
-            if (confirm("⚠️ ATENÇÃO: Esta ação irá APAGAR todos os lançamentos do seu banco de dados.\n\nDeseja prosseguir?")) {
-                const senhaDigitada = prompt("Digite a sua SENHA de acesso para autorizar a limpeza:");
-                if (senhaDigitada === obterSenhaAtual()) {
+            const perfil = obterPerfilLogado();
+            if (!perfil) return;
+
+            if (confirm(`⚠️ ATENÇÃO: Esta ação irá APAGAR todos os lançamentos do perfil "${perfil.name}".\n\nDeseja prosseguir?`)) {
+                const senhaDigitada = prompt("Digite sua SENHA para autorizar a limpeza:");
+                if (senhaDigitada === perfil.pwd) {
                     if (db) {
                         loadingEl.style.display = 'flex';
                         db.remove().then(() => {
-                            alert("Banco de dados reiniciado com sucesso!");
+                            alert("Banco de dados deste perfil foi limpo com sucesso!");
                             window.location.reload();
                         });
                     }
@@ -1003,8 +1130,9 @@
         }
 
         window.fazerLogout = function() {
-            if (confirm("Deseja bloquear o aplicativo?")) {
+            if (confirm("Deseja sair deste perfil e retornar à tela de login?")) {
                 localStorage.removeItem('user_authenticated');
+                localStorage.removeItem('active_user_key');
                 window.location.reload();
             }
         }
@@ -1014,11 +1142,13 @@
                 alert("O seu banco de dados está vazio.");
                 return;
             }
+            const perfil = obterPerfilLogado();
+            const nomePerfil = perfil ? perfil.name.toLowerCase() : 'perfil';
             const dadosJSON = JSON.stringify(transactions, null, 2);
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(dadosJSON);
             const linkDownload = document.createElement('a');
             linkDownload.setAttribute("href", dataStr);
-            linkDownload.setAttribute("download", "meu_backup_financeiro.json");
+            linkDownload.setAttribute("download", `backup_financeiro_${nomePerfil}.json`);
             document.body.appendChild(linkDownload);
             linkDownload.click();
             linkDownload.remove();
@@ -1028,11 +1158,15 @@
         window.addEventListener('DOMContentLoaded', () => {
             toggleMethodFields();
             const jaLogado = localStorage.getItem('user_authenticated') === 'true';
-            if (jaLogado) {
+            const perfil = obterPerfilLogado();
+
+            if (jaLogado && perfil) {
                 loginScreen.style.display = 'none';
                 appContainer.style.display = 'block';
+                profileBadge.textContent = `👤 Perfil: ${perfil.name}${perfil.isMaster ? ' (Master)' : ''}`;
+                btnMasterPanel.style.display = perfil.isMaster ? 'flex' : 'none';
                 loadingEl.style.display = 'flex';
-                inicializarFirebase();
+                inicializarFirebase(perfil.node);
             } else {
                 loginScreen.style.display = 'flex';
             }
@@ -1040,12 +1174,17 @@
 
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            if (loginPassword.value === obterSenhaAtual()) {
+            const perfilEncontrado = autenticarSenha(loginPassword.value);
+
+            if (perfilEncontrado) {
                 localStorage.setItem('user_authenticated', 'true');
+                localStorage.setItem('active_user_key', perfilEncontrado.key);
                 loginScreen.style.display = 'none';
                 appContainer.style.display = 'block';
+                profileBadge.textContent = `👤 Perfil: ${perfilEncontrado.name}${perfilEncontrado.isMaster ? ' (Master)' : ''}`;
+                btnMasterPanel.style.display = perfilEncontrado.isMaster ? 'flex' : 'none';
                 loadingEl.style.display = 'flex';
-                inicializarFirebase();
+                inicializarFirebase(perfilEncontrado.node);
             } else {
                 loginError.style.display = 'block';
                 loginPassword.value = '';
@@ -1087,9 +1226,11 @@
 
         dateInput.value = new Date().toISOString().split('T')[0];
 
-        function inicializarFirebase() {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.database().ref("lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM");
+        function inicializarFirebase(nodeName) {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            db = firebase.database().ref(nodeName);
 
             db.on('value', (snapshot) => {
                 const data = snapshot.val();
@@ -1232,29 +1373,20 @@
             }
         }
 
-        // EDIÇÃO COMPLETA: DESCRIÇÃO E VALOR
         window.editTransaction = function(id) {
             const t = transactions.find(item => item.id === id);
             if (!t || !db) return;
 
-            // 1. Edição da Descrição
             const novaDescricao = prompt(`Editar Nome/Descrição do lançamento:`, t.description);
-            if (novaDescricao === null) return; // Cancelou
+            if (novaDescricao === null) return;
 
-            // 2. Edição do Valor
             const valorAtualFormatado = t.amount.toString().replace('.', ',');
             const novoValorStr = prompt(`Editar Valor do lançamento:\n\nDigite o valor correto (Ex: 145,90):`, valorAtualFormatado);
-            if (novoValorStr === null) return; // Cancelou
+            if (novoValorStr === null) return;
 
             const updates = {};
-            
-            if (novaDescricao.trim() !== '') {
-                updates.description = novaDescricao.trim();
-            }
-            
-            if (novoValorStr.trim() !== '') {
-                updates.amount = parseFormattedValue(novoValorStr);
-            }
+            if (novaDescricao.trim() !== '') updates.description = novaDescricao.trim();
+            if (novoValorStr.trim() !== '') updates.amount = parseFormattedValue(novoValorStr);
 
             if (Object.keys(updates).length > 0) {
                 db.child(id).update(updates);
