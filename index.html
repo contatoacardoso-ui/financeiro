@@ -803,22 +803,6 @@
                             <input type="text" id="card-origin" placeholder="Ex: Nubank, Itaú, Dinheiro" autocomplete="off">
                         </div>
 
-                        <!-- NOVO CAMPO: Categoria / Tipo de Compra -->
-                        <div class="form-group">
-                            <label for="category-input">Categoria / Local da Compra</label>
-                            <input type="text" id="category-input" list="category-suggestions" placeholder="Ex: Mercado, Padaria, Petshop, Café..." autocomplete="off">
-                            <datalist id="category-suggestions">
-                                <option value="Mercado"></option>
-                                <option value="Padaria"></option>
-                                <option value="Petshop"></option>
-                                <option value="Restaurante/Café"></option>
-                                <option value="Farmácia"></option>
-                                <option value="Combustível"></option>
-                                <option value="Assinaturas/Lazer"></option>
-                                <option value="Serviços/Outros"></option>
-                            </datalist>
-                        </div>
-
                         <!-- Passo 3: Parcelas Condicionais (Se Crédito) -->
                         <div id="credit-fields">
                             <div class="form-group">
@@ -828,10 +812,17 @@
                         </div>
                     </div>
 
+                    <!-- Categoria / Tipo da Transação -->
+                    <div class="form-group">
+                        <label for="category-input" id="category-label">Categoria / Tipo de Entrada</label>
+                        <input type="text" id="category-input" list="category-suggestions" placeholder="Ex: Salário, Evento, Entrega..." autocomplete="off">
+                        <datalist id="category-suggestions"></datalist>
+                    </div>
+
                     <!-- Passo 4: Detalhes do Lançamento -->
                     <div class="form-group">
                         <label for="description">Descrição</label>
-                        <input type="text" id="description" placeholder="Ex: Pão de açúcar, Ração do gato" required autocomplete="off">
+                        <input type="text" id="description" placeholder="Ex: Salário, Evento, Entrega, Rendimento..." required autocomplete="off">
                     </div>
 
                     <div class="form-group">
@@ -938,16 +929,62 @@
         }
 
         // --- CONTROLE DINÂMICO DOS CAMPOS ---
+        const SUGGESTIONS_RECEBER = [
+            'Salário', 
+            'Prestação de Serviços', 
+            'Evento / Trabalho Extra', 
+            'Entregas', 
+            'Rendimentos / Investimentos', 
+            'Vendas / Comércio', 
+            'Reembolso / Outros'
+        ];
+
+        const SUGGESTIONS_PAGAR = [
+            'Mercado', 
+            'Padaria', 
+            'Petshop', 
+            'Restaurante/Café', 
+            'Farmácia', 
+            'Combustível', 
+            'Assinaturas/Lazer', 
+            'Serviços/Outros'
+        ];
+
         window.toggleMethodFields = function() {
             const isPagar = document.querySelector('input[name="type"]:checked').value === 'pagar';
             document.getElementById('expense-conditional-fields').style.display = isPagar ? 'block' : 'none';
             
+            const categoryLabel = document.getElementById('category-label');
+            const categoryInput = document.getElementById('category-input');
+            const descInput = document.getElementById('description');
+            const datalist = document.getElementById('category-suggestions');
+
+            datalist.innerHTML = '';
+
             if (!isPagar) {
                 toggleCreditFields(false);
                 document.getElementById('date-label').textContent = 'Data de Recebimento';
+                categoryLabel.textContent = 'Categoria / Tipo de Entrada';
+                categoryInput.placeholder = 'Ex: Salário, Evento, Entrega...';
+                descInput.placeholder = 'Ex: Salário, Evento, Entrega, Rendimentos...';
+
+                SUGGESTIONS_RECEBER.forEach(sug => {
+                    const opt = document.createElement('option');
+                    opt.value = sug;
+                    datalist.appendChild(opt);
+                });
             } else {
                 const isCredito = document.getElementById('method-credito').checked;
                 toggleCreditFields(isCredito);
+                categoryLabel.textContent = 'Categoria / Local da Compra';
+                categoryInput.placeholder = 'Ex: Mercado, Padaria, Petshop, Café...';
+                descInput.placeholder = 'Ex: Pão de açúcar, Ração do gato...';
+
+                SUGGESTIONS_PAGAR.forEach(sug => {
+                    const opt = document.createElement('option');
+                    opt.value = sug;
+                    datalist.appendChild(opt);
+                });
             }
         }
 
@@ -1087,7 +1124,7 @@
         let transactions = [];
         let currentTab = 'pending';
         let selectedMonthKey = '';
-        let reportMode = 'month'; // 'month' ou 'year'
+        let reportMode = 'month';
         let chartComparisonInstance = null;
         let chartCategoriesInstance = null;
 
@@ -1309,13 +1346,19 @@
                 : `Débito/Dinheiro${complementoOrigem}`;
         }
 
-        // Obtém a Categoria do Lançamento (ou infere inteligentemente caso antigo)
         function getTransactionCategory(t) {
             if (t.category && t.category.trim() !== '') return t.category.trim();
             const desc = (t.description || '').toLowerCase();
-            const orig = (t.cardOrigin || '').toLowerCase();
             
-            if (desc.includes('padaria') || desc.includes('pao') || desc.includes('café') || desc.includes('cafe')) return 'Padaria/Café';
+            if (t.type === 'receber') {
+                if (desc.includes('salario') || desc.includes('salário')) return 'Salário';
+                if (desc.includes('evento')) return 'Evento';
+                if (desc.includes('entrega')) return 'Entrega';
+                if (desc.includes('rendimento') || desc.includes('investimento')) return 'Rendimento';
+                return 'Entradas Gerais';
+            }
+
+            if (desc.includes('padaria') || desc.includes('pao') || desc.includes('café') || desc.includes('cafe')) return 'Padaria';
             if (desc.includes('mercado') || desc.includes('supermercado') || desc.includes('feira') || desc.includes('açougue')) return 'Mercado';
             if (desc.includes('pet') || desc.includes('ração') || desc.includes('racao') || desc.includes('vet')) return 'Petshop';
             if (desc.includes('farmacia') || desc.includes('drogaria') || desc.includes('remedio')) return 'Farmácia';
@@ -1386,7 +1429,7 @@
                     }
 
                     const catText = getTransactionCategory(t);
-                    const catBadge = t.type === 'pagar' ? `<span class="category-tag">🏷️ ${catText}</span>` : '';
+                    const catBadge = `<span class="category-tag">🏷️ ${catText}</span>`;
 
                     let actionMarkup = "";
                     if (!t.done) {
@@ -1434,7 +1477,6 @@
         function renderReport() {
             const currentYear = selectedMonthKey.split('-')[0];
             
-            // Filtragem de Acordo com o Modo (Mensal vs Anual)
             const filteredTransactions = transactions.filter(t => {
                 if (!t.date) return false;
                 if (reportMode === 'month') return t.date.startsWith(selectedMonthKey);
@@ -1458,7 +1500,6 @@
                 }
             });
 
-            // Indicador de Comprometimento de Renda
             const ratioBadge = document.getElementById('income-ratio-badge');
             if (totalEntradas > 0) {
                 const ratio = Math.round((totalSaidas / totalEntradas) * 100);
@@ -1541,7 +1582,7 @@
                 }
             });
 
-            // 3. Lista do "Onde Você Mais Gastou" (Com barras de progresso)
+            // 3. Lista do "Onde Você Mais Gastou"
             const topListEl = document.getElementById('top-expenses-list');
             topListEl.innerHTML = '';
 
@@ -1578,6 +1619,7 @@
             const description = descInput.value.trim();
             const totalAmount = parseFormattedValue(amountInput.value);
             const baseDate = dateInput.value;
+            const category = categoryInput.value.trim();
 
             if (!description || totalAmount <= 0 || !baseDate) return;
 
@@ -1590,6 +1632,7 @@
                     db.push({
                         type: 'receber',
                         description,
+                        category,
                         amount: totalAmount,
                         date: baseDate,
                         done: false
@@ -1597,7 +1640,6 @@
                 } else {
                     const method = document.querySelector('input[name="method"]:checked').value;
                     const cardOrigin = cardOriginInput.value.trim();
-                    const category = categoryInput.value.trim();
                     
                     if (method === 'debito') {
                         db.push({
