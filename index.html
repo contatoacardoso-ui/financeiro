@@ -1153,8 +1153,9 @@
                 if (t.type === 'receber') {
                     totalEntradas += t.amount;
                     entradasDetalhadas.push(t);
-                    const orig = t.cardOrigin || 'Outras Entradas';
-                    agrupaEntradasOrigem[orig] = (agrupaEntradasOrigem[orig] || 0) + t.amount;
+                    // Usa a descrição ou cardOrigin separadamente para cada entrada
+                    const chaveEntrada = t.cardOrigin ? `${t.description} (${t.cardOrigin})` : t.description;
+                    agrupaEntradasOrigem[chaveEntrada] = (agrupaEntradasOrigem[chaveEntrada] || 0) + t.amount;
                 } else {
                     totalSaidas += t.amount;
                     saidasDetalhadas.push(t);
@@ -1187,7 +1188,7 @@
                 });
             }
 
-            // Ranking Entradas
+            // Ranking Entradas (agora individualizado por descrição/origem)
             const topIncRanking = document.getElementById('top-incomes-ranking');
             topIncRanking.innerHTML = '';
             const sortedInc = Object.entries(agrupaEntradasOrigem).sort((a, b) => b[1] - a[1]);
