@@ -864,8 +864,8 @@
             const t = transactions.find(item => item.id === id);
             if (!t) return;
             editIdInput.value = t.id;
-            descInput.value = t.description;
-            amountInput.value = formatCurrencyInput(t.amount);
+            descInput.value = t.description.replace(/ \(\d+\/\d+\)$/, '');
+            amountInput.value = formatCurrencyInput(t.amount * (t.installmentsTotal || 1));
             dateInput.value = t.date;
             cardOriginInput.value = t.cardOrigin || '';
 
@@ -876,7 +876,7 @@
                 if (t.method === 'credito') {
                     document.getElementById('method-credito').checked = true;
                     toggleCreditFields(true);
-                    document.getElementById('installments').value = t.installments || 1;
+                    document.getElementById('installments').value = t.installmentsTotal || 1;
                 } else {
                     document.getElementById('method-debito').checked = true;
                     toggleCreditFields(false);
@@ -924,7 +924,7 @@
 
         function montarHtmlDoItem(t) {
             const isRec = t.type === 'receber';
-            let badgeText = t.type === 'pagar' ? (t.method === 'credito' ? `💳 Crédito${t.installments > 1 ? ' (' + t.installments + 'x)' : ''}` : '💵 Débito') : '';
+            let badgeText = t.type === 'pagar' ? (t.method === 'credito' ? `💳 Crédito${t.installmentsTotal > 1 ? ' (' + t.installmentsNum + '/' + t.installmentsTotal + ')' : ''}` : '💵 Débito') : '';
             return `
                 <div class="item-details">
                     <h4>${t.description}</h4>
@@ -1109,19 +1109,42 @@
             if (!description || totalAmount <= 0 || !baseDate) return;
 
             const methodVal = selectedType === 'pagar' ? document.querySelector('input[name="method"]:checked').value : 'debito';
-
-            let transData = {
-                type: selectedType, description, amount: totalAmount, date: baseDate, cardOrigin: cardOrigin || '',
-                method: methodVal,
-                installments: selectedType === 'pagar' && methodVal === 'credito' ? (parseInt(document.getElementById('installments').value) || 1) : 1
-            };
+            const qtdParcelas = selectedType === 'pagar' && methodVal === 'credito' ? (parseInt(document.getElementById('installments').value) || 1) : 1;
 
             if (dbTransactions) {
                 if (editId) {
+                    let transData = {
+                        type: selectedType, description, amount: totalAmount, date: baseDate, cardOrigin: cardOrigin || '',
+                        method: methodVal, installmentsNum: 1, installmentsTotal: 1, done: false
+                    };
                     dbTransactions.child(editId).update(transData);
                 } else {
-                    transData.done = (selectedType === 'pagar' && methodVal === 'debito') ? true : false;
-                    dbTransactions.push(transData);
+                    const valorParcela = parseFloat((totalAmount / qtdParcelas).toFixed(2));
+                    let [ano, mes, dia] = baseDate.split('-').map(Number);
+
+                    for (let i = 0; i < qtdParcelas; i++) {
+                        let novaData = new Date(ano, mes - 1 + i, dia);
+                        let anoStr = novaData.getFullYear();
+                        let mesStr = String(novaData.getMonth() + 1).padStart(2, '0');
+                        let diaStr = String(novaData.getDate()).padStart(2, '0');
+                        let dataFormatada = `${anoStr}-${mesStr}-${diaStr}`;
+
+                        let nomeDesc = qtdParcelas > 1 ? `${description} (${i + 1}/${qtdParcelas})` : description;
+
+                        let transData = {
+                            type: selectedType,
+                            description: nomeDesc,
+                            amount: valorParcela,
+                            date: dataFormatada,
+                            cardOrigin: cardOrigin || '',
+                            method: methodVal,
+                            installmentsNum: i + 1,
+                            installmentsTotal: qtdParcelas,
+                            done: (selectedType === 'pagar' && methodVal === 'debito') ? true : false
+                        };
+
+                        dbTransactions.push(transData);
+                    }
                 }
             }
             cancelarEdicao();
