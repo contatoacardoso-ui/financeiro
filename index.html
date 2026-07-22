@@ -370,11 +370,11 @@
                 
                 <div class="kpi-grid">
                     <div class="kpi-item">
-                        <span>Margem Líquida</span>
+                        <span id="label-kpi-1">Margem Líquida</span>
                         <strong id="kpi-margin">0%</strong>
                     </div>
                     <div class="kpi-item">
-                        <span>Fluxo Líquido</span>
+                        <span id="label-kpi-2">Fluxo Líquido</span>
                         <strong id="kpi-flow">R$ 0,00</strong>
                     </div>
                 </div>
@@ -389,7 +389,7 @@
             </div>
 
             <div class="report-card">
-                <h3>📊 Demonstrativo Mensal (Entradas vs Saídas)</h3>
+                <h3 id="chart-comparison-title">📊 Demonstrativo Mensal (Entradas vs Saídas)</h3>
                 <div class="chart-container"><canvas id="chart-comparison"></canvas></div>
             </div>
 
@@ -446,7 +446,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.0.6"; 
+        const VERSAO_CODIGO = "1.0.7"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -527,7 +527,6 @@
                 if (!versaoNuvem) {
                     dbRoot.child('versao_sistema').set(VERSAO_CODIGO);
                 } else if (versaoNuvem !== VERSAO_CODIGO) {
-                    // Verifica se esta versão específica já foi dispensada nesta sessão/aparelho
                     const versaoDispensada = localStorage.getItem('versao_dispensada');
                     if (versaoDispensada !== versaoNuvem) {
                         document.getElementById('update-modal').style.display = 'flex';
@@ -556,7 +555,6 @@
             });
         });
 
-        // Salva a versão atual no localStorage para que o pop-up só apareça uma única vez por atualização
         window.fecharAvisoAtualizacao = function() {
             dbRoot.child('versao_sistema').once('value').then((snapshot) => {
                 const versaoNuvem = snapshot.val() || VERSAO_CODIGO;
@@ -1161,15 +1159,56 @@
                 }
             });
 
-            const diff = totalEntradas - totalSaidas;
-            const margem = totalEntradas > 0 ? ((diff / totalEntradas) * 100).toFixed(1) : 0;
+            if (reportMode === 'month') {
+                const diff = totalEntradas - totalSaidas;
+                const margem = totalEntradas > 0 ? ((diff / totalEntradas) * 100).toFixed(1) : 0;
 
-            document.getElementById('kpi-margin').textContent = `${margem}%`;
-            document.getElementById('kpi-margin').className = margem >= 0 ? 'income-text' : 'expense-text';
-            document.getElementById('kpi-flow').textContent = formatCurrency(diff);
-            document.getElementById('kpi-flow').className = diff >= 0 ? 'income-text' : 'expense-text';
+                document.getElementById('label-kpi-1').textContent = "Margem Líquida";
+                document.getElementById('label-kpi-2').textContent = "Fluxo Líquido";
+                document.getElementById('kpi-margin').textContent = `${margem}%`;
+                document.getElementById('kpi-margin').className = margem >= 0 ? 'income-text' : 'expense-text';
+                document.getElementById('kpi-flow').textContent = formatCurrency(diff);
+                document.getElementById('kpi-flow').className = diff >= 0 ? 'income-text' : 'expense-text';
 
-            document.getElementById('analysis-summary-text').innerHTML = `Total de Entradas: <strong class="income-text">${formatCurrency(totalEntradas)}</strong> | Total de Saídas: <strong class="expense-text">${formatCurrency(totalSaidas)}</strong><br><br>${diff >= 0 ? `✅ Excelente! Suas <strong>entradas superam as saídas</strong> em ${formatCurrency(diff)}.` : `⚠️ Alerta Executivo: Suas <strong>saídas superam as entradas</strong> em ${formatCurrency(Math.abs(diff))}.`}`;
+                document.getElementById('analysis-summary-text').innerHTML = `Total de Entradas: <strong class="income-text">${formatCurrency(totalEntradas)}</strong> | Total de Saídas: <strong class="expense-text">${formatCurrency(totalSaidas)}</strong><br><br>${diff >= 0 ? `✅ Excelente! Suas <strong>entradas superam as saídas</strong> em ${formatCurrency(diff)}.` : `⚠️ Alerta Executivo: Suas <strong>saídas superam as entradas</strong> em ${formatCurrency(Math.abs(diff))}.`}`;
+                document.getElementById('chart-comparison-title').textContent = "📊 Demonstrativo Mensal (Entradas vs Saídas)";
+            } else {
+                // Visão Anual: Médias Mensais e Alertas de Redução de Gastos
+                const mesesComMovimento = new Set();
+                transactions.forEach(t => {
+                    if (t.date) mesesComMovimento.add(t.date.substring(0, 7));
+                });
+                const qtdMeses = Math.max(1, mesesComMovimento.size);
+
+                const mediaEntradas = totalEntradas / qtdMeses;
+                const mediaSaidas = totalSaidas / qtdMeses;
+
+                document.getElementById('label-kpi-1').textContent = "Média Mensal Entradas";
+                document.getElementById('label-kpi-2').textContent = "Média Mensal Saídas";
+                document.getElementById('kpi-margin').textContent = formatCurrency(mediaEntradas);
+                document.getElementById('kpi-margin').className = 'income-text';
+                document.getElementById('kpi-flow').textContent = formatCurrency(mediaSaidas);
+                document.getElementById('kpi-flow').className = 'expense-text';
+
+                // Indicadores de Alerta para Redução de Gastos
+                let maiorDespesaNome = "Nenhuma";
+                let maiorDespesaValor = 0;
+                const ordenadasDespesas = Object.entries(agrupaSaidasDesc).sort((a, b) => b[1] - a[1]);
+                if (ordenadasDespesas.length > 0) {
+                    maiorDespesaNome = ordenadasDespesas[0][0];
+                    maiorDespesaValor = ordenadasDespesas[0][1];
+                }
+
+                let analiseAnualHtml = `Média de Gastos Mensais: <strong class="expense-text">${formatCurrency(mediaSaidas)}</strong> | Média de Receitas: <strong class="income-text">${formatCurrency(mediaEntradas)}</strong><br><br>`;
+                if (mediaSaidas > mediaEntradas) {
+                    analiseAnualHtml += `🚨 <strong>Atenção Anual:</strong> Sua média de gastos excede sua média de receitas! O maior peso em despesas é gerado por <strong>"${maiorDespesaNome}"</strong> (${formatCurrency(maiorDespesaValor)} acumulados). <strong>Ponto crítico para redução:</strong> Reveja os gastos com esta categoria ou defina um teto orçamentário mensal nela.`;
+                } else {
+                    analiseAnualHtml += `✅ <strong>Desempenho Anual Saudável:</strong> Suas receitas superam as despesas na média do período.<br>💡 <strong>Oportunidade de Otimização:</strong> A maior fatia dos seus custos é direcionada para <strong>"${maiorDespesaNome}"</strong>. Tente negociar ou enxugar 10% deste valor para otimizar ainda mais seus investimentos.`;
+                }
+
+                document.getElementById('analysis-summary-text').innerHTML = analiseAnualHtml;
+                document.getElementById('chart-comparison-title').textContent = "📊 Evolução Mensal Anual (Entradas vs Saídas por Mês)";
+            }
 
             const topExpRanking = document.getElementById('top-expenses-ranking');
             topExpRanking.innerHTML = '';
@@ -1188,9 +1227,47 @@
             const paletaCoresAltas = ['#3366CC', '#DC3912', '#FF9900', '#109618', '#990099', '#0099C6', '#DD4477', '#66AA00'];
             
             if (chartComparisonInstance) chartComparisonInstance.destroy();
-            chartComparisonInstance = new Chart(document.getElementById('chart-comparison').getContext('2d'), {
-                type: 'bar', data: { labels: ['Entradas', 'Saídas'], datasets: [{ data: [totalEntradas, totalSaidas], backgroundColor: ['#00b37e', '#f75a68'], borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
+            
+            if (reportMode === 'month') {
+                chartComparisonInstance = new Chart(document.getElementById('chart-comparison').getContext('2d'), {
+                    type: 'bar', data: { labels: ['Entradas', 'Saídas'], datasets: [{ data: [totalEntradas, totalSaidas], backgroundColor: ['#00b37e', '#f75a68'], borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+            } else {
+                // Gráfico Comparativo Mensal para a Visão Anual
+                const mesesAgrupados = {};
+                transactions.forEach(t => {
+                    if (t.date) {
+                        const mKey = t.date.substring(0, 7);
+                        if (!mesesAgrupados[mKey]) mesesAgrupados[mKey] = { rec: 0, pag: 0 };
+                        if (t.type === 'receber') mesesAgrupados[mKey].rec += t.amount;
+                        else mesesAgrupados[mKey].pag += t.amount;
+                    }
+                });
+
+                const chavesMeses = Object.keys(mesesAgrupados).sort();
+                const labelsAnuais = chavesMeses.map(m => {
+                    const [ano, mes] = m.split('-');
+                    return `${NOME_MESES[parseInt(mes) - 1]}/${ano}`;
+                });
+                const dadosRecAnual = chavesMeses.map(m => mesesAgrupados[m].rec);
+                const dadosPagAnual = chavesMeses.map(m => mesesAgrupados[m].pag);
+
+                chartComparisonInstance = new Chart(document.getElementById('chart-comparison').getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: labelsAnuais.length ? labelsAnuais : ['Nenhum mês'],
+                        datasets: [
+                            { label: 'Entradas', data: dadosRecAnual.length ? dadosRecAnual : [0], backgroundColor: '#00b37e', borderRadius: 4 },
+                            { label: 'Saídas', data: dadosPagAnual.length ? dadosPagAnual : [0], backgroundColor: '#f75a68', borderRadius: 4 }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
+                    }
+                });
+            }
 
             const dadosPizzaEntradas = consolidarDadosParaPizza(agrupaEntradasOrigem, 5);
             if (chartIncomesPieInstance) chartIncomesPieInstance.destroy();
