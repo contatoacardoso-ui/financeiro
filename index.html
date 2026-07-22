@@ -389,7 +389,7 @@
             </div>
 
             <div class="report-card">
-                <h3 id="chart-comparison-title">📊 Demonstrativo Mensal (Entradas vs Saídas)</h3>
+                <h3 id="chart-comparison-title">📊 Demonstrativo (Entradas vs Saídas)</h3>
                 <div class="chart-container"><canvas id="chart-comparison"></canvas></div>
             </div>
 
@@ -446,7 +446,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.0.7"; 
+        const VERSAO_CODIGO = "1.0.8"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -1159,8 +1159,9 @@
                 }
             });
 
+            const diff = totalEntradas - totalSaidas;
+
             if (reportMode === 'month') {
-                const diff = totalEntradas - totalSaidas;
                 const margem = totalEntradas > 0 ? ((diff / totalEntradas) * 100).toFixed(1) : 0;
 
                 document.getElementById('label-kpi-1').textContent = "Margem Líquida";
@@ -1173,24 +1174,16 @@
                 document.getElementById('analysis-summary-text').innerHTML = `Total de Entradas: <strong class="income-text">${formatCurrency(totalEntradas)}</strong> | Total de Saídas: <strong class="expense-text">${formatCurrency(totalSaidas)}</strong><br><br>${diff >= 0 ? `✅ Excelente! Suas <strong>entradas superam as saídas</strong> em ${formatCurrency(diff)}.` : `⚠️ Alerta Executivo: Suas <strong>saídas superam as entradas</strong> em ${formatCurrency(Math.abs(diff))}.`}`;
                 document.getElementById('chart-comparison-title').textContent = "📊 Demonstrativo Mensal (Entradas vs Saídas)";
             } else {
-                // Visão Anual: Médias Mensais e Alertas de Redução de Gastos
-                const mesesComMovimento = new Set();
-                transactions.forEach(t => {
-                    if (t.date) mesesComMovimento.add(t.date.substring(0, 7));
-                });
-                const qtdMeses = Math.max(1, mesesComMovimento.size);
+                // Visão Anual: Totais, Margem Global, Fluxo e Alertas de Redução de Custos
+                const margemAnual = totalEntradas > 0 ? ((diff / totalEntradas) * 100).toFixed(1) : 0;
 
-                const mediaEntradas = totalEntradas / qtdMeses;
-                const mediaSaidas = totalSaidas / qtdMeses;
+                document.getElementById('label-kpi-1').textContent = "Margem Anual";
+                document.getElementById('label-kpi-2').textContent = "Fluxo Líquido Anual";
+                document.getElementById('kpi-margin').textContent = `${margemAnual}%`;
+                document.getElementById('kpi-margin').className = margemAnual >= 0 ? 'income-text' : 'expense-text';
+                document.getElementById('kpi-flow').textContent = formatCurrency(diff);
+                document.getElementById('kpi-flow').className = diff >= 0 ? 'income-text' : 'expense-text';
 
-                document.getElementById('label-kpi-1').textContent = "Média Mensal Entradas";
-                document.getElementById('label-kpi-2').textContent = "Média Mensal Saídas";
-                document.getElementById('kpi-margin').textContent = formatCurrency(mediaEntradas);
-                document.getElementById('kpi-margin').className = 'income-text';
-                document.getElementById('kpi-flow').textContent = formatCurrency(mediaSaidas);
-                document.getElementById('kpi-flow').className = 'expense-text';
-
-                // Indicadores de Alerta para Redução de Gastos
                 let maiorDespesaNome = "Nenhuma";
                 let maiorDespesaValor = 0;
                 const ordenadasDespesas = Object.entries(agrupaSaidasDesc).sort((a, b) => b[1] - a[1]);
@@ -1199,11 +1192,11 @@
                     maiorDespesaValor = ordenadasDespesas[0][1];
                 }
 
-                let analiseAnualHtml = `Média de Gastos Mensais: <strong class="expense-text">${formatCurrency(mediaSaidas)}</strong> | Média de Receitas: <strong class="income-text">${formatCurrency(mediaEntradas)}</strong><br><br>`;
-                if (mediaSaidas > mediaEntradas) {
-                    analiseAnualHtml += `🚨 <strong>Atenção Anual:</strong> Sua média de gastos excede sua média de receitas! O maior peso em despesas é gerado por <strong>"${maiorDespesaNome}"</strong> (${formatCurrency(maiorDespesaValor)} acumulados). <strong>Ponto crítico para redução:</strong> Reveja os gastos com esta categoria ou defina um teto orçamentário mensal nela.`;
+                let analiseAnualHtml = `Total Entradas: <strong class="income-text">${formatCurrency(totalEntradas)}</strong> | Total Saídas: <strong class="expense-text">${formatCurrency(totalSaidas)}</strong><br><br>`;
+                if (diff < 0) {
+                    analiseAnualHtml += `⚠️ <strong>Alerta Anual:</strong> Seus gastos anuais superam as receitas! O maior impacto no orçamento é gerado por <strong>"${maiorDespesaNome}"</strong> (${formatCurrency(maiorDespesaValor)}). <strong>Ponto crítico de redução:</strong> Estabeleça um teto rigoroso para esta categoria.`;
                 } else {
-                    analiseAnualHtml += `✅ <strong>Desempenho Anual Saudável:</strong> Suas receitas superam as despesas na média do período.<br>💡 <strong>Oportunidade de Otimização:</strong> A maior fatia dos seus custos é direcionada para <strong>"${maiorDespesaNome}"</strong>. Tente negociar ou enxugar 10% deste valor para otimizar ainda mais seus investimentos.`;
+                    analiseAnualHtml += `✅ <strong>Desempenho Anual Saudável:</strong> Suas entradas superam o total de saídas no período.<br>💡 <strong>Oportunidade de Redução:</strong> A categoria que mais consome recursos é <strong>"${maiorDespesaNome}"</strong> (${formatCurrency(maiorDespesaValor)}). Avalie enxugar custos aqui para otimizar ainda mais o seu saldo.`;
                 }
 
                 document.getElementById('analysis-summary-text').innerHTML = analiseAnualHtml;
@@ -1233,7 +1226,6 @@
                     type: 'bar', data: { labels: ['Entradas', 'Saídas'], datasets: [{ data: [totalEntradas, totalSaidas], backgroundColor: ['#00b37e', '#f75a68'], borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
                 });
             } else {
-                // Gráfico Comparativo Mensal para a Visão Anual
                 const mesesAgrupados = {};
                 transactions.forEach(t => {
                     if (t.date) {
@@ -1283,7 +1275,7 @@
 
             const detailedIncList = document.getElementById('detailed-incomes-list');
             detailedIncList.innerHTML = entradasDetalhadas.length ? '' : '<div class="empty-state">Nenhuma entrada.</div>';
-            entradasDetalhadas.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
+            entradasDetalhadas.sort((a, b) => new Date(b.date) - new Date(b.date)).forEach(t => {
                 detailedIncList.innerHTML += `<div class="detailed-item"><div class="detailed-info"><h4>${t.description}</h4><span>${formatDate(t.date)}${t.cardOrigin ? ' • ' + t.cardOrigin : ''}</span></div><strong class="income-text">${formatCurrency(t.amount)}</strong></div>`;
             });
 
