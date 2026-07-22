@@ -449,7 +449,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.0.9"; 
+        const VERSAO_CODIGO = "1.1.0"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -1147,6 +1147,22 @@
             return resultadoConsolidado;
         }
 
+        // Função auxiliar exclusiva para o relatório agrupar pagamentos de crédito pelo banco/cartão automaticamente (ex: "C6 Bank")
+        function obterCategoriaRelatorio(t) {
+            if (t.type === 'pagar' && t.method === 'credito' && t.cardOrigin && t.cardOrigin.trim() !== '') {
+                const origemLimpa = t.cardOrigin.trim();
+                // Normaliza o nome do banco para manter padrão caso o usuário digite variações
+                const origemLower = origemLimpa.toLowerCase();
+                if (origemLower.includes('c6')) return 'Cartão C6 Bank';
+                if (origemLower.includes('nubank')) return 'Cartão Nubank';
+                if (origemLower.includes('itau') || origemLower.includes('itaú')) return 'Cartão Itaú';
+                if (origemLower.includes('mastercard')) return 'Cartão Mastercard';
+                if (origemLower.includes('visa')) return 'Cartão Visa';
+                return `Cartão ${origemLimpa}`;
+            }
+            return t.description;
+        }
+
         function renderReport() {
             let totalEntradas = 0, totalSaidas = 0;
             const transFiltradas = reportMode === 'month' ? transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey)) : transactions;
@@ -1158,7 +1174,10 @@
                     agrupaEntradasOrigem[t.cardOrigin ? `${t.description} (${t.cardOrigin})` : t.description] = (agrupaEntradasOrigem[t.cardOrigin ? `${t.description} (${t.cardOrigin})` : t.description] || 0) + t.amount;
                 } else {
                     totalSaidas += t.amount; saidasDetalhadas.push(t);
-                    agrupaSaidasDesc[t.description] = (agrupaSaidasDesc[t.description] || 0) + t.amount;
+                    
+                    // Aplicação automática do agrupamento de crédito por banco/cartão estritamente no relatório
+                    const chaveAgrupada = obterCategoriaRelatorio(t);
+                    agrupaSaidasDesc[chaveAgrupada] = (agrupaSaidasDesc[chaveAgrupada] || 0) + t.amount;
                 }
             });
 
@@ -1351,18 +1370,20 @@
                         let nomeDesc = qtdParcelas > 1 ? `${description} (${i + 1}/${qtdParcelas})` : description;
 
                         let transData = {
-                            type: selectedType,
-                            description: nomeDesc,
-                            amount: valorParcela,
-                            date: dataFormatada,
-                            cardOrigin: cardOrigin || '',
-                            method: methodVal,
-                            installmentsNum: i + 1,
-                            installmentsTotal: qtdParcelas,
-                            done: (selectedType === 'pagar' && methodVal === 'debito') ? true : false
+                            type: selectedData = {
+                                type: selectedType,
+                                description: nomeDesc,
+                                amount: valorParcela,
+                                date: dataFormatada,
+                                cardOrigin: cardOrigin || '',
+                                method: methodVal,
+                                installmentsNum: i + 1,
+                                installmentsTotal: qtdParcelas,
+                                done: (selectedType === 'pagar' && methodVal === 'debito') ? true : false
+                            }
                         };
 
-                        dbTransactions.push(transData);
+                        dbTransactions.push(transData.selectedData);
                     }
                 }
             }
