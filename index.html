@@ -149,7 +149,6 @@
         .report-card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
         .report-card h3 { font-size: 0.95rem; color: var(--text-color); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
         
-        /* Ajuste de altura e proporção dos gráficos de pizza para ótima visualização no app e impressão */
         .chart-container { position: relative; width: 100%; height: 210px; display: flex; justify-content: center; align-items: center; }
         .chart-container canvas { max-height: 210px !important; margin: 0 auto; }
         
@@ -462,7 +461,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.1.2"; 
+        const VERSAO_CODIGO = "1.1.3"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -792,7 +791,7 @@
                 const novaSenhaTrim = novaSenha.trim();
                 perfisCadastrados[chaveAtiva].pwd = novaSenhaTrim;
                 dbRoot.child('config_perfis').set(perfisCadastrados).then(() => {
-                    if (localStorage.getItem('remember_active') === 'true' && localStorage.getItem('active_user_key'] === chaveAtiva) {
+                    if (localStorage.getItem('remember_active') === 'true' && localStorage.getItem('active_user_key') === chaveAtiva) {
                         localStorage.setItem('saved_password', novaSenhaTrim);
                     }
                     alert("Senha alterada com sucesso!");
@@ -1247,7 +1246,6 @@
             });
             if(topIncRanking.innerHTML === '') topIncRanking.innerHTML = '<div class="empty-state">Sem dados de entradas.</div>';
 
-            // Paleta de cores corporativa sofisticada, limpa e harmoniosa para os gráficos de pizza (Doughnut)
             const paletaCoresPizza = ['#4ea8de', '#00b37e', '#ffb86c', '#f75a68', '#9d4edd', '#48bfe3'];
             
             if (chartComparisonInstance) chartComparisonInstance.destroy();
@@ -1268,7 +1266,7 @@
                     type: 'bar',
                     data: {
                         labels: ['Entradas', 'Saídas'],
-                        datasets: [{ data: [totalEntradas, totalSaídas], backgroundColor: ['#00b37e', '#f75a68'], borderRadius: 6 }]
+                        datasets: [{ data: [totalEntradas, totalSaidas], backgroundColor: ['#00b37e', '#f75a68'], borderRadius: 6 }]
                     },
                     options: {
                         ...commonChartOptions,
