@@ -158,6 +158,10 @@
         .kpi-item span { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; display: block; margin-bottom: 2px; }
         .kpi-item strong { font-size: 1rem; }
 
+        /* Container padrão para os rankings Top 3 (coluna na tela normal) */
+        .top-rankings-wrapper { display: flex; flex-direction: column; gap: 12px; }
+        .ranking-column { width: 100%; }
+
         .ranking-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
         .ranking-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; padding: 8px 10px; background: rgba(255,255,255,0.02); border-radius: 6px; border: 1px solid var(--border); }
 
@@ -200,17 +204,25 @@
         .update-card p { font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.4; }
 
         @media print {
-            @page { size: portrait; margin: 12mm; }
+            @page { size: portrait; margin: 10mm; }
             body { background-color: #fff; color: #000; padding: 0; width: 100%; max-width: 100%; }
             .install-banner, .tabs, .form-accordion, .month-selector, .security-footer, .report-mode-toggle, .report-actions, .action-btn, header { display: none !important; }
-            #report-section { display: flex !important; width: 100% !important; gap: 14px !important; }
-            .report-card { border: 1px solid #ccc; background: #fff; color: #000; box-shadow: none; margin-bottom: 12px; padding: 12px; page-break-inside: avoid; width: 100% !important; max-width: 100% !important; display: flex; flex-direction: column; align-items: center; }
+            #report-section { display: flex !important; width: 100% !important; gap: 10px !important; }
+            .report-card { border: 1px solid #ccc; background: #fff; color: #000; box-shadow: none; margin-bottom: 10px; padding: 10px; page-break-inside: avoid; width: 100% !important; max-width: 100% !important; display: flex; flex-direction: column; align-items: center; }
             .report-card h3 { width: 100%; text-align: left; }
-            .chart-container { position: relative; width: 100% !important; max-width: 100% !important; height: 170px !important; max-height: 170px !important; margin: 0 auto; display: flex; justify-content: center; align-items: center; page-break-inside: avoid; }
-            .chart-container canvas { margin: 0 auto !important; max-width: 100% !important; max-height: 170px !important; }
+            
+            /* Ajuste profissional para impressão: Gráficos centralizados e contidos perfeitamente no quadro */
+            .chart-container { position: relative; width: 100% !important; max-width: 100% !important; height: 160px !important; max-height: 160px !important; margin: 0 auto; display: flex; justify-content: center; align-items: center; page-break-inside: avoid; }
+            .chart-container canvas { margin: 0 auto !important; max-width: 100% !important; max-height: 160px !important; object-fit: contain; }
+            
             .analysis-box { background: #f0f0f0; border: 1px solid #ccc; color: #000; width: 100%; }
             .detailed-item, .ranking-item { background: #f9f9f9; border: 1px solid #ddd; color: #000; width: 100%; }
             .kpi-grid { width: 100%; }
+            
+            /* Impressão: Top 3 Despesas e Top 3 Entradas lado a lado em duas colunas */
+            .top-rankings-wrapper { display: flex !important; flex-direction: row !important; gap: 10px !important; width: 100% !important; }
+            .ranking-column { flex: 1 !important; width: 50% !important; }
+
             .detailed-report-list { max-height: none !important; overflow: visible !important; display: flex !important; flex-direction: column !important; gap: 6px !important; width: 100%; }
             .income-text { color: #008000 !important; }
             .expense-text { color: #ff0000 !important; }
@@ -384,11 +396,17 @@
 
                 <div class="analysis-box" id="analysis-summary-text">Calculando análise...</div>
                 
-                <h4 style="font-size:0.85rem; color:var(--expense); margin-bottom:6px;">🔥 Top 3 Maiores Despesas</h4>
-                <div class="ranking-list" id="top-expenses-ranking"></div>
-
-                <h4 style="font-size:0.85rem; color:var(--income); margin-bottom:6px; margin-top:12px;">💰 Top 3 Maiores Entradas</h4>
-                <div class="ranking-list" id="top-incomes-ranking"></div>
+                <!-- Wrapper que formata os rankings lado a lado na impressão (e coluna empilhada normal no mobile) -->
+                <div class="top-rankings-wrapper">
+                    <div class="ranking-column">
+                        <h4 style="font-size:0.85rem; color:var(--expense); margin-bottom:6px;">🔥 Top 3 Maiores Despesas</h4>
+                        <div class="ranking-list" id="top-expenses-ranking"></div>
+                    </div>
+                    <div class="ranking-column">
+                        <h4 style="font-size:0.85rem; color:var(--income); margin-bottom:6px; margin-top:0px;">💰 Top 3 Maiores Entradas</h4>
+                        <div class="ranking-list" id="top-incomes-ranking"></div>
+                    </div>
+                </div>
             </div>
 
             <div class="report-card">
@@ -449,7 +467,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.1.0"; 
+        const VERSAO_CODIGO = "1.1.1"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -1147,11 +1165,9 @@
             return resultadoConsolidado;
         }
 
-        // Função auxiliar exclusiva para o relatório agrupar pagamentos de crédito pelo banco/cartão automaticamente (ex: "C6 Bank")
         function obterCategoriaRelatorio(t) {
             if (t.type === 'pagar' && t.method === 'credito' && t.cardOrigin && t.cardOrigin.trim() !== '') {
                 const origemLimpa = t.cardOrigin.trim();
-                // Normaliza o nome do banco para manter padrão caso o usuário digite variações
                 const origemLower = origemLimpa.toLowerCase();
                 if (origemLower.includes('c6')) return 'Cartão C6 Bank';
                 if (origemLower.includes('nubank')) return 'Cartão Nubank';
@@ -1174,8 +1190,6 @@
                     agrupaEntradasOrigem[t.cardOrigin ? `${t.description} (${t.cardOrigin})` : t.description] = (agrupaEntradasOrigem[t.cardOrigin ? `${t.description} (${t.cardOrigin})` : t.description] || 0) + t.amount;
                 } else {
                     totalSaidas += t.amount; saidasDetalhadas.push(t);
-                    
-                    // Aplicação automática do agrupamento de crédito por banco/cartão estritamente no relatório
                     const chaveAgrupada = obterCategoriaRelatorio(t);
                     agrupaSaidasDesc[chaveAgrupada] = (agrupaSaidasDesc[chaveAgrupada] || 0) + t.amount;
                 }
@@ -1370,20 +1384,18 @@
                         let nomeDesc = qtdParcelas > 1 ? `${description} (${i + 1}/${qtdParcelas})` : description;
 
                         let transData = {
-                            type: selectedData = {
-                                type: selectedType,
-                                description: nomeDesc,
-                                amount: valorParcela,
-                                date: dataFormatada,
-                                cardOrigin: cardOrigin || '',
-                                method: methodVal,
-                                installmentsNum: i + 1,
-                                installmentsTotal: qtdParcelas,
-                                done: (selectedType === 'pagar' && methodVal === 'debito') ? true : false
-                            }
+                            type: selectedType,
+                            description: nomeDesc,
+                            amount: valorParcela,
+                            date: dataFormatada,
+                            cardOrigin: cardOrigin || '',
+                            method: methodVal,
+                            installmentsNum: i + 1,
+                            installmentsTotal: qtdParcelas,
+                            done: (selectedType === 'pagar' && methodVal === 'debito') ? true : false
                         };
 
-                        dbTransactions.push(transData.selectedData);
+                        dbTransactions.push(transData);
                     }
                 }
             }
