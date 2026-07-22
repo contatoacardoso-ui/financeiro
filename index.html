@@ -148,7 +148,10 @@
 
         .report-card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
         .report-card h3 { font-size: 0.95rem; color: var(--text-color); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .chart-container { position: relative; width: 100%; height: 250px; }
+        
+        /* Ajuste de altura e proporção dos gráficos de pizza para ótima visualização no app e impressão */
+        .chart-container { position: relative; width: 100%; height: 210px; display: flex; justify-content: center; align-items: center; }
+        .chart-container canvas { max-height: 210px !important; margin: 0 auto; }
         
         .analysis-box { background: rgba(78, 168, 222, 0.08); border: 1px solid rgba(78, 168, 222, 0.2); border-radius: 8px; padding: 14px; margin-bottom: 14px; font-size: 0.88rem; line-height: 1.5; }
         .analysis-box strong { color: var(--primary); }
@@ -158,7 +161,6 @@
         .kpi-item span { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; display: block; margin-bottom: 2px; }
         .kpi-item strong { font-size: 1rem; }
 
-        /* Container padrão para os rankings Top 3 (coluna na tela normal) */
         .top-rankings-wrapper { display: flex; flex-direction: column; gap: 12px; }
         .ranking-column { width: 100%; }
 
@@ -189,7 +191,6 @@
             padding: 14px; color: var(--text-color); font-size: 0.9rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
         }
 
-        /* Modal de Atualização Simples com botão OK */
         #update-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center;
@@ -211,15 +212,13 @@
             .report-card { border: 1px solid #ccc; background: #fff; color: #000; box-shadow: none; margin-bottom: 10px; padding: 10px; page-break-inside: avoid; width: 100% !important; max-width: 100% !important; display: flex; flex-direction: column; align-items: center; }
             .report-card h3 { width: 100%; text-align: left; }
             
-            /* Ajuste profissional para impressão: Gráficos centralizados e contidos perfeitamente no quadro */
-            .chart-container { position: relative; width: 100% !important; max-width: 100% !important; height: 160px !important; max-height: 160px !important; margin: 0 auto; display: flex; justify-content: center; align-items: center; page-break-inside: avoid; }
-            .chart-container canvas { margin: 0 auto !important; max-width: 100% !important; max-height: 160px !important; object-fit: contain; }
+            .chart-container { position: relative; width: 100% !important; max-width: 100% !important; height: 150px !important; max-height: 150px !important; margin: 0 auto; display: flex; justify-content: center; align-items: center; page-break-inside: avoid; }
+            .chart-container canvas { margin: 0 auto !important; max-width: 100% !important; max-height: 150px !important; object-fit: contain; }
             
             .analysis-box { background: #f0f0f0; border: 1px solid #ccc; color: #000; width: 100%; }
             .detailed-item, .ranking-item { background: #f9f9f9; border: 1px solid #ddd; color: #000; width: 100%; }
             .kpi-grid { width: 100%; }
             
-            /* Impressão: Top 3 Despesas e Top 3 Entradas lado a lado em duas colunas */
             .top-rankings-wrapper { display: flex !important; flex-direction: row !important; gap: 10px !important; width: 100% !important; }
             .ranking-column { flex: 1 !important; width: 50% !important; }
 
@@ -231,7 +230,6 @@
 </head>
 <body>
 
-    <!-- Modal de Nova Versão Simples (Apenas OK para fechar) -->
     <div id="update-modal">
         <div class="update-card">
             <div style="font-size: 2.5rem; margin-bottom: 10px;">✨</div>
@@ -241,7 +239,6 @@
         </div>
     </div>
 
-    <!-- Tela de Login -->
     <div id="login-screen">
         <div class="login-card">
             <div class="login-icon">🔒</div>
@@ -261,7 +258,6 @@
         </div>
     </div>
 
-    <!-- Aplicativo Principal -->
     <div id="app-container">
         <header>
             <h1>Controle Financeiro</h1>
@@ -396,7 +392,6 @@
 
                 <div class="analysis-box" id="analysis-summary-text">Calculando análise...</div>
                 
-                <!-- Wrapper que formata os rankings lado a lado na impressão (e coluna empilhada normal no mobile) -->
                 <div class="top-rankings-wrapper">
                     <div class="ranking-column">
                         <h4 style="font-size:0.85rem; color:var(--expense); margin-bottom:6px;">🔥 Top 3 Maiores Despesas</h4>
@@ -467,7 +462,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.1.1"; 
+        const VERSAO_CODIGO = "1.1.2"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -797,7 +792,7 @@
                 const novaSenhaTrim = novaSenha.trim();
                 perfisCadastrados[chaveAtiva].pwd = novaSenhaTrim;
                 dbRoot.child('config_perfis').set(perfisCadastrados).then(() => {
-                    if (localStorage.getItem('remember_active') === 'true' && localStorage.getItem('active_user_key') === chaveAtiva) {
+                    if (localStorage.getItem('remember_active') === 'true' && localStorage.getItem('active_user_key'] === chaveAtiva) {
                         localStorage.setItem('saved_password', novaSenhaTrim);
                     }
                     alert("Senha alterada com sucesso!");
@@ -1140,7 +1135,7 @@
             });
         }
 
-        function consolidarDadosParaPizza(dadosObjeto, limiteMaxFatias = 5) {
+        function consolidarDadosParaPizza(dadosObjeto, limiteMaxFatias = 4) {
             const entradasOrdenadas = Object.entries(dadosObjeto).sort((a, b) => b[1] - a[1]);
             
             if (entradasOrdenadas.length <= limiteMaxFatias) {
@@ -1252,7 +1247,8 @@
             });
             if(topIncRanking.innerHTML === '') topIncRanking.innerHTML = '<div class="empty-state">Sem dados de entradas.</div>';
 
-            const paletaCoresAltas = ['#3366CC', '#DC3912', '#FF9900', '#109618', '#990099', '#0099C6', '#DD4477', '#66AA00'];
+            // Paleta de cores corporativa sofisticada, limpa e harmoniosa para os gráficos de pizza (Doughnut)
+            const paletaCoresPizza = ['#4ea8de', '#00b37e', '#ffb86c', '#f75a68', '#9d4edd', '#48bfe3'];
             
             if (chartComparisonInstance) chartComparisonInstance.destroy();
             
@@ -1262,7 +1258,7 @@
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels: { boxWidth: 12, font: { size: 11 } }
+                        labels: { boxWidth: 10, font: { size: 10, weight: '600' }, color: '#e1e1e6', padding: 12 }
                     }
                 }
             };
@@ -1272,7 +1268,7 @@
                     type: 'bar',
                     data: {
                         labels: ['Entradas', 'Saídas'],
-                        datasets: [{ data: [totalEntradas, totalSaidas], backgroundColor: ['#00b37e', '#f75a68'], borderRadius: 6 }]
+                        datasets: [{ data: [totalEntradas, totalSaídas], backgroundColor: ['#00b37e', '#f75a68'], borderRadius: 6 }]
                     },
                     options: {
                         ...commonChartOptions,
@@ -1311,26 +1307,44 @@
                 });
             }
 
-            const dadosPizzaEntradas = consolidarDadosParaPizza(agrupaEntradasOrigem, 5);
+            const dadosPizzaEntradas = consolidarDadosParaPizza(agrupaEntradasOrigem, 4);
             if (chartIncomesPieInstance) chartIncomesPieInstance.destroy();
             chartIncomesPieInstance = new Chart(document.getElementById('chart-incomes-pie').getContext('2d'), {
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(dadosPizzaEntradas).length ? Object.keys(dadosPizzaEntradas) : ['Nenhuma'],
-                    datasets: [{ data: Object.values(dadosPizzaEntradas).length ? Object.values(dadosPizzaEntradas) : [1], backgroundColor: paletaCoresAltas }]
+                    datasets: [{ 
+                        data: Object.values(dadosPizzaEntradas).length ? Object.values(dadosPizzaEntradas) : [1], 
+                        backgroundColor: paletaCoresPizza,
+                        borderWidth: 2,
+                        borderColor: '#1d1d22',
+                        hoverOffset: 4
+                    }]
                 },
-                options: commonChartOptions
+                options: {
+                    ...commonChartOptions,
+                    cutout: '65%'
+                }
             });
 
-            const dadosPizzaSaidas = consolidarDadosParaPizza(agrupaSaidasDesc, 5);
+            const dadosPizzaSaidas = consolidarDadosParaPizza(agrupaSaidasDesc, 4);
             if (chartExpensesPieInstance) chartExpensesPieInstance.destroy();
             chartExpensesPieInstance = new Chart(document.getElementById('chart-expenses-pie').getContext('2d'), {
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(dadosPizzaSaidas).length ? Object.keys(dadosPizzaSaidas) : ['Nenhuma'],
-                    datasets: [{ data: Object.values(dadosPizzaSaidas).length ? Object.values(dadosPizzaSaidas) : [1], backgroundColor: paletaCoresAltas }]
+                    datasets: [{ 
+                        data: Object.values(dadosPizzaSaidas).length ? Object.values(dadosPizzaSaidas) : [1], 
+                        backgroundColor: paletaCoresPizza,
+                        borderWidth: 2,
+                        borderColor: '#1d1d22',
+                        hoverOffset: 4
+                    }]
                 },
-                options: commonChartOptions
+                options: {
+                    ...commonChartOptions,
+                    cutout: '65%'
+                }
             });
 
             const detailedIncList = document.getElementById('detailed-incomes-list');
