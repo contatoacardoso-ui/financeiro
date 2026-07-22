@@ -200,15 +200,18 @@
         .update-card p { font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.4; }
 
         @media print {
-            @page { size: portrait; margin: 10mm; }
+            @page { size: portrait; margin: 12mm; }
             body { background-color: #fff; color: #000; padding: 0; width: 100%; max-width: 100%; }
             .install-banner, .tabs, .form-accordion, .month-selector, .security-footer, .report-mode-toggle, .report-actions, .action-btn, header { display: none !important; }
-            #report-section { display: flex !important; width: 100% !important; gap: 10px !important; }
-            .report-card { border: 1px solid #ccc; background: #fff; color: #000; box-shadow: none; margin-bottom: 10px; padding: 10px; page-break-inside: avoid; width: 100% !important; max-width: 100% !important; }
-            .chart-container { position: relative; width: 100% !important; max-width: 100% !important; height: 180px !important; max-height: 180px !important; margin: 0 auto; page-break-inside: avoid; }
-            .analysis-box { background: #f0f0f0; border: 1px solid #ccc; color: #000; }
-            .detailed-item, .ranking-item { background: #f9f9f9; border: 1px solid #ddd; color: #000; }
-            .detailed-report-list { max-height: none !important; overflow: visible !important; display: flex !important; flex-direction: column !important; gap: 6px !important; }
+            #report-section { display: flex !important; width: 100% !important; gap: 14px !important; }
+            .report-card { border: 1px solid #ccc; background: #fff; color: #000; box-shadow: none; margin-bottom: 12px; padding: 12px; page-break-inside: avoid; width: 100% !important; max-width: 100% !important; display: flex; flex-direction: column; align-items: center; }
+            .report-card h3 { width: 100%; text-align: left; }
+            .chart-container { position: relative; width: 100% !important; max-width: 100% !important; height: 170px !important; max-height: 170px !important; margin: 0 auto; display: flex; justify-content: center; align-items: center; page-break-inside: avoid; }
+            .chart-container canvas { margin: 0 auto !important; max-width: 100% !important; max-height: 170px !important; }
+            .analysis-box { background: #f0f0f0; border: 1px solid #ccc; color: #000; width: 100%; }
+            .detailed-item, .ranking-item { background: #f9f9f9; border: 1px solid #ddd; color: #000; width: 100%; }
+            .kpi-grid { width: 100%; }
+            .detailed-report-list { max-height: none !important; overflow: visible !important; display: flex !important; flex-direction: column !important; gap: 6px !important; width: 100%; }
             .income-text { color: #008000 !important; }
             .expense-text { color: #ff0000 !important; }
         }
@@ -446,7 +449,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.0.8"; 
+        const VERSAO_CODIGO = "1.0.9"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -1174,7 +1177,6 @@
                 document.getElementById('analysis-summary-text').innerHTML = `Total de Entradas: <strong class="income-text">${formatCurrency(totalEntradas)}</strong> | Total de Saídas: <strong class="expense-text">${formatCurrency(totalSaidas)}</strong><br><br>${diff >= 0 ? `✅ Excelente! Suas <strong>entradas superam as saídas</strong> em ${formatCurrency(diff)}.` : `⚠️ Alerta Executivo: Suas <strong>saídas superam as entradas</strong> em ${formatCurrency(Math.abs(diff))}.`}`;
                 document.getElementById('chart-comparison-title').textContent = "📊 Demonstrativo Mensal (Entradas vs Saídas)";
             } else {
-                // Visão Anual: Totais, Margem Global, Fluxo e Alertas de Redução de Custos
                 const margemAnual = totalEntradas > 0 ? ((diff / totalEntradas) * 100).toFixed(1) : 0;
 
                 document.getElementById('label-kpi-1').textContent = "Margem Anual";
@@ -1221,9 +1223,28 @@
             
             if (chartComparisonInstance) chartComparisonInstance.destroy();
             
+            const commonChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { boxWidth: 12, font: { size: 11 } }
+                    }
+                }
+            };
+
             if (reportMode === 'month') {
                 chartComparisonInstance = new Chart(document.getElementById('chart-comparison').getContext('2d'), {
-                    type: 'bar', data: { labels: ['Entradas', 'Saídas'], datasets: [{ data: [totalEntradas, totalSaidas], backgroundColor: ['#00b37e', '#f75a68'], borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                    type: 'bar',
+                    data: {
+                        labels: ['Entradas', 'Saídas'],
+                        datasets: [{ data: [totalEntradas, totalSaidas], backgroundColor: ['#00b37e', '#f75a68'], borderRadius: 6 }]
+                    },
+                    options: {
+                        ...commonChartOptions,
+                        plugins: { legend: { display: false } }
+                    }
                 });
             } else {
                 const mesesAgrupados = {};
@@ -1253,29 +1274,35 @@
                             { label: 'Saídas', data: dadosPagAnual.length ? dadosPagAnual : [0], backgroundColor: '#f75a68', borderRadius: 4 }
                         ]
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
-                    }
+                    options: commonChartOptions
                 });
             }
 
             const dadosPizzaEntradas = consolidarDadosParaPizza(agrupaEntradasOrigem, 5);
             if (chartIncomesPieInstance) chartIncomesPieInstance.destroy();
             chartIncomesPieInstance = new Chart(document.getElementById('chart-incomes-pie').getContext('2d'), {
-                type: 'doughnut', data: { labels: Object.keys(dadosPizzaEntradas).length ? Object.keys(dadosPizzaEntradas) : ['Nenhuma'], datasets: [{ data: Object.values(dadosPizzaEntradas).length ? Object.values(dadosPizzaEntradas) : [1], backgroundColor: paletaCoresAltas }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } }
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(dadosPizzaEntradas).length ? Object.keys(dadosPizzaEntradas) : ['Nenhuma'],
+                    datasets: [{ data: Object.values(dadosPizzaEntradas).length ? Object.values(dadosPizzaEntradas) : [1], backgroundColor: paletaCoresAltas }]
+                },
+                options: commonChartOptions
             });
 
             const dadosPizzaSaidas = consolidarDadosParaPizza(agrupaSaidasDesc, 5);
             if (chartExpensesPieInstance) chartExpensesPieInstance.destroy();
             chartExpensesPieInstance = new Chart(document.getElementById('chart-expenses-pie').getContext('2d'), {
-                type: 'doughnut', data: { labels: Object.keys(dadosPizzaSaidas).length ? Object.keys(dadosPizzaSaidas) : ['Nenhuma'], datasets: [{ data: Object.values(dadosPizzaSaidas).length ? Object.values(dadosPizzaSaidas) : [1], backgroundColor: paletaCoresAltas }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } }
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(dadosPizzaSaidas).length ? Object.keys(dadosPizzaSaidas) : ['Nenhuma'],
+                    datasets: [{ data: Object.values(dadosPizzaSaidas).length ? Object.values(dadosPizzaSaidas) : [1], backgroundColor: paletaCoresAltas }]
+                },
+                options: commonChartOptions
             });
 
             const detailedIncList = document.getElementById('detailed-incomes-list');
             detailedIncList.innerHTML = entradasDetalhadas.length ? '' : '<div class="empty-state">Nenhuma entrada.</div>';
-            entradasDetalhadas.sort((a, b) => new Date(b.date) - new Date(b.date)).forEach(t => {
+            entradasDetalhadas.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
                 detailedIncList.innerHTML += `<div class="detailed-item"><div class="detailed-info"><h4>${t.description}</h4><span>${formatDate(t.date)}${t.cardOrigin ? ' • ' + t.cardOrigin : ''}</span></div><strong class="income-text">${formatCurrency(t.amount)}</strong></div>`;
             });
 
