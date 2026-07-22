@@ -149,7 +149,6 @@
         .report-card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
         .report-card h3 { font-size: 0.95rem; color: var(--text-color); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
         
-        /* Aumentado para 320px no app para dar excelente visibilidade e legibilidade */
         .chart-container { position: relative; width: 100%; height: 320px; display: flex; justify-content: center; align-items: center; }
         .chart-container canvas { max-height: 320px !important; margin: 0 auto; }
         
@@ -199,7 +198,6 @@
             .report-card { border: 1px solid #ccc; background: #fff; color: #000; box-shadow: none; margin-bottom: 6mm; padding: 6mm; page-break-inside: avoid; width: 100% !important; max-width: 100% !important; display: flex; flex-direction: column; align-items: center; }
             .report-card h3 { width: 100%; text-align: left; font-size: 14pt !important; }
             
-            /* Altura otimizada e generosa na impressão para garantir gráficos grandes, claros e perfeitamente legíveis */
             .chart-container { position: relative; width: 100% !important; max-width: 100% !important; height: 260px !important; max-height: 260px !important; margin: 0 auto; display: flex; justify-content: center; align-items: center; page-break-inside: avoid; }
             .chart-container canvas { margin: 0 auto !important; max-width: 100% !important; max-height: 260px !important; object-fit: contain; }
             
@@ -336,9 +334,9 @@
         <div class="month-selector" id="month-selector"></div>
 
         <div class="tabs">
-            <button class="tab-btn active" id="tab-pending" onclick="switchTab('pending')">Pendentes</button>
+            <button class="tab-btn active" id="tab-report" onclick="switchTab('report')">📊 Relatórios</button>
+            <button class="tab-btn" id="tab-pending" onclick="switchTab('pending')">Pendentes</button>
             <button class="tab-btn" id="tab-done" onclick="switchTab('done')">Realizados</button>
-            <button class="tab-btn" id="tab-report" onclick="switchTab('report')">📊 Relatórios</button>
         </div>
 
         <div id="transactions-wrapper">
@@ -441,7 +439,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.1.5"; 
+        const VERSAO_CODIGO = "1.1.6"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -460,9 +458,13 @@
         let perfisCadastrados = DEFAULT_PROFILES;
         let transactions = [];
         
-        let currentTab = localStorage.getItem('active_tab') || 'pending';
-        let selectedMonthKey = localStorage.getItem('selected_month_key') || '';
-        let reportMode = localStorage.getItem('report_mode') || 'month';
+        // Sempre abre na aba de relatórios e visão mensal por padrão ao iniciar o app
+        let currentTab = 'report';
+        let reportMode = 'month';
+        
+        const hojeObj = new Date();
+        const mesAtualGlobalKey = `${hojeObj.getFullYear()}-${String(hojeObj.getMonth() + 1).padStart(2, '0')}`;
+        let selectedMonthKey = mesAtualGlobalKey;
         
         let chartComparisonInstance = null;
         let chartIncomesPieInstance = null;
@@ -773,9 +775,6 @@
         window.fazerLogout = function() {
             localStorage.removeItem('user_authenticated');
             localStorage.removeItem('active_user_key');
-            localStorage.removeItem('active_tab');
-            localStorage.removeItem('selected_month_key');
-            localStorage.removeItem('report_mode');
             window.location.reload();
         }
 
@@ -795,9 +794,7 @@
 
         function gerarFiltroDeMeses() {
             const mesesSet = new Set();
-            const hoje = new Date();
-            const mesAtualKey = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
-            mesesSet.add(mesAtualKey);
+            mesesSet.add(mesAtualGlobalKey);
 
             transactions.forEach(t => {
                 if (t.date) {
@@ -808,9 +805,9 @@
 
             const mesesOrdenados = Array.from(mesesSet).sort();
 
+            // Sempre seleciona e fixa o mês atual por padrão ao abrir o app
             if (!selectedMonthKey || !mesesSet.has(selectedMonthKey)) {
-                selectedMonthKey = mesesSet.has(mesAtualKey) ? mesAtualKey : mesesOrdenados[mesesOrdenados.length - 1];
-                localStorage.setItem('selected_month_key', selectedMonthKey);
+                selectedMonthKey = mesAtualGlobalKey;
             }
 
             const assinaturaAtual = mesesOrdenados.join(',');
@@ -837,7 +834,6 @@
 
         function selectMonth(key) {
             selectedMonthKey = key;
-            localStorage.setItem('selected_month_key', key);
             monthSelector.querySelectorAll('.month-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.monthKey === key);
             });
@@ -877,25 +873,23 @@
 
         window.switchTab = function(tab) {
             currentTab = tab;
-            localStorage.setItem('active_tab', tab);
+            document.getElementById('tab-report').classList.toggle('active', tab === 'report');
             document.getElementById('tab-pending').classList.toggle('active', tab === 'pending');
             document.getElementById('tab-done').classList.toggle('active', tab === 'done');
-            document.getElementById('tab-report').classList.toggle('active', tab === 'report');
             renderView();
         }
 
         window.setReportMode = function(mode) {
             reportMode = mode;
-            localStorage.setItem('report_mode', mode);
             document.getElementById('rep-mode-month').classList.toggle('active', mode === 'month');
             document.getElementById('rep-mode-year').classList.toggle('active', mode === 'year');
             renderReport();
         }
 
         function renderView() {
+            document.getElementById('tab-report').classList.toggle('active', currentTab === 'report');
             document.getElementById('tab-pending').classList.toggle('active', currentTab === 'pending');
             document.getElementById('tab-done').classList.toggle('active', currentTab === 'done');
-            document.getElementById('tab-report').classList.toggle('active', currentTab === 'report');
 
             const wrapper = document.getElementById('transactions-wrapper');
             const reportSection = document.getElementById('report-section');
