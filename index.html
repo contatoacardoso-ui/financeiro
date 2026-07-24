@@ -22,12 +22,24 @@
             --text-color: #e1e1e6;
             --text-secondary: #a8a8b3;
             --primary: #4ea8de;
-            --income: #00b37e;
-            --expense: #f75a68;
             --border: #29292e;
             --warning: #ffb86c;
-            --forecast-pos: #00d2ff; /* Azul Ciano brilhante para saldo previsto positivo */
-            --forecast-neg: #ff3b30; /* Vermelho vivo para saldo previsto negativo */
+
+            /* Padrão 1: Saldos Globais */
+            --balance-pos: #00d2ff; /* Ciano */
+            --balance-neg: #ff3b30; /* Vermelho Vivo */
+
+            /* Padrão 2: A Receber / A Pagar */
+            --pending-pos: #00b37e; /* Verde Clássico */
+            --pending-neg: #f75a68; /* Vermelho Pastel */
+
+            /* Padrão 3: Bancos */
+            --bank-pos: #a78bfa; /* Roxo / Lilás */
+            --bank-neg: #fb923c; /* Laranja */
+            
+            /* Mantendo variáveis base para não quebrar outras partes */
+            --income: var(--pending-pos); 
+            --expense: var(--pending-neg);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-color); color: var(--text-color); padding: 16px; padding-bottom: 60px; }
@@ -77,21 +89,29 @@
         .balance-sub-card h3 { font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; }
         .balance-value { font-size: 1.4rem; font-weight: bold; transition: color 0.3s ease, opacity 0.25s ease; }
         
-        /* Classes de cores dinâmicas para o Saldo Previsto */
-        .forecast-pos { color: var(--forecast-pos) !important; }
-        .forecast-neg { color: var(--forecast-neg) !important; }
+        /* Classes dos 3 padrões de cores */
+        .balance-pos { color: var(--balance-pos) !important; }
+        .balance-neg { color: var(--balance-neg) !important; }
+        
+        .pending-pos { color: var(--pending-pos) !important; }
+        .pending-neg { color: var(--pending-neg) !important; }
+        
+        .bank-pos { color: var(--bank-pos) !important; }
+        .bank-neg { color: var(--bank-neg) !important; }
+
+        /* Helpers antigos mantidos para botões e detalhes gerais */
+        .income-text { color: var(--pending-pos); }
+        .expense-text { color: var(--pending-neg); }
 
         .mini-card { background-color: var(--card-bg); padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
         .mini-card h4 { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px; }
         .mini-card p { font-size: 1rem; font-weight: bold; transition: opacity 0.25s ease; }
-        .income-text { color: var(--income); }
-        .expense-text { color: var(--expense); }
 
         .bank-balances-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 16px; }
         .bank-balances-scroll::-webkit-scrollbar { display: none; }
         .bank-card { background-color: var(--card-bg); border: 1px solid var(--border); padding: 10px 14px; border-radius: 10px; min-width: 140px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .bank-card h5 { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: normal; display: flex; align-items: center; }
-        .bank-card p { font-size: 1.05rem; font-weight: bold; }
+        .bank-card p { font-size: 1.05rem; font-weight: bold; transition: color 0.3s ease; }
         .bank-logo { width: 16px; height: 16px; border-radius: 4px; margin-right: 6px; object-fit: contain; background: #fff; padding: 1px; }
 
         .form-accordion { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
@@ -109,8 +129,8 @@
         .radio-btn { position: relative; }
         .radio-btn input { position: absolute; opacity: 0; width: 0; height: 0; }
         .radio-label { display: block; text-align: center; padding: 10px; background-color: #121214; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
-        .radio-btn input:checked + .radio-label.lbl-receber { border-color: var(--income); background-color: rgba(0, 179, 126, 0.1); color: var(--income); }
-        .radio-btn input:checked + .radio-label.lbl-pagar { border-color: var(--expense); background-color: rgba(247, 90, 104, 0.1); color: var(--expense); }
+        .radio-btn input:checked + .radio-label.lbl-receber { border-color: var(--pending-pos); background-color: rgba(0, 179, 126, 0.1); color: var(--pending-pos); }
+        .radio-btn input:checked + .radio-label.lbl-pagar { border-color: var(--pending-neg); background-color: rgba(247, 90, 104, 0.1); color: var(--pending-neg); }
         .radio-btn input:checked + .radio-label.lbl-debito { border-color: var(--primary); background-color: rgba(78, 168, 222, 0.1); color: var(--primary); }
         .radio-btn input:checked + .radio-label.lbl-credito { border-color: var(--warning); background-color: rgba(255, 184, 108, 0.1); color: var(--warning); }
         button.submit-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--primary) 0%, #3a9ec2 100%); border: none; border-radius: 10px; color: #fff; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
@@ -145,7 +165,7 @@
         
         .item-actions-group { display: flex; align-items: center; gap: 5px; }
         .action-btn { background: none; border: none; font-size: 1rem; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .confirm-btn { color: var(--income); border: 1px solid rgba(0, 179, 126, 0.3); }
+        .confirm-btn { color: var(--pending-pos); border: 1px solid rgba(0, 179, 126, 0.3); }
         .edit-btn { color: var(--primary); border: 1px solid rgba(78, 168, 222, 0.3); }
         .delete-btn { color: var(--text-secondary); font-size: 1.2rem; border: 1px solid rgba(168, 168, 179, 0.15); }
         .empty-state { text-align: center; color: var(--text-secondary); padding: 20px 0; font-size: 0.85rem; }
@@ -183,7 +203,7 @@
         .security-panel-content { display: none; flex-direction: column; }
         .security-panel-content button { background: none; border: none; border-bottom: 1px solid var(--border); padding: 14px 20px; color: var(--text-color); font-size: 0.85rem; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 12px; width: 100%; }
         .security-panel-content button.danger-btn { color: var(--expense); }
-        .security-panel-content button.master-btn { color: var(--income); font-weight: bold; }
+        .security-panel-content button.master-btn { color: var(--pending-pos); font-weight: bold; }
         .logout-outer-btn { width: 100%; background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; color: var(--text-color); font-size: 0.9rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
         @media print {
@@ -233,22 +253,23 @@
             <div class="balance-card">
                 <div class="balance-sub-card">
                     <h3>Saldo Real</h3>
-                    <div class="balance-value income-text" id="real-balance">R$ 0,00</div>
+                    <!-- As cores aqui agora serão controladas dinamicamente via JS -->
+                    <div class="balance-value" id="real-balance">R$ 0,00</div>
                 </div>
                 <div style="border-left: 1px solid var(--border)"></div>
                 <div class="balance-sub-card">
                     <h3>Saldo Previsto</h3>
-                    <!-- Classe controlada dinamicamente via JS -->
+                    <!-- As cores aqui agora serão controladas dinamicamente via JS -->
                     <div class="balance-value" id="total-balance">R$ 0,00</div>
                 </div>
             </div>
             <div class="mini-card">
                 <h4>A Receber</h4>
-                <p class="income-text" id="total-income">R$ 0,00</p>
+                <p class="pending-pos" id="total-income">R$ 0,00</p>
             </div>
             <div class="mini-card">
                 <h4>A Pagar</h4>
-                <p class="expense-text" id="total-expense">R$ 0,00</p>
+                <p class="pending-neg" id="total-expense">R$ 0,00</p>
             </div>
         </div>
         
@@ -439,7 +460,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.2.0"; 
+        const VERSAO_CODIGO = "1.2.1"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -879,44 +900,13 @@
         function atualizarTextoSeMudou(el, novoTexto) { if (el.textContent !== novoTexto) el.textContent = novoTexto; }
 
         function getBankLogo(bankName) {
-            // Mapeamento dos nomes de bancos para os domínios oficiais para puxar o favicon
             const domainMap = {
-                'Banco do Brasil': 'bb.com.br',
-                'Santander': 'santander.com.br',
-                'Caixa': 'caixa.gov.br',
-                'Caixa Econômica Federal': 'caixa.gov.br',
-                'Bradesco': 'bradesco.com.br',
-                'Itaú': 'itau.com.br',
-                'Nubank': 'nubank.com.br',
-                'Inter': 'bancointer.com.br',
-                'Banco Inter': 'bancointer.com.br',
-                'C6 Bank': 'c6bank.com.br',
-                'Original': 'original.com.br',
-                'Banco Original': 'original.com.br',
-                'Neon': 'neon.com.br',
-                'Pan': 'bancopan.com.br',
-                'Banco Pan': 'bancopan.com.br',
-                'BTG': 'btgpactual.com',
-                'BTG Pactual': 'btgpactual.com',
-                'Sicredi': 'sicredi.com.br',
-                'Sicoob': 'sicoob.com.br',
-                'Mercado Pago': 'mercadopago.com.br',
-                'PicPay': 'picpay.com',
-                'PagSeguro': 'pagseguro.uol.com.br'
+                'Banco do Brasil': 'bb.com.br', 'Santander': 'santander.com.br', 'Caixa': 'caixa.gov.br', 'Caixa Econômica Federal': 'caixa.gov.br', 'Bradesco': 'bradesco.com.br', 'Itaú': 'itau.com.br', 'Nubank': 'nubank.com.br', 'Inter': 'bancointer.com.br', 'Banco Inter': 'bancointer.com.br', 'C6 Bank': 'c6bank.com.br', 'Original': 'original.com.br', 'Banco Original': 'original.com.br', 'Neon': 'neon.com.br', 'Pan': 'bancopan.com.br', 'Banco Pan': 'bancopan.com.br', 'BTG': 'btgpactual.com', 'BTG Pactual': 'btgpactual.com', 'Sicredi': 'sicredi.com.br', 'Sicoob': 'sicoob.com.br', 'Mercado Pago': 'mercadopago.com.br', 'PicPay': 'picpay.com', 'PagSeguro': 'pagseguro.uol.com.br'
             };
-            
             let domain = null;
-            for (let key in domainMap) {
-                if (bankName.includes(key)) {
-                    domain = domainMap[key];
-                    break;
-                }
-            }
-            
-            if (domain) {
-                return `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" class="bank-logo" alt="logo">`;
-            }
-            return '🏦 '; // Retorna o emoji padrão se não encontrar a logo
+            for (let key in domainMap) { if (bankName.includes(key)) { domain = domainMap[key]; break; } }
+            if (domain) return `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" class="bank-logo" alt="logo">`;
+            return '🏦 '; 
         }
 
         function updateDashboard() {
@@ -924,26 +914,19 @@
             const bankRealBalances = {};
 
             transactions.forEach(t => {
-                // Cálculo Global de tudo que já foi pago/recebido
                 if (t.done) {
                     if (t.type === 'receber') realIncome += t.amount; else realExpense += t.amount;
-                    
-                    // Cálculo por Banco
                     if (t.bank && (t.type === 'receber' || (t.type === 'pagar' && t.method === 'debito'))) {
                         if (!bankRealBalances[t.bank]) bankRealBalances[t.bank] = 0;
                         if (t.type === 'receber') bankRealBalances[t.bank] += t.amount;
                         else bankRealBalances[t.bank] -= t.amount;
                     }
                 } else {
-                    // CÁLCULO PENDENTE GLOBAL (Reflete todo o futuro/passado pendente)
                     if (t.type === 'receber') pendingIncome += t.amount; else pendingExpense += t.amount;
                 }
             });
 
-            // Saldo Real = Entradas Pagas - Saídas Pagas
             const saldoRealAtual = realIncome - realExpense;
-            
-            // Saldo Previsto (GLOBAL) = Saldo Real + Tudo a receber - Tudo a pagar
             const saldoPrevistoGlobal = saldoRealAtual + pendingIncome - pendingExpense;
 
             atualizarTextoSeMudou(realBalanceEl, formatCurrency(saldoRealAtual));
@@ -951,15 +934,13 @@
             atualizarTextoSeMudou(incomeEl, formatCurrency(pendingIncome));
             atualizarTextoSeMudou(expenseEl, formatCurrency(pendingExpense));
             
-            // Lógica de Cores Dinâmicas para o Saldo Previsto
-            balanceEl.className = 'balance-value'; // Reseta a classe
-            if (saldoPrevistoGlobal >= 0) {
-                balanceEl.classList.add('forecast-pos');
-            } else {
-                balanceEl.classList.add('forecast-neg');
-            }
+            // Controle dinâmico Padrão 1: Saldos Globais
+            realBalanceEl.className = 'balance-value ' + (saldoRealAtual >= 0 ? 'balance-pos' : 'balance-neg');
+            balanceEl.className = 'balance-value ' + (saldoPrevistoGlobal >= 0 ? 'balance-pos' : 'balance-neg');
             
-            // Renderizar Balanços por Banco com as Logos
+            // Controle dinâmico Padrão 2: A Receber / A Pagar (são blocos estáticos por natureza, mas mantemos o padrão)
+            // A Receber usa verde (pending-pos) e A Pagar usa vermelho (pending-neg), já definidos no HTML.
+            
             let bankHtml = '';
             const bancosOrdenados = Object.entries(bankRealBalances).sort((a, b) => b[1] - a[1]);
             
@@ -967,11 +948,12 @@
                 bankBalancesContainer.style.display = 'flex';
                 bancosOrdenados.forEach(([nomeBancoCompleto, saldoReal]) => {
                     let nomeCurto = nomeBancoCompleto.includes('-') ? nomeBancoCompleto.split('-')[1].trim() : nomeBancoCompleto;
-                    let logoHtml = getBankLogo(nomeCurto); // Busca a logo via Google API
+                    let logoHtml = getBankLogo(nomeCurto); 
                     
                     if(nomeCurto.length > 15) nomeCurto = nomeCurto.substring(0, 13) + '...';
                     
-                    let corClasse = saldoReal >= 0 ? 'income-text' : 'expense-text';
+                    // Controle dinâmico Padrão 3: Bancos
+                    let corClasse = saldoReal >= 0 ? 'bank-pos' : 'bank-neg';
                     bankHtml += `
                         <div class="bank-card">
                             <h5>${logoHtml} ${nomeCurto}</h5>
@@ -989,28 +971,13 @@
         function montarHtmlDoItem(t) {
             const isRec = t.type === 'receber';
             
-            let badgeText = '';
-            let iconHtml = '';
+            let badgeText = ''; let iconHtml = '';
             if (t.type === 'receber') {
-                if (t.bank) {
-                    let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
-                    iconHtml = getBankLogo(nomeCurto);
-                    badgeText = `${iconHtml} ${nomeCurto}`;
-                } else {
-                    badgeText = '💵 Entrada';
-                }
+                if (t.bank) { let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} ${nomeCurto}`; } 
+                else { badgeText = '💵 Entrada'; }
             } else {
-                if (t.method === 'credito') {
-                    badgeText = `💳 Crédito${t.installmentsTotal > 1 ? ' (' + t.installmentsNum + '/' + t.installmentsTotal + ')' : ''}`;
-                } else {
-                    if (t.bank) {
-                        let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
-                        iconHtml = getBankLogo(nomeCurto);
-                        badgeText = `${iconHtml} Saída ${nomeCurto}`;
-                    } else {
-                        badgeText = '💵 Débito';
-                    }
-                }
+                if (t.method === 'credito') { badgeText = `💳 Crédito${t.installmentsTotal > 1 ? ' (' + t.installmentsNum + '/' + t.installmentsTotal + ')' : ''}`; } 
+                else { if (t.bank) { let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} Saída ${nomeCurto}`; } else { badgeText = '💵 Débito'; } }
             }
 
             return `
@@ -1044,18 +1011,9 @@
             const grouped = {};
             filtered.forEach(t => {
                 let groupKey = '';
-                if (t.type === 'receber') {
-                    groupKey = t.bank ? `Entrada: ${t.bank}` : 'Entradas Diversas';
-                } else {
-                    if (t.method === 'credito') {
-                        groupKey = `Crédito: ${t.cardOrigin || 'Cartão'}`;
-                    } else {
-                        groupKey = t.bank ? `Saída (Débito): ${t.bank}` : 'Saídas Diversas';
-                    }
-                }
-                
-                if (!grouped[groupKey]) grouped[groupKey] = [];
-                grouped[groupKey].push(t);
+                if (t.type === 'receber') { groupKey = t.bank ? `Entrada: ${t.bank}` : 'Entradas Diversas'; } 
+                else { if (t.method === 'credito') { groupKey = `Crédito: ${t.cardOrigin || 'Cartão'}`; } else { groupKey = t.bank ? `Saída (Débito): ${t.bank}` : 'Saídas Diversas'; } }
+                if (!grouped[groupKey]) grouped[groupKey] = []; grouped[groupKey].push(t);
             });
             const groupKeysOrdenados = Object.keys(grouped).sort();
 
@@ -1067,17 +1025,10 @@
                 let groupDiv = gruposExistentes[groupKey];
                 let listSubContainer;
                 if (!groupDiv) {
-                    groupDiv = document.createElement('div');
-                    groupDiv.className = 'group-container';
-                    groupDiv.dataset.groupKey = groupKey;
+                    groupDiv = document.createElement('div'); groupDiv.className = 'group-container'; groupDiv.dataset.groupKey = groupKey;
                     groupDiv.innerHTML = `<div class="group-header"><span>📂 ${groupKey}</span></div>`;
-                    listSubContainer = document.createElement('div');
-                    listSubContainer.className = 'transaction-list';
-                    groupDiv.appendChild(listSubContainer);
-                } else {
-                    listSubContainer = groupDiv.querySelector('.transaction-list');
-                    delete gruposExistentes[groupKey];
-                }
+                    listSubContainer = document.createElement('div'); listSubContainer.className = 'transaction-list'; groupDiv.appendChild(listSubContainer);
+                } else { listSubContainer = groupDiv.querySelector('.transaction-list'); delete gruposExistentes[groupKey]; }
 
                 if (nodeGrupoAnterior) { if (nodeGrupoAnterior.nextElementSibling !== groupDiv) nodeGrupoAnterior.after(groupDiv); }
                 else if (listContainer.firstElementChild !== groupDiv) listContainer.prepend(groupDiv);
@@ -1088,8 +1039,7 @@
 
                 let nodeItemAnterior = null;
                 grouped[groupKey].forEach(t => {
-                    let item = itensExistentes[t.id];
-                    const hashAtual = JSON.stringify(t);
+                    let item = itensExistentes[t.id]; const hashAtual = JSON.stringify(t);
                     if (!item) {
                         item = document.createElement('div'); item.className = 'transaction-item tx-entering'; item.dataset.txId = t.id; item.innerHTML = montarHtmlDoItem(t); item.dataset.txHash = hashAtual; requestAnimationFrame(() => item.classList.remove('tx-entering'));
                     } else {
@@ -1109,23 +1059,17 @@
             const entradasOrdenadas = Object.entries(dadosObjeto).sort((a, b) => b[1] - a[1]);
             if (entradasOrdenadas.length <= limiteMaxFatias) return dadosObjeto;
             const resultadoConsolidado = {}; let somaOutros = 0;
-            entradasOrdenadas.forEach((item, index) => {
-                if (index < limiteMaxFatias - 1) resultadoConsolidado[item[0]] = item[1];
-                else somaOutros += item[1];
-            });
+            entradasOrdenadas.forEach((item, index) => { if (index < limiteMaxFatias - 1) resultadoConsolidado[item[0]] = item[1]; else somaOutros += item[1]; });
             if (somaOutros > 0) resultadoConsolidado['Outros'] = somaOutros;
             return resultadoConsolidado;
         }
 
         function obterCategoriaRelatorio(t) {
             if (t.type === 'pagar' && t.method === 'credito' && t.cardOrigin && t.cardOrigin.trim() !== '') {
-                const origemLimpa = t.cardOrigin.trim();
-                const origemLower = origemLimpa.toLowerCase();
-                if (origemLower.includes('c6')) return 'Cartão C6 Bank';
-                if (origemLower.includes('nubank')) return 'Cartão Nubank';
+                const origemLimpa = t.cardOrigin.trim(); const origemLower = origemLimpa.toLowerCase();
+                if (origemLower.includes('c6')) return 'Cartão C6 Bank'; if (origemLower.includes('nubank')) return 'Cartão Nubank';
                 if (origemLower.includes('itau') || origemLower.includes('itaú')) return 'Cartão Itaú';
-                if (origemLower.includes('mastercard')) return 'Cartão Mastercard';
-                if (origemLower.includes('visa')) return 'Cartão Visa';
+                if (origemLower.includes('mastercard')) return 'Cartão Mastercard'; if (origemLower.includes('visa')) return 'Cartão Visa';
                 return `Cartão ${origemLimpa}`;
             }
             return t.description;
@@ -1143,8 +1087,7 @@
                     agrupaEntradasOrigem[labelEntrada] = (agrupaEntradasOrigem[labelEntrada] || 0) + t.amount;
                 } else {
                     totalSaidas += t.amount; saidasDetalhadas.push(t);
-                    const chaveAgrupada = obterCategoriaRelatorio(t);
-                    agrupaSaidasDesc[chaveAgrupada] = (agrupaSaidasDesc[chaveAgrupada] || 0) + t.amount;
+                    const chaveAgrupada = obterCategoriaRelatorio(t); agrupaSaidasDesc[chaveAgrupada] = (agrupaSaidasDesc[chaveAgrupada] || 0) + t.amount;
                 }
             });
 
@@ -1168,11 +1111,11 @@
                 if (ordenadasDespesas.length > 0) { maiorDespesaNome = ordenadasDespesas[0][0]; maiorDespesaValor = ordenadasDespesas[0][1]; }
 
                 let analiseAnualHtml = `Total Entradas: <strong class="income-text">${formatCurrency(totalEntradas)}</strong> | Total Saídas: <strong class="expense-text">${formatCurrency(totalSaidas)}</strong><br><br>`;
-                if (diff < 0) analiseAnualHtml += `⚠️ <strong>Alerta Anual:</strong> Seus gastos anuais superam as receitas! O maior impacto no orçamento é gerado por <strong>"${maiorDespesaNome}"</strong> (${formatCurrency(maiorDespesaValor)}). <strong>Ponto crítico de redução:</strong> Estabeleça um teto rigoroso para esta categoria.`;
-                else analiseAnualHtml += `✅ <strong>Desempenho Anual Saudável:</strong> Suas entradas superam o total de saídas no período.<br>💡 <strong>Oportunidade de Redução:</strong> A categoria que mais consome recursos é <strong>"${maiorDespesaNome}"</strong> (${formatCurrency(maiorDespesaValor)}). Avalie enxugar custos aqui para otimizar ainda mais o seu saldo.`;
+                if (diff < 0) analiseAnualHtml += `⚠️ <strong>Alerta Anual:</strong> Seus gastos superam as receitas! O maior impacto é gerado por <strong>"${maiorDespesaNome}"</strong> (${formatCurrency(maiorDespesaValor)}). <strong>Ponto crítico de redução:</strong> Estabeleça um teto rigoroso para esta categoria.`;
+                else analiseAnualHtml += `✅ <strong>Desempenho Anual Saudável:</strong> Entradas superam saídas no período.<br>💡 <strong>Oportunidade de Redução:</strong> A categoria que mais consome recursos é <strong>"${maiorDespesaNome}"</strong> (${formatCurrency(maiorDespesaValor)}). Avalie enxugar custos aqui para otimizar ainda mais seu saldo.`;
 
                 document.getElementById('analysis-summary-text').innerHTML = analiseAnualHtml;
-                document.getElementById('chart-comparison-title').textContent = "📊 Evolução Mensal Anual (Entradas vs Saídas por Mês)";
+                document.getElementById('chart-comparison-title').textContent = "📊 Evolução Mensal Anual (Entradas vs Saídas)";
             }
 
             const topExpRanking = document.getElementById('top-expenses-ranking'); topExpRanking.innerHTML = '';
@@ -1214,82 +1157,38 @@
 
             const detailedIncList = document.getElementById('detailed-incomes-list'); detailedIncList.innerHTML = entradasDetalhadas.length ? '' : '<div class="empty-state">Nenhuma entrada.</div>';
             entradasDetalhadas.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
-                let subTitle = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : '';
-                let iconHtml = subTitle ? getBankLogo(subTitle) : '';
+                let subTitle = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : ''; let iconHtml = subTitle ? getBankLogo(subTitle) : '';
                 detailedIncList.innerHTML += `<div class="detailed-item"><div class="detailed-info"><h4>${t.description}</h4><span style="display:inline-flex; align-items:center;">${formatDate(t.date)}${subTitle ? ' &nbsp;•&nbsp; ' + iconHtml + ' ' + subTitle : ''}</span></div><strong class="income-text">${formatCurrency(t.amount)}</strong></div>`;
             });
 
             const detailedExpList = document.getElementById('detailed-expenses-list'); detailedExpList.innerHTML = saidasDetalhadas.length ? '' : '<div class="empty-state">Nenhuma saída.</div>';
             saidasDetalhadas.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
-                let subTitle = t.type === 'pagar' && t.method === 'debito' && t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : '';
-                let iconHtml = subTitle ? getBankLogo(subTitle) : '';
+                let subTitle = t.type === 'pagar' && t.method === 'debito' && t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : ''; let iconHtml = subTitle ? getBankLogo(subTitle) : '';
                 detailedExpList.innerHTML += `<div class="detailed-item"><div class="detailed-info"><h4>${t.description}</h4><span style="display:inline-flex; align-items:center;">${formatDate(t.date)}${subTitle ? ' &nbsp;•&nbsp; ' + iconHtml + ' ' + subTitle : ''}</span></div><strong class="expense-text">${formatCurrency(t.amount)}</strong></div>`;
             });
         }
 
         form.addEventListener('submit', (e) => {
             e.preventDefault();
-            const editId = editIdInput.value;
-            const selectedType = document.querySelector('input[name="type"]:checked').value;
-            const description = descInput.value.trim();
-            const totalAmount = parseFormattedValue(amountInput.value);
-            const baseDate = dateInput.value;
+            const editId = editIdInput.value; const selectedType = document.querySelector('input[name="type"]:checked').value; const description = descInput.value.trim(); const totalAmount = parseFormattedValue(amountInput.value); const baseDate = dateInput.value; const methodVal = selectedType === 'pagar' ? document.querySelector('input[name="method"]:checked').value : 'debito';
+            let cardOrigin = ''; let bankSelected = '';
             
-            const methodVal = selectedType === 'pagar' ? document.querySelector('input[name="method"]:checked').value : 'debito';
-            
-            let cardOrigin = '';
-            let bankSelected = '';
-            
-            if (selectedType === 'receber' || (selectedType === 'pagar' && methodVal === 'debito')) {
-                bankSelected = bankSelect.value;
-            }
-            if (selectedType === 'pagar' && methodVal === 'credito') {
-                cardOrigin = cardOriginInput.value.trim();
-            }
-
+            if (selectedType === 'receber' || (selectedType === 'pagar' && methodVal === 'debito')) bankSelected = bankSelect.value;
+            if (selectedType === 'pagar' && methodVal === 'credito') cardOrigin = cardOriginInput.value.trim();
             if (!description || totalAmount <= 0 || !baseDate) return;
 
             const qtdParcelas = selectedType === 'pagar' && methodVal === 'credito' ? (parseInt(document.getElementById('installments').value) || 1) : 1;
 
             if (dbTransactions) {
                 if (editId) {
-                    const transAntiga = transactions.find(item => item.id === editId);
-                    const statusDone = transAntiga ? !!transAntiga.done : false;
-
-                    let transData = {
-                        type: selectedType, description, amount: totalAmount, date: baseDate, 
-                        cardOrigin: cardOrigin || '',
-                        bank: bankSelected || '',
-                        method: methodVal, installmentsNum: 1, installmentsTotal: 1, done: statusDone
-                    };
-                    dbTransactions.child(editId).update(transData);
+                    const transAntiga = transactions.find(item => item.id === editId); const statusDone = transAntiga ? !!transAntiga.done : false;
+                    dbTransactions.child(editId).update({ type: selectedType, description, amount: totalAmount, date: baseDate, cardOrigin: cardOrigin || '', bank: bankSelected || '', method: methodVal, installmentsNum: 1, installmentsTotal: 1, done: statusDone });
                 } else {
                     const valorParcela = parseFloat((totalAmount / qtdParcelas).toFixed(2));
                     let [ano, mes, dia] = baseDate.split('-').map(Number);
-
                     for (let i = 0; i < qtdParcelas; i++) {
-                        let novaData = new Date(ano, mes - 1 + i, dia);
-                        let anoStr = novaData.getFullYear();
-                        let mesStr = String(novaData.getMonth() + 1).padStart(2, '0');
-                        let diaStr = String(novaData.getDate()).padStart(2, '0');
-                        let dataFormatada = `${anoStr}-${mesStr}-${diaStr}`;
-
-                        let nomeDesc = qtdParcelas > 1 ? `${description} (${i + 1}/${qtdParcelas})` : description;
-
-                        let transData = {
-                            type: selectedType,
-                            description: nomeDesc,
-                            amount: valorParcela,
-                            date: dataFormatada,
-                            cardOrigin: cardOrigin || '',
-                            bank: bankSelected || '',
-                            method: methodVal,
-                            installmentsNum: i + 1,
-                            installmentsTotal: qtdParcelas,
-                            done: (selectedType === 'pagar' && methodVal === 'debito') ? true : false
-                        };
-
-                        dbTransactions.push(transData);
+                        let novaData = new Date(ano, mes - 1 + i, dia); let anoStr = novaData.getFullYear(); let mesStr = String(novaData.getMonth() + 1).padStart(2, '0'); let diaStr = String(novaData.getDate()).padStart(2, '0');
+                        dbTransactions.push({ type: selectedType, description: qtdParcelas > 1 ? `${description} (${i + 1}/${qtdParcelas})` : description, amount: valorParcela, date: `${anoStr}-${mesStr}-${diaStr}`, cardOrigin: cardOrigin || '', bank: bankSelected || '', method: methodVal, installmentsNum: i + 1, installmentsTotal: qtdParcelas, done: (selectedType === 'pagar' && methodVal === 'debito') ? true : false });
                     }
                 }
             }
