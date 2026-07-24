@@ -578,7 +578,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.3.5"; 
+        const VERSAO_CODIGO = "1.3.6"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -708,7 +708,7 @@
             const senhaSalva = localStorage.getItem('saved_password');
             if (usuarioSalvo) loginUsernameInput.value = usuarioSalvo;
             if (senhaSalva) loginPassword.value = senhaSalva;
-            rememberMeCheckbox.checked = localStorage.getItem('remember_active'] !== 'false';
+            rememberMeCheckbox.checked = localStorage.getItem('remember_active') !== 'false';
 
             dbRoot.child('config_perfis').on('value', (snapshot) => {
                 const dadosNuvem = snapshot.val();
@@ -908,7 +908,7 @@
                 const novaSenhaTrim = novaSenha.trim();
                 perfisCadastrados[chaveAtiva].pwd = novaSenhaTrim;
                 dbRoot.child('config_perfis').set(perfisCadastrados).then(() => {
-                    if (localStorage.getItem('remember_active'] === 'true' && localStorage.getItem('active_user_key') === chaveAtiva) localStorage.setItem('saved_password', novaSenhaTrim);
+                    if (localStorage.getItem('remember_active') === 'true' && localStorage.getItem('active_user_key') === chaveAtiva) localStorage.setItem('saved_password', novaSenhaTrim);
                     alert("Senha alterada com sucesso!");
                 });
             }
@@ -1030,7 +1030,6 @@
             }
         }
 
-        // Funções para Controle do Modal de Banco
         window.confirmTransaction = function(id) {
             if (!dbTransactions) return;
             const t = transactions.find(item => item.id === id);
@@ -1056,7 +1055,6 @@
                         </button>
                     `;
                 });
-                // Opção Outro Banco
                 listEl.innerHTML += `
                     <button class="bank-option-btn" onclick="selecionarOutroBancoModal()" style="color:var(--primary); font-weight:bold;">
                         ➕ Outro Banco...
