@@ -26,18 +26,17 @@
             --warning: #ffb86c;
 
             /* Padrão 1: Saldos Globais */
-            --balance-pos: #00d2ff; /* Ciano */
-            --balance-neg: #ff3b30; /* Vermelho Vivo */
+            --balance-pos: #00d2ff;
+            --balance-neg: #ff3b30;
 
             /* Padrão 2: A Receber / A Pagar */
-            --pending-pos: #00b37e; /* Verde Clássico */
-            --pending-neg: #f75a68; /* Vermelho Pastel */
+            --pending-pos: #00b37e;
+            --pending-neg: #f75a68;
 
             /* Padrão 3: Bancos */
-            --bank-pos: #a78bfa; /* Roxo / Lilás */
-            --bank-neg: #fb923c; /* Laranja */
+            --bank-pos: #a78bfa;
+            --bank-neg: #fb923c;
             
-            /* Mantendo variáveis base para não quebrar outras partes */
             --income: var(--pending-pos); 
             --expense: var(--pending-neg);
         }
@@ -89,7 +88,6 @@
         .balance-sub-card h3 { font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; }
         .balance-value { font-size: 1.4rem; font-weight: bold; transition: color 0.3s ease, opacity 0.25s ease; }
         
-        /* Classes dos 3 padrões de cores */
         .balance-pos { color: var(--balance-pos) !important; }
         .balance-neg { color: var(--balance-neg) !important; }
         
@@ -99,7 +97,6 @@
         .bank-pos { color: var(--bank-pos) !important; }
         .bank-neg { color: var(--bank-neg) !important; }
 
-        /* Helpers antigos mantidos para botões e detalhes gerais */
         .income-text { color: var(--pending-pos); }
         .expense-text { color: var(--pending-neg); }
 
@@ -125,17 +122,22 @@
         label { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 4px; }
         input, select { width: 100%; padding: 10px; background-color: #121214; border: 1px solid var(--border); border-radius: 8px; color: var(--text-color); font-size: 0.95rem; outline: none; }
         input:focus, select:focus { border-color: var(--primary); }
-        .radio-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+        
+        .radio-group-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 12px; }
+        .radio-group-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
         .radio-btn { position: relative; }
         .radio-btn input { position: absolute; opacity: 0; width: 0; height: 0; }
-        .radio-label { display: block; text-align: center; padding: 10px; background-color: #121214; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+        .radio-label { display: block; text-align: center; padding: 10px 4px; background-color: #121214; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.78rem; }
         .radio-btn input:checked + .radio-label.lbl-receber { border-color: var(--pending-pos); background-color: rgba(0, 179, 126, 0.1); color: var(--pending-pos); }
         .radio-btn input:checked + .radio-label.lbl-pagar { border-color: var(--pending-neg); background-color: rgba(247, 90, 104, 0.1); color: var(--pending-neg); }
+        .radio-btn input:checked + .radio-label.lbl-transf { border-color: var(--warning); background-color: rgba(255, 184, 108, 0.1); color: var(--warning); }
         .radio-btn input:checked + .radio-label.lbl-debito { border-color: var(--primary); background-color: rgba(78, 168, 222, 0.1); color: var(--primary); }
         .radio-btn input:checked + .radio-label.lbl-credito { border-color: var(--warning); background-color: rgba(255, 184, 108, 0.1); color: var(--warning); }
+        
         button.submit-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--primary) 0%, #3a9ec2 100%); border: none; border-radius: 10px; color: #fff; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
 
         #expense-conditional-fields { display: none; border-left: 2px solid var(--border); padding-left: 12px; margin-top: 10px; margin-bottom: 12px; }
+        #transfer-fields { display: none; border-left: 2px solid var(--warning); padding-left: 12px; margin-top: 10px; margin-bottom: 12px; }
         #credit-fields { display: none; margin-top: 10px; }
 
         .month-selector { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px; }
@@ -253,13 +255,11 @@
             <div class="balance-card">
                 <div class="balance-sub-card">
                     <h3>Saldo Real</h3>
-                    <!-- As cores aqui agora serão controladas dinamicamente via JS -->
                     <div class="balance-value" id="real-balance">R$ 0,00</div>
                 </div>
                 <div style="border-left: 1px solid var(--border)"></div>
                 <div class="balance-sub-card">
                     <h3>Saldo Previsto</h3>
-                    <!-- As cores aqui agora serão controladas dinamicamente via JS -->
                     <div class="balance-value" id="total-balance">R$ 0,00</div>
                 </div>
             </div>
@@ -280,9 +280,10 @@
             <div class="form-content">
                 <form id="finance-form">
                     <input type="hidden" id="edit-id" value="">
+                    
                     <div class="form-group">
                         <label>Tipo de Transação</label>
-                        <div class="radio-group">
+                        <div class="radio-group-3">
                             <div class="radio-btn">
                                 <input type="radio" id="type-receber" name="type" value="receber" checked onclick="toggleTypeFields()">
                                 <label for="type-receber" class="radio-label lbl-receber">A Receber</label>
@@ -291,13 +292,68 @@
                                 <input type="radio" id="type-pagar" name="type" value="pagar" onclick="toggleTypeFields()">
                                 <label for="type-pagar" class="radio-label lbl-pagar">A Pagar</label>
                             </div>
+                            <div class="radio-btn">
+                                <input type="radio" id="type-transfer" name="type" value="transfer" onclick="toggleTypeFields()">
+                                <label for="type-transfer" class="radio-label lbl-transf">Transferência</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="transfer-fields">
+                        <div class="form-group">
+                            <label for="bank-origin">Banco de Origem (Sai o valor)</label>
+                            <select id="bank-origin">
+                                <option value="" disabled selected>Selecione o banco de origem</option>
+                                <option value="001 - Banco do Brasil">001 - Banco do Brasil</option>
+                                <option value="033 - Santander">033 - Santander</option>
+                                <option value="104 - Caixa Econômica Federal">104 - Caixa Econômica Federal</option>
+                                <option value="237 - Bradesco">237 - Bradesco</option>
+                                <option value="341 - Itaú">341 - Itaú</option>
+                                <option value="260 - Nubank">260 - Nubank</option>
+                                <option value="077 - Banco Inter">077 - Banco Inter</option>
+                                <option value="336 - C6 Bank">336 - C6 Bank</option>
+                                <option value="212 - Banco Original">212 - Banco Original</option>
+                                <option value="655 - Neon (Votorantim)">655 - Neon (Votorantim)</option>
+                                <option value="623 - Banco Pan">623 - Banco Pan</option>
+                                <option value="208 - BTG Pactual">208 - BTG Pactual</option>
+                                <option value="748 - Sicredi">748 - Sicredi</option>
+                                <option value="756 - Sicoob">756 - Sicoob</option>
+                                <option value="389 - Mercado Pago">389 - Mercado Pago</option>
+                                <option value="380 - PicPay">380 - PicPay</option>
+                                <option value="290 - PagSeguro">290 - PagSeguro</option>
+                                <option value="Outro Banco...">Outro Banco...</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="bank-destination">Banco de Destino (Entra o valor)</label>
+                            <select id="bank-destination">
+                                <option value="" disabled selected>Selecione o banco de destino</option>
+                                <option value="001 - Banco do Brasil">001 - Banco do Brasil</option>
+                                <option value="033 - Santander">033 - Santander</option>
+                                <option value="104 - Caixa Econômica Federal">104 - Caixa Econômica Federal</option>
+                                <option value="237 - Bradesco">237 - Bradesco</option>
+                                <option value="341 - Itaú">341 - Itaú</option>
+                                <option value="260 - Nubank">260 - Nubank</option>
+                                <option value="077 - Banco Inter">077 - Banco Inter</option>
+                                <option value="336 - C6 Bank">336 - C6 Bank</option>
+                                <option value="212 - Banco Original">212 - Banco Original</option>
+                                <option value="655 - Neon (Votorantim)">655 - Neon (Votorantim)</option>
+                                <option value="623 - Banco Pan">623 - Banco Pan</option>
+                                <option value="208 - BTG Pactual">208 - BTG Pactual</option>
+                                <option value="748 - Sicredi">748 - Sicredi</option>
+                                <option value="756 - Sicoob">756 - Sicoob</option>
+                                <option value="389 - Mercado Pago">389 - Mercado Pago</option>
+                                <option value="380 - PicPay">380 - PicPay</option>
+                                <option value="290 - PagSeguro">290 - PagSeguro</option>
+                                <option value="Outro Banco...">Outro Banco...</option>
+                            </select>
                         </div>
                     </div>
 
                     <div id="expense-conditional-fields">
                         <div class="form-group" style="margin-bottom: 12px;">
                             <label>Forma de Lançamento</label>
-                            <div class="radio-group">
+                            <div class="radio-group-2">
                                 <div class="radio-btn">
                                     <input type="radio" id="method-debito" name="method" value="debito" checked onclick="toggleCreditFields(false)">
                                     <label for="method-debito" class="radio-label lbl-debito">Débito</label>
@@ -347,7 +403,7 @@
                         </select>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" id="desc-group">
                         <label for="description">Descrição do Lançamento</label>
                         <input type="text" id="description" placeholder="Ex: Salario, Rendimento, Investimento..." required autocomplete="off">
                     </div>
@@ -460,7 +516,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.2.1"; 
+        const VERSAO_CODIGO = "1.3.0"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -505,6 +561,7 @@
         const form = document.getElementById('finance-form');
         const editIdInput = document.getElementById('edit-id');
         const descInput = document.getElementById('description');
+        const descGroup = document.getElementById('desc-group');
         const amountInput = document.getElementById('amount');
         const dateInput = document.getElementById('due-date');
         const dateLabel = document.getElementById('date-label');
@@ -514,6 +571,9 @@
         const bankLabel = document.getElementById('bank-label');
         const bankSelect = document.getElementById('bank-select');
         const cardGroup = document.getElementById('card-group');
+        const transferFields = document.getElementById('transfer-fields');
+        const bankOriginSelect = document.getElementById('bank-origin');
+        const bankDestinationSelect = document.getElementById('bank-destination');
 
         const listContainer = document.getElementById('transaction-list');
         const monthSelector = document.getElementById('month-selector');
@@ -664,8 +724,9 @@
         }
 
         window.atualizarRotuloData = function() {
-            const isReceber = document.querySelector('input[name="type"]:checked').value === 'receber';
-            if (isReceber) { dateLabel.textContent = "Data de Recebimento"; return; }
+            const tipo = document.querySelector('input[name="type"]:checked').value;
+            if (tipo === 'receber') { dateLabel.textContent = "Data de Recebimento"; return; }
+            if (tipo === 'transfer') { dateLabel.textContent = "Data da Transferência"; return; }
 
             const isCredito = document.querySelector('input[name="method"]:checked').value === 'credito';
             if (!isCredito) dateLabel.textContent = "Data de Pagamento";
@@ -673,20 +734,34 @@
         }
 
         window.toggleTypeFields = function() {
-            const isReceber = document.querySelector('input[name="type"]:checked').value === 'receber';
-            const isPagar = !isReceber;
+            const tipo = document.querySelector('input[name="type"]:checked').value;
             
-            document.getElementById('expense-conditional-fields').style.display = isPagar ? 'block' : 'none';
+            const expFields = document.getElementById('expense-conditional-fields');
+            const transFields = document.getElementById('transfer-fields');
             
-            if (isReceber) {
+            expFields.style.display = (tipo === 'pagar') ? 'block' : 'none';
+            transFields.style.display = (tipo === 'transfer') ? 'block' : 'none';
+            
+            if (tipo === 'receber') {
+                descGroup.style.display = 'block';
+                descInput.required = true;
                 descInput.placeholder = "Ex: Salario, Rendimento, Investimento...";
                 bankGroup.style.display = 'block';
                 bankLabel.textContent = 'Banco de Destino (Recebimento)';
                 bankSelect.required = true;
-            } else {
+            } else if (tipo === 'pagar') {
+                descGroup.style.display = 'block';
+                descInput.required = true;
                 descInput.placeholder = "Ex: Mercado, Padaria, Combustivel...";
                 const isCredito = document.querySelector('input[name="method"]:checked').value === 'credito';
                 toggleCreditFields(isCredito);
+            } else if (tipo === 'transfer') {
+                bankGroup.style.display = 'none';
+                bankSelect.required = false;
+                descGroup.style.display = 'none';
+                descInput.required = false;
+                bankOriginSelect.required = true;
+                bankDestinationSelect.required = true;
             }
             atualizarRotuloData();
         }
@@ -856,6 +931,10 @@
         window.editTransaction = function(id) {
             const t = transactions.find(item => item.id === id);
             if (!t) return;
+            if (t.type === 'transfer') {
+                alert("Para alterar uma transferência, exclua este registro e faça novamente.");
+                return;
+            }
             editIdInput.value = t.id;
             descInput.value = t.description.replace(/ \(\d+\/\d+\)$/, '');
             amountInput.value = formatCurrencyInput(t.amount * (t.installmentsTotal || 1));
@@ -914,7 +993,17 @@
             const bankRealBalances = {};
 
             transactions.forEach(t => {
-                if (t.done) {
+                if (t.type === 'transfer') {
+                    // Transferência afeta diretamente os saldos reais dos bancos envolvidos (já nasce done: true)
+                    if (t.bankOrigin) {
+                        if (!bankRealBalances[t.bankOrigin]) bankRealBalances[t.bankOrigin] = 0;
+                        bankRealBalances[t.bankOrigin] -= t.amount;
+                    }
+                    if (t.bankDestination) {
+                        if (!bankRealBalances[t.bankDestination]) bankRealBalances[t.bankDestination] = 0;
+                        bankRealBalances[t.bankDestination] += t.amount;
+                    }
+                } else if (t.done) {
                     if (t.type === 'receber') realIncome += t.amount; else realExpense += t.amount;
                     if (t.bank && (t.type === 'receber' || (t.type === 'pagar' && t.method === 'debito'))) {
                         if (!bankRealBalances[t.bank]) bankRealBalances[t.bank] = 0;
@@ -934,12 +1023,8 @@
             atualizarTextoSeMudou(incomeEl, formatCurrency(pendingIncome));
             atualizarTextoSeMudou(expenseEl, formatCurrency(pendingExpense));
             
-            // Controle dinâmico Padrão 1: Saldos Globais
             realBalanceEl.className = 'balance-value ' + (saldoRealAtual >= 0 ? 'balance-pos' : 'balance-neg');
             balanceEl.className = 'balance-value ' + (saldoPrevistoGlobal >= 0 ? 'balance-pos' : 'balance-neg');
-            
-            // Controle dinâmico Padrão 2: A Receber / A Pagar (são blocos estáticos por natureza, mas mantemos o padrão)
-            // A Receber usa verde (pending-pos) e A Pagar usa vermelho (pending-neg), já definidos no HTML.
             
             let bankHtml = '';
             const bancosOrdenados = Object.entries(bankRealBalances).sort((a, b) => b[1] - a[1]);
@@ -952,7 +1037,6 @@
                     
                     if(nomeCurto.length > 15) nomeCurto = nomeCurto.substring(0, 13) + '...';
                     
-                    // Controle dinâmico Padrão 3: Bancos
                     let corClasse = saldoReal >= 0 ? 'bank-pos' : 'bank-neg';
                     bankHtml += `
                         <div class="bank-card">
@@ -970,9 +1054,14 @@
 
         function montarHtmlDoItem(t) {
             const isRec = t.type === 'receber';
+            const isTransf = t.type === 'transfer';
             
             let badgeText = ''; let iconHtml = '';
-            if (t.type === 'receber') {
+            if (isTransf) {
+                let origCurto = t.bankOrigin.includes('-') ? t.bankOrigin.split('-')[1].trim() : t.bankOrigin;
+                let destCurto = t.bankDestination.includes('-') ? t.bankDestination.split('-')[1].trim() : t.bankDestination;
+                badgeText = `🔄 ${origCurto} ➔ ${destCurto}`;
+            } else if (isRec) {
                 if (t.bank) { let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} ${nomeCurto}`; } 
                 else { badgeText = '💵 Entrada'; }
             } else {
@@ -980,25 +1069,31 @@
                 else { if (t.bank) { let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} Saída ${nomeCurto}`; } else { badgeText = '💵 Débito'; } }
             }
 
+            let valorClasse = isTransf ? 'warning' : (isRec ? 'income-text' : 'expense-text');
+            if (isTransf) valorClasse = ''; // cor neutra/destacada para transferência
+
             return `
                 <div class="item-details">
-                    <h4>${t.description}</h4>
+                    <h4>${isTransf ? 'Transferência entre Contas' : t.description}</h4>
                     <span>Data: ${formatDate(t.date)}</span>
                     <span class="method-badge" style="display:inline-flex; align-items:center;">${badgeText}</span>
                 </div>
                 <div class="item-right">
-                    <span class="item-value ${isRec ? 'income-text' : 'expense-text'}">${formatCurrency(t.amount)}</span>
+                    <span class="item-value" style="color: ${isTransf ? '#ffb86c' : ''}">${formatCurrency(t.amount)}</span>
                     <div class="item-actions-group">
-                        <button class="action-btn edit-btn" onclick="editTransaction('${t.id}')">✏️</button>
+                        ${!isTransf ? `<button class="action-btn edit-btn" onclick="editTransaction('${t.id}')">✏️</button>` : ''}
                         <button class="action-btn delete-btn" onclick="deleteTransaction('${t.id}')">×</button>
-                        ${!t.done ? `<button class="action-btn confirm-btn" onclick="confirmTransaction('${t.id}')">✓</button>` : ''}
+                        ${(!t.done && !isTransf) ? `<button class="action-btn confirm-btn" onclick="confirmTransaction('${t.id}')">✓</button>` : ''}
                     </div>
                 </div>
             `;
         }
 
         function renderList() {
-            const filtered = transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey)).filter(t => currentTab === 'done' ? t.done : !t.done);
+            const filtered = transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey)).filter(t => {
+                if (currentTab === 'done') return t.done || t.type === 'transfer';
+                return !t.done && t.type !== 'transfer';
+            });
             const emptyState = listContainer.querySelector('.empty-state');
 
             if (filtered.length === 0) {
@@ -1011,8 +1106,14 @@
             const grouped = {};
             filtered.forEach(t => {
                 let groupKey = '';
-                if (t.type === 'receber') { groupKey = t.bank ? `Entrada: ${t.bank}` : 'Entradas Diversas'; } 
-                else { if (t.method === 'credito') { groupKey = `Crédito: ${t.cardOrigin || 'Cartão'}`; } else { groupKey = t.bank ? `Saída (Débito): ${t.bank}` : 'Saídas Diversas'; } }
+                if (t.type === 'transfer') {
+                    groupKey = 'Transferências entre Contas';
+                } else if (t.type === 'receber') { 
+                    groupKey = t.bank ? `Entrada: ${t.bank}` : 'Entradas Diversas'; 
+                } else { 
+                    if (t.method === 'credito') { groupKey = `Crédito: ${t.cardOrigin || 'Cartão'}`; } 
+                    else { groupKey = t.bank ? `Saída (Débito): ${t.bank}` : 'Saídas Diversas'; } 
+                }
                 if (!grouped[groupKey]) grouped[groupKey] = []; grouped[groupKey].push(t);
             });
             const groupKeysOrdenados = Object.keys(grouped).sort();
@@ -1085,10 +1186,11 @@
                     totalEntradas += t.amount; entradasDetalhadas.push(t);
                     const labelEntrada = t.bank ? `${t.description} (${t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank})` : t.description;
                     agrupaEntradasOrigem[labelEntrada] = (agrupaEntradasOrigem[labelEntrada] || 0) + t.amount;
-                } else {
+                } else if (t.type === 'pagar') {
                     totalSaidas += t.amount; saidasDetalhadas.push(t);
                     const chaveAgrupada = obterCategoriaRelatorio(t); agrupaSaidasDesc[chaveAgrupada] = (agrupaSaidasDesc[chaveAgrupada] || 0) + t.amount;
                 }
+                // Transferências não entram nas receitas/despesas operacionais para não falsear a margem líquida.
             });
 
             const diff = totalEntradas - totalSaidas;
@@ -1111,8 +1213,8 @@
                 if (ordenadasDespesas.length > 0) { maiorDespesaNome = ordenadasDespesas[0][0]; maiorDespesaValor = ordenadasDespesas[0][1]; }
 
                 let analiseAnualHtml = `Total Entradas: <strong class="income-text">${formatCurrency(totalEntradas)}</strong> | Total Saídas: <strong class="expense-text">${formatCurrency(totalSaidas)}</strong><br><br>`;
-                if (diff < 0) analiseAnualHtml += `⚠️ <strong>Alerta Anual:</strong> Seus gastos superam as receitas! O maior impacto é gerado por <strong>"${maiorDespesaNome}"</strong> (${formatCurrency(maiorDespesaValor)}). <strong>Ponto crítico de redução:</strong> Estabeleça um teto rigoroso para esta categoria.`;
-                else analiseAnualHtml += `✅ <strong>Desempenho Anual Saudável:</strong> Entradas superam saídas no período.<br>💡 <strong>Oportunidade de Redução:</strong> A categoria que mais consome recursos é <strong>"${maiorDespesaNome}"</strong> (${formatCurrency(maiorDespesaValor)}). Avalie enxugar custos aqui para otimizar ainda mais seu saldo.`;
+                if (diff < 0) analiseAnualHtml += `⚠️ <strong>Alerta Anual:</strong> Seus gastos superam as receitas! O maior impacto é gerado por <strong>"${maiorDespesaNome}"</strong> (${formatCurrency(maiorDespesaValor)}).`;
+                else analiseAnualHtml += `✅ <strong>Desempenho Anual Saudável:</strong> Entradas superam saídas no período.<br>💡 <strong>Oportunidade de Redução:</strong> A categoria que mais consome recursos é <strong>"${maiorDespesaNome}"</strong> (${formatCurrency(maiorDespesaValor)}).`;
 
                 document.getElementById('analysis-summary-text').innerHTML = analiseAnualHtml;
                 document.getElementById('chart-comparison-title').textContent = "📊 Evolução Mensal Anual (Entradas vs Saídas)";
@@ -1135,7 +1237,7 @@
             } else {
                 const mesesAgrupados = {};
                 transactions.forEach(t => {
-                    if (t.date) {
+                    if (t.date && t.type !== 'transfer') {
                         const mKey = t.date.substring(0, 7);
                         if (!mesesAgrupados[mKey]) mesesAgrupados[mKey] = { rec: 0, pag: 0 };
                         if (t.type === 'receber') mesesAgrupados[mKey].rec += t.amount; else mesesAgrupados[mKey].pag += t.amount;
@@ -1170,25 +1272,52 @@
 
         form.addEventListener('submit', (e) => {
             e.preventDefault();
-            const editId = editIdInput.value; const selectedType = document.querySelector('input[name="type"]:checked').value; const description = descInput.value.trim(); const totalAmount = parseFormattedValue(amountInput.value); const baseDate = dateInput.value; const methodVal = selectedType === 'pagar' ? document.querySelector('input[name="method"]:checked').value : 'debito';
-            let cardOrigin = ''; let bankSelected = '';
-            
-            if (selectedType === 'receber' || (selectedType === 'pagar' && methodVal === 'debito')) bankSelected = bankSelect.value;
-            if (selectedType === 'pagar' && methodVal === 'credito') cardOrigin = cardOriginInput.value.trim();
-            if (!description || totalAmount <= 0 || !baseDate) return;
+            const editId = editIdInput.value; 
+            const selectedType = document.querySelector('input[name="type"]:checked').value; 
+            const totalAmount = parseFormattedValue(amountInput.value); 
+            const baseDate = dateInput.value; 
 
-            const qtdParcelas = selectedType === 'pagar' && methodVal === 'credito' ? (parseInt(document.getElementById('installments').value) || 1) : 1;
+            if (totalAmount <= 0 || !baseDate) return;
 
-            if (dbTransactions) {
-                if (editId) {
-                    const transAntiga = transactions.find(item => item.id === editId); const statusDone = transAntiga ? !!transAntiga.done : false;
-                    dbTransactions.child(editId).update({ type: selectedType, description, amount: totalAmount, date: baseDate, cardOrigin: cardOrigin || '', bank: bankSelected || '', method: methodVal, installmentsNum: 1, installmentsTotal: 1, done: statusDone });
-                } else {
-                    const valorParcela = parseFloat((totalAmount / qtdParcelas).toFixed(2));
-                    let [ano, mes, dia] = baseDate.split('-').map(Number);
-                    for (let i = 0; i < qtdParcelas; i++) {
-                        let novaData = new Date(ano, mes - 1 + i, dia); let anoStr = novaData.getFullYear(); let mesStr = String(novaData.getMonth() + 1).padStart(2, '0'); let diaStr = String(novaData.getDate()).padStart(2, '0');
-                        dbTransactions.push({ type: selectedType, description: qtdParcelas > 1 ? `${description} (${i + 1}/${qtdParcelas})` : description, amount: valorParcela, date: `${anoStr}-${mesStr}-${diaStr}`, cardOrigin: cardOrigin || '', bank: bankSelected || '', method: methodVal, installmentsNum: i + 1, installmentsTotal: qtdParcelas, done: (selectedType === 'pagar' && methodVal === 'debito') ? true : false });
+            if (selectedType === 'transfer') {
+                const bOrigem = bankOriginSelect.value;
+                const bDestino = bankDestinationSelect.value;
+                if (!bOrigem || !bDestino) return alert("Selecione o banco de origem e o banco de destino.");
+                if (bOrigem === bDestino) return alert("O banco de origem e o destino devem ser diferentes.");
+
+                if (dbTransactions) {
+                    dbTransactions.push({
+                        type: 'transfer',
+                        description: 'Transferência entre Contas',
+                        amount: totalAmount,
+                        date: baseDate,
+                        bankOrigin: bOrigem,
+                        bankDestination: bDestino,
+                        done: true
+                    });
+                }
+            } else {
+                const description = descInput.value.trim();
+                const methodVal = selectedType === 'pagar' ? document.querySelector('input[name="method"]:checked').value : 'debito';
+                let cardOrigin = ''; let bankSelected = '';
+                
+                if (selectedType === 'receber' || (selectedType === 'pagar' && methodVal === 'debito')) bankSelected = bankSelect.value;
+                if (selectedType === 'pagar' && methodVal === 'credito') cardOrigin = cardOriginInput.value.trim();
+                if (!description) return;
+
+                const qtdParcelas = selectedType === 'pagar' && methodVal === 'credito' ? (parseInt(document.getElementById('installments').value) || 1) : 1;
+
+                if (dbTransactions) {
+                    if (editId) {
+                        const transAntiga = transactions.find(item => item.id === editId); const statusDone = transAntiga ? !!transAntiga.done : false;
+                        dbTransactions.child(editId).update({ type: selectedType, description, amount: totalAmount, date: baseDate, cardOrigin: cardOrigin || '', bank: bankSelected || '', method: methodVal, installmentsNum: 1, installmentsTotal: 1, done: statusDone });
+                    } else {
+                        const valorParcela = parseFloat((totalAmount / qtdParcelas).toFixed(2));
+                        let [ano, mes, dia] = baseDate.split('-').map(Number);
+                        for (let i = 0; i < qtdParcelas; i++) {
+                            let novaData = new Date(ano, mes - 1 + i, dia); let anoStr = novaData.getFullYear(); let mesStr = String(novaData.getMonth() + 1).padStart(2, '0'); let diaStr = String(novaData.getDate()).padStart(2, '0');
+                            dbTransactions.push({ type: selectedType, description: qtdParcelas > 1 ? `${description} (${i + 1}/${qtdParcelas})` : description, amount: valorParcela, date: `${anoStr}-${mesStr}-${diaStr}`, cardOrigin: cardOrigin || '', bank: bankSelected || '', method: methodVal, installmentsNum: i + 1, installmentsTotal: qtdParcelas, done: (selectedType === 'pagar' && methodVal === 'debito') ? true : false });
+                        }
                     }
                 }
             }
