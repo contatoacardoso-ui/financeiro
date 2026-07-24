@@ -578,7 +578,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.3.6"; 
+        const VERSAO_CODIGO = "1.3.7"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -1293,7 +1293,9 @@
                     groupKey = t.bank ? `Entrada: ${t.bank}` : 'Entradas Diversas'; 
                 } else { 
                     if (t.method === 'credito') { groupKey = `Cartão: ${t.cardOrigin || 'Crédito'}`; } 
-                    else if (t.method === 'conta') { groupKey = 'Contas e Boletos (Pendentes)'; }
+                    else if (t.method === 'conta') { 
+                        groupKey = currentTab === 'pending' ? 'Contas e Boletos (Pendentes)' : 'Contas e Boletos'; 
+                    }
                     else { groupKey = t.bank ? `Saída (Débito): ${t.bank}` : 'Saídas Diversas'; } 
                 }
                 if (!grouped[groupKey]) grouped[groupKey] = []; grouped[groupKey].push(t);
