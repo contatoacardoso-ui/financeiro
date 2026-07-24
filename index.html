@@ -25,23 +25,31 @@
             --border: #29292e;
             --warning: #ffb86c;
 
-            /* Padrão 1: Saldos Globais */
-            --balance-pos: #00d2ff;
-            --balance-neg: #ff3b30;
+            /* Padrão Unificado: Saldos Globais e Pendentes (A Receber / A Pagar) */
+            --unified-pos: #00b37e; /* Verde Positivo */
+            --unified-neg: #f75a68; /* Vermelho Negativo */
 
-            /* Padrão 2: A Receber / A Pagar */
-            --pending-pos: #00b37e;
-            --pending-neg: #f75a68;
-
-            /* Padrão 3: Bancos */
-            --bank-pos: #a78bfa;
-            --bank-neg: #fb923c;
+            /* Padrão para Bancos (Mantém o terceiro padrão independente) */
+            --bank-pos: #a78bfa; 
+            --bank-neg: #fb923c; 
             
-            --income: var(--pending-pos); 
-            --expense: var(--pending-neg);
+            --income: var(--unified-pos); 
+            --expense: var(--unified-neg);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-color); color: var(--text-color); padding: 16px; padding-bottom: 60px; }
+
+        /* Estilo do Pop-up de Nova Atualização */
+        #update-toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: linear-gradient(135deg, #1d1d22 0%, #29292e 100%);
+            border: 1px solid var(--primary); color: var(--text-color); padding: 12px 20px;
+            border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 20000;
+            display: flex; align-items: center; gap: 10px; font-size: 0.85rem; font-weight: 500;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0;
+        }
+        #update-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        #update-toast span { color: var(--primary); font-size: 1.2rem; }
 
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -88,17 +96,15 @@
         .balance-sub-card h3 { font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; }
         .balance-value { font-size: 1.4rem; font-weight: bold; transition: color 0.3s ease, opacity 0.25s ease; }
         
-        .balance-pos { color: var(--balance-pos) !important; }
-        .balance-neg { color: var(--balance-neg) !important; }
-        
-        .pending-pos { color: var(--pending-pos) !important; }
-        .pending-neg { color: var(--pending-neg) !important; }
+        /* Classes de cores unificadas */
+        .unified-pos { color: var(--unified-pos) !important; }
+        .unified-neg { color: var(--unified-neg) !important; }
         
         .bank-pos { color: var(--bank-pos) !important; }
         .bank-neg { color: var(--bank-neg) !important; }
 
-        .income-text { color: var(--pending-pos); }
-        .expense-text { color: var(--pending-neg); }
+        .income-text { color: var(--unified-pos); }
+        .expense-text { color: var(--unified-neg); }
 
         .mini-card { background-color: var(--card-bg); padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
         .mini-card h4 { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px; }
@@ -128,8 +134,8 @@
         .radio-btn { position: relative; }
         .radio-btn input { position: absolute; opacity: 0; width: 0; height: 0; }
         .radio-label { display: block; text-align: center; padding: 10px 4px; background-color: #121214; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.78rem; }
-        .radio-btn input:checked + .radio-label.lbl-receber { border-color: var(--pending-pos); background-color: rgba(0, 179, 126, 0.1); color: var(--pending-pos); }
-        .radio-btn input:checked + .radio-label.lbl-pagar { border-color: var(--pending-neg); background-color: rgba(247, 90, 104, 0.1); color: var(--pending-neg); }
+        .radio-btn input:checked + .radio-label.lbl-receber { border-color: var(--unified-pos); background-color: rgba(0, 179, 126, 0.1); color: var(--unified-pos); }
+        .radio-btn input:checked + .radio-label.lbl-pagar { border-color: var(--unified-neg); background-color: rgba(247, 90, 104, 0.1); color: var(--unified-neg); }
         .radio-btn input:checked + .radio-label.lbl-transf { border-color: var(--warning); background-color: rgba(255, 184, 108, 0.1); color: var(--warning); }
         .radio-btn input:checked + .radio-label.lbl-debito { border-color: var(--primary); background-color: rgba(78, 168, 222, 0.1); color: var(--primary); }
         .radio-btn input:checked + .radio-label.lbl-credito { border-color: var(--warning); background-color: rgba(255, 184, 108, 0.1); color: var(--warning); }
@@ -167,7 +173,7 @@
         
         .item-actions-group { display: flex; align-items: center; gap: 5px; }
         .action-btn { background: none; border: none; font-size: 1rem; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .confirm-btn { color: var(--pending-pos); border: 1px solid rgba(0, 179, 126, 0.3); }
+        .confirm-btn { color: var(--unified-pos); border: 1px solid rgba(0, 179, 126, 0.3); }
         .edit-btn { color: var(--primary); border: 1px solid rgba(78, 168, 222, 0.3); }
         .delete-btn { color: var(--text-secondary); font-size: 1.2rem; border: 1px solid rgba(168, 168, 179, 0.15); }
         .empty-state { text-align: center; color: var(--text-secondary); padding: 20px 0; font-size: 0.85rem; }
@@ -204,8 +210,8 @@
         .security-header-btn { width: 100%; background: none; border: none; padding: 16px; font-size: 0.9rem; font-weight: bold; color: var(--text-secondary); cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
         .security-panel-content { display: none; flex-direction: column; }
         .security-panel-content button { background: none; border: none; border-bottom: 1px solid var(--border); padding: 14px 20px; color: var(--text-color); font-size: 0.85rem; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 12px; width: 100%; }
-        .security-panel-content button.danger-btn { color: var(--expense); }
-        .security-panel-content button.master-btn { color: var(--pending-pos); font-weight: bold; }
+        .security-panel-content button.danger-btn { color: var(--unified-neg); }
+        .security-panel-content button.master-btn { color: var(--unified-pos); font-weight: bold; }
         .logout-outer-btn { width: 100%; background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; color: var(--text-color); font-size: 0.9rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
         @media print {
@@ -229,6 +235,15 @@
     </style>
 </head>
 <body>
+
+    <!-- Aviso Toast de Nova Atualização -->
+    <div id="update-toast">
+        <span>🚀</span>
+        <div>
+            <strong>Aplicativo Atualizado!</strong><br>
+            <span id="toast-version-text" style="color:var(--text-secondary);">Versão mais recente carregada.</span>
+        </div>
+    </div>
 
     <div id="login-screen">
         <div class="login-card">
@@ -265,11 +280,11 @@
             </div>
             <div class="mini-card">
                 <h4>A Receber</h4>
-                <p class="pending-pos" id="total-income">R$ 0,00</p>
+                <p class="unified-pos" id="total-income">R$ 0,00</p>
             </div>
             <div class="mini-card">
                 <h4>A Pagar</h4>
-                <p class="pending-neg" id="total-expense">R$ 0,00</p>
+                <p class="unified-neg" id="total-expense">R$ 0,00</p>
             </div>
         </div>
         
@@ -455,11 +470,11 @@
                 <div class="analysis-box" id="analysis-summary-text">Calculando análise...</div>
                 <div class="top-rankings-wrapper">
                     <div class="ranking-column">
-                        <h4 style="font-size:0.85rem; color:var(--expense); margin-bottom:6px;">🔥 Top 3 Maiores Despesas</h4>
+                        <h4 style="font-size:0.85rem; color:var(--unified-neg); margin-bottom:6px;">🔥 Top 3 Maiores Despesas</h4>
                         <div class="ranking-list" id="top-expenses-ranking"></div>
                     </div>
                     <div class="ranking-column">
-                        <h4 style="font-size:0.85rem; color:var(--income); margin-bottom:6px; margin-top:0px;">💰 Top 3 Maiores Entradas</h4>
+                        <h4 style="font-size:0.85rem; color:var(--unified-pos); margin-bottom:6px; margin-top:0px;">💰 Top 3 Maiores Entradas</h4>
                         <div class="ranking-list" id="top-incomes-ranking"></div>
                     </div>
                 </div>
@@ -516,7 +531,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.3.0"; 
+        const VERSAO_CODIGO = "1.3.1"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -586,6 +601,21 @@
 
         dateInput.value = new Date().toISOString().split('T')[0];
 
+        // Sistema de verificação e aviso de nova atualização
+        function verificarAtualizacaoDoApp() {
+            const versaoSalva = localStorage.getItem('app_version_cache');
+            document.getElementById('toast-version-text').textContent = `Versão ${VERSAO_CODIGO} carregada com sucesso.`;
+            
+            if (versaoSalva !== VERSAO_CODIGO) {
+                localStorage.setItem('app_version_cache', VERSAO_CODIGO);
+                const toast = document.getElementById('update-toast');
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 4500);
+            }
+        }
+
         let atualizacaoAgendada = false;
         function agendarAtualizacaoDaTela() {
             if (atualizacaoAgendada) return;
@@ -599,6 +629,8 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
+            verificarAtualizacaoDoApp();
+
             if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
             try { firebase.database().goOnline(); } catch(e){}
 
@@ -735,7 +767,6 @@
 
         window.toggleTypeFields = function() {
             const tipo = document.querySelector('input[name="type"]:checked').value;
-            
             const expFields = document.getElementById('expense-conditional-fields');
             const transFields = document.getElementById('transfer-fields');
             
@@ -994,7 +1025,6 @@
 
             transactions.forEach(t => {
                 if (t.type === 'transfer') {
-                    // Transferência afeta diretamente os saldos reais dos bancos envolvidos (já nasce done: true)
                     if (t.bankOrigin) {
                         if (!bankRealBalances[t.bankOrigin]) bankRealBalances[t.bankOrigin] = 0;
                         bankRealBalances[t.bankOrigin] -= t.amount;
@@ -1023,8 +1053,11 @@
             atualizarTextoSeMudou(incomeEl, formatCurrency(pendingIncome));
             atualizarTextoSeMudou(expenseEl, formatCurrency(pendingExpense));
             
-            realBalanceEl.className = 'balance-value ' + (saldoRealAtual >= 0 ? 'balance-pos' : 'balance-neg');
-            balanceEl.className = 'balance-value ' + (saldoPrevistoGlobal >= 0 ? 'balance-pos' : 'balance-neg');
+            // Padrão de Cores Unificado Aplicado a Saldo Real, Saldo Previsto, A Receber e A Pagar
+            realBalanceEl.className = 'balance-value ' + (saldoRealAtual >= 0 ? 'unified-pos' : 'unified-neg');
+            balanceEl.className = 'balance-value ' + (saldoPrevistoGlobal >= 0 ? 'unified-pos' : 'unified-neg');
+            incomeEl.className = (pendingIncome >= 0 ? 'unified-pos' : 'unified-neg');
+            expenseEl.className = (pendingExpense >= 0 ? 'unified-neg' : 'unified-pos');
             
             let bankHtml = '';
             const bancosOrdenados = Object.entries(bankRealBalances).sort((a, b) => b[1] - a[1]);
@@ -1037,6 +1070,7 @@
                     
                     if(nomeCurto.length > 15) nomeCurto = nomeCurto.substring(0, 13) + '...';
                     
+                    // Terceiro padrão independente para os bancos
                     let corClasse = saldoReal >= 0 ? 'bank-pos' : 'bank-neg';
                     bankHtml += `
                         <div class="bank-card">
@@ -1068,9 +1102,6 @@
                 if (t.method === 'credito') { badgeText = `💳 Crédito${t.installmentsTotal > 1 ? ' (' + t.installmentsNum + '/' + t.installmentsTotal + ')' : ''}`; } 
                 else { if (t.bank) { let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} Saída ${nomeCurto}`; } else { badgeText = '💵 Débito'; } }
             }
-
-            let valorClasse = isTransf ? 'warning' : (isRec ? 'income-text' : 'expense-text');
-            if (isTransf) valorClasse = ''; // cor neutra/destacada para transferência
 
             return `
                 <div class="item-details">
@@ -1190,7 +1221,6 @@
                     totalSaidas += t.amount; saidasDetalhadas.push(t);
                     const chaveAgrupada = obterCategoriaRelatorio(t); agrupaSaidasDesc[chaveAgrupada] = (agrupaSaidasDesc[chaveAgrupada] || 0) + t.amount;
                 }
-                // Transferências não entram nas receitas/despesas operacionais para não falsear a margem líquida.
             });
 
             const diff = totalEntradas - totalSaidas;
