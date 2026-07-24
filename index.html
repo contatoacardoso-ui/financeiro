@@ -26,6 +26,8 @@
             --expense: #f75a68;
             --border: #29292e;
             --warning: #ffb86c;
+            --forecast-pos: #00d2ff; /* Azul Ciano brilhante para saldo previsto positivo */
+            --forecast-neg: #ff3b30; /* Vermelho vivo para saldo previsto negativo */
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-color); color: var(--text-color); padding: 16px; padding-bottom: 60px; }
@@ -73,7 +75,12 @@
             text-align: center; display: flex; justify-content: space-around;
         }
         .balance-sub-card h3 { font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; }
-        .balance-value { font-size: 1.4rem; font-weight: bold; transition: opacity 0.25s ease; }
+        .balance-value { font-size: 1.4rem; font-weight: bold; transition: color 0.3s ease, opacity 0.25s ease; }
+        
+        /* Classes de cores dinâmicas para o Saldo Previsto */
+        .forecast-pos { color: var(--forecast-pos) !important; }
+        .forecast-neg { color: var(--forecast-neg) !important; }
+
         .mini-card { background-color: var(--card-bg); padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
         .mini-card h4 { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px; }
         .mini-card p { font-size: 1rem; font-weight: bold; transition: opacity 0.25s ease; }
@@ -82,9 +89,10 @@
 
         .bank-balances-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 16px; }
         .bank-balances-scroll::-webkit-scrollbar { display: none; }
-        .bank-card { background-color: var(--card-bg); border: 1px solid var(--border); padding: 10px 14px; border-radius: 10px; min-width: 130px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .bank-card h5 { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: normal; }
+        .bank-card { background-color: var(--card-bg); border: 1px solid var(--border); padding: 10px 14px; border-radius: 10px; min-width: 140px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .bank-card h5 { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: normal; display: flex; align-items: center; }
         .bank-card p { font-size: 1.05rem; font-weight: bold; }
+        .bank-logo { width: 16px; height: 16px; border-radius: 4px; margin-right: 6px; object-fit: contain; background: #fff; padding: 1px; }
 
         .form-accordion { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
         .form-accordion summary { padding: 16px; font-size: 1rem; font-weight: bold; color: var(--text-color); cursor: pointer; list-style: none; display: flex; align-items: center; }
@@ -230,6 +238,7 @@
                 <div style="border-left: 1px solid var(--border)"></div>
                 <div class="balance-sub-card">
                     <h3>Saldo Previsto</h3>
+                    <!-- Classe controlada dinamicamente via JS -->
                     <div class="balance-value" id="total-balance">R$ 0,00</div>
                 </div>
             </div>
@@ -430,7 +439,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.1.9"; 
+        const VERSAO_CODIGO = "1.2.0"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -869,6 +878,47 @@
         window.salvarComoPDF = function() { window.print(); }
         function atualizarTextoSeMudou(el, novoTexto) { if (el.textContent !== novoTexto) el.textContent = novoTexto; }
 
+        function getBankLogo(bankName) {
+            // Mapeamento dos nomes de bancos para os domínios oficiais para puxar o favicon
+            const domainMap = {
+                'Banco do Brasil': 'bb.com.br',
+                'Santander': 'santander.com.br',
+                'Caixa': 'caixa.gov.br',
+                'Caixa Econômica Federal': 'caixa.gov.br',
+                'Bradesco': 'bradesco.com.br',
+                'Itaú': 'itau.com.br',
+                'Nubank': 'nubank.com.br',
+                'Inter': 'bancointer.com.br',
+                'Banco Inter': 'bancointer.com.br',
+                'C6 Bank': 'c6bank.com.br',
+                'Original': 'original.com.br',
+                'Banco Original': 'original.com.br',
+                'Neon': 'neon.com.br',
+                'Pan': 'bancopan.com.br',
+                'Banco Pan': 'bancopan.com.br',
+                'BTG': 'btgpactual.com',
+                'BTG Pactual': 'btgpactual.com',
+                'Sicredi': 'sicredi.com.br',
+                'Sicoob': 'sicoob.com.br',
+                'Mercado Pago': 'mercadopago.com.br',
+                'PicPay': 'picpay.com',
+                'PagSeguro': 'pagseguro.uol.com.br'
+            };
+            
+            let domain = null;
+            for (let key in domainMap) {
+                if (bankName.includes(key)) {
+                    domain = domainMap[key];
+                    break;
+                }
+            }
+            
+            if (domain) {
+                return `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" class="bank-logo" alt="logo">`;
+            }
+            return '🏦 '; // Retorna o emoji padrão se não encontrar a logo
+        }
+
         function updateDashboard() {
             let pendingIncome = 0, pendingExpense = 0, realIncome = 0, realExpense = 0;
             const bankRealBalances = {};
@@ -885,7 +935,7 @@
                         else bankRealBalances[t.bank] -= t.amount;
                     }
                 } else {
-                    // CÁLCULO PENDENTE GLOBAL (Removemos o filtro de mês daqui)
+                    // CÁLCULO PENDENTE GLOBAL (Reflete todo o futuro/passado pendente)
                     if (t.type === 'receber') pendingIncome += t.amount; else pendingExpense += t.amount;
                 }
             });
@@ -893,7 +943,7 @@
             // Saldo Real = Entradas Pagas - Saídas Pagas
             const saldoRealAtual = realIncome - realExpense;
             
-            // Saldo Previsto (GLOBAL) = Saldo Real + Tudo a receber (futuro) - Tudo a pagar (futuro)
+            // Saldo Previsto (GLOBAL) = Saldo Real + Tudo a receber - Tudo a pagar
             const saldoPrevistoGlobal = saldoRealAtual + pendingIncome - pendingExpense;
 
             atualizarTextoSeMudou(realBalanceEl, formatCurrency(saldoRealAtual));
@@ -901,7 +951,15 @@
             atualizarTextoSeMudou(incomeEl, formatCurrency(pendingIncome));
             atualizarTextoSeMudou(expenseEl, formatCurrency(pendingExpense));
             
-            // Renderizar Balanços por Banco
+            // Lógica de Cores Dinâmicas para o Saldo Previsto
+            balanceEl.className = 'balance-value'; // Reseta a classe
+            if (saldoPrevistoGlobal >= 0) {
+                balanceEl.classList.add('forecast-pos');
+            } else {
+                balanceEl.classList.add('forecast-neg');
+            }
+            
+            // Renderizar Balanços por Banco com as Logos
             let bankHtml = '';
             const bancosOrdenados = Object.entries(bankRealBalances).sort((a, b) => b[1] - a[1]);
             
@@ -909,12 +967,14 @@
                 bankBalancesContainer.style.display = 'flex';
                 bancosOrdenados.forEach(([nomeBancoCompleto, saldoReal]) => {
                     let nomeCurto = nomeBancoCompleto.includes('-') ? nomeBancoCompleto.split('-')[1].trim() : nomeBancoCompleto;
+                    let logoHtml = getBankLogo(nomeCurto); // Busca a logo via Google API
+                    
                     if(nomeCurto.length > 15) nomeCurto = nomeCurto.substring(0, 13) + '...';
                     
                     let corClasse = saldoReal >= 0 ? 'income-text' : 'expense-text';
                     bankHtml += `
                         <div class="bank-card">
-                            <h5>🏦 ${nomeCurto}</h5>
+                            <h5>${logoHtml} ${nomeCurto}</h5>
                             <p class="${corClasse}">${formatCurrency(saldoReal)}</p>
                         </div>
                     `;
@@ -930,13 +990,26 @@
             const isRec = t.type === 'receber';
             
             let badgeText = '';
+            let iconHtml = '';
             if (t.type === 'receber') {
-                badgeText = t.bank ? `🏦 ${(t.bank.includes('-') ? t.bank.split('-')[1] : t.bank).trim()}` : '💵 Entrada';
+                if (t.bank) {
+                    let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
+                    iconHtml = getBankLogo(nomeCurto);
+                    badgeText = `${iconHtml} ${nomeCurto}`;
+                } else {
+                    badgeText = '💵 Entrada';
+                }
             } else {
                 if (t.method === 'credito') {
                     badgeText = `💳 Crédito${t.installmentsTotal > 1 ? ' (' + t.installmentsNum + '/' + t.installmentsTotal + ')' : ''}`;
                 } else {
-                    badgeText = t.bank ? `🏦 Saída ${(t.bank.includes('-') ? t.bank.split('-')[1] : t.bank).trim()}` : '💵 Débito';
+                    if (t.bank) {
+                        let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
+                        iconHtml = getBankLogo(nomeCurto);
+                        badgeText = `${iconHtml} Saída ${nomeCurto}`;
+                    } else {
+                        badgeText = '💵 Débito';
+                    }
                 }
             }
 
@@ -944,7 +1017,7 @@
                 <div class="item-details">
                     <h4>${t.description}</h4>
                     <span>Data: ${formatDate(t.date)}</span>
-                    <span class="method-badge">${badgeText}</span>
+                    <span class="method-badge" style="display:inline-flex; align-items:center;">${badgeText}</span>
                 </div>
                 <div class="item-right">
                     <span class="item-value ${isRec ? 'income-text' : 'expense-text'}">${formatCurrency(t.amount)}</span>
@@ -1141,14 +1214,16 @@
 
             const detailedIncList = document.getElementById('detailed-incomes-list'); detailedIncList.innerHTML = entradasDetalhadas.length ? '' : '<div class="empty-state">Nenhuma entrada.</div>';
             entradasDetalhadas.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
-                const subTitle = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : '';
-                detailedIncList.innerHTML += `<div class="detailed-item"><div class="detailed-info"><h4>${t.description}</h4><span>${formatDate(t.date)}${subTitle ? ' • 🏦 ' + subTitle : ''}</span></div><strong class="income-text">${formatCurrency(t.amount)}</strong></div>`;
+                let subTitle = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : '';
+                let iconHtml = subTitle ? getBankLogo(subTitle) : '';
+                detailedIncList.innerHTML += `<div class="detailed-item"><div class="detailed-info"><h4>${t.description}</h4><span style="display:inline-flex; align-items:center;">${formatDate(t.date)}${subTitle ? ' &nbsp;•&nbsp; ' + iconHtml + ' ' + subTitle : ''}</span></div><strong class="income-text">${formatCurrency(t.amount)}</strong></div>`;
             });
 
             const detailedExpList = document.getElementById('detailed-expenses-list'); detailedExpList.innerHTML = saidasDetalhadas.length ? '' : '<div class="empty-state">Nenhuma saída.</div>';
             saidasDetalhadas.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
-                const subTitle = t.type === 'pagar' && t.method === 'debito' && t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : '';
-                detailedExpList.innerHTML += `<div class="detailed-item"><div class="detailed-info"><h4>${t.description}</h4><span>${formatDate(t.date)}${subTitle ? ' • 🏦 ' + subTitle : ''}</span></div><strong class="expense-text">${formatCurrency(t.amount)}</strong></div>`;
+                let subTitle = t.type === 'pagar' && t.method === 'debito' && t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : '';
+                let iconHtml = subTitle ? getBankLogo(subTitle) : '';
+                detailedExpList.innerHTML += `<div class="detailed-item"><div class="detailed-info"><h4>${t.description}</h4><span style="display:inline-flex; align-items:center;">${formatDate(t.date)}${subTitle ? ' &nbsp;•&nbsp; ' + iconHtml + ' ' + subTitle : ''}</span></div><strong class="expense-text">${formatCurrency(t.amount)}</strong></div>`;
             });
         }
 
