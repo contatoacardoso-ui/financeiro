@@ -234,11 +234,11 @@
                 </div>
             </div>
             <div class="mini-card">
-                <h4>A Receber (Mês)</h4>
+                <h4>A Receber</h4>
                 <p class="income-text" id="total-income">R$ 0,00</p>
             </div>
             <div class="mini-card">
-                <h4>A Pagar (Mês)</h4>
+                <h4>A Pagar</h4>
                 <p class="expense-text" id="total-expense">R$ 0,00</p>
             </div>
         </div>
@@ -430,7 +430,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.1.8"; 
+        const VERSAO_CODIGO = "1.1.9"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -874,32 +874,30 @@
             const bankRealBalances = {};
 
             transactions.forEach(t => {
-                // Cálculo Global (Tudo que já foi efetivado desde o começo dos tempos)
+                // Cálculo Global de tudo que já foi pago/recebido
                 if (t.done) {
                     if (t.type === 'receber') realIncome += t.amount; else realExpense += t.amount;
                     
-                    // Cálculo por Banco (Apenas transações efetivadas para mostrar saldo real por banco)
+                    // Cálculo por Banco
                     if (t.bank && (t.type === 'receber' || (t.type === 'pagar' && t.method === 'debito'))) {
                         if (!bankRealBalances[t.bank]) bankRealBalances[t.bank] = 0;
                         if (t.type === 'receber') bankRealBalances[t.bank] += t.amount;
                         else bankRealBalances[t.bank] -= t.amount;
                     }
-                } 
-                
-                // Pendentes APENAS DO MÊS SELECIONADO NA TELA
-                if (!t.done && t.date && t.date.startsWith(selectedMonthKey)) {
+                } else {
+                    // CÁLCULO PENDENTE GLOBAL (Removemos o filtro de mês daqui)
                     if (t.type === 'receber') pendingIncome += t.amount; else pendingExpense += t.amount;
                 }
             });
 
-            // Lógica Corrigida: 
-            // Saldo Real = Entradas Pagas - Saídas Pagas (Geral)
-            // Saldo Previsto = Saldo Real de hoje + Entradas que faltam no mês selecionado - Saídas que faltam no mês selecionado.
+            // Saldo Real = Entradas Pagas - Saídas Pagas
             const saldoRealAtual = realIncome - realExpense;
-            const saldoPrevistoMensal = saldoRealAtual + pendingIncome - pendingExpense;
+            
+            // Saldo Previsto (GLOBAL) = Saldo Real + Tudo a receber (futuro) - Tudo a pagar (futuro)
+            const saldoPrevistoGlobal = saldoRealAtual + pendingIncome - pendingExpense;
 
             atualizarTextoSeMudou(realBalanceEl, formatCurrency(saldoRealAtual));
-            atualizarTextoSeMudou(balanceEl, formatCurrency(saldoPrevistoMensal));
+            atualizarTextoSeMudou(balanceEl, formatCurrency(saldoPrevistoGlobal));
             atualizarTextoSeMudou(incomeEl, formatCurrency(pendingIncome));
             atualizarTextoSeMudou(expenseEl, formatCurrency(pendingExpense));
             
