@@ -48,6 +48,37 @@
         #update-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
         #update-toast span { color: var(--primary); font-size: 1.2rem; }
 
+        /* Estilo do Modal de Seleção de Banco */
+        #bank-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px);
+            display: none; justify-content: center; align-items: center; z-index: 30000; padding: 20px;
+        }
+        .bank-modal-card {
+            background-color: var(--card-bg); border: 1px solid var(--border); width: 100%; max-width: 360px;
+            border-radius: 16px; padding: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column; max-height: 85vh; animation: modalPop 0.3s ease;
+        }
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.93); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .bank-modal-header { font-size: 1.05rem; font-weight: bold; margin-bottom: 6px; text-align: center; }
+        .bank-modal-subtitle { font-size: 0.8rem; color: var(--text-secondary); text-align: center; margin-bottom: 16px; }
+        .bank-options-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 280px; padding-right: 4px; margin-bottom: 16px; }
+        .bank-options-list::-webkit-scrollbar { width: 4px; }
+        .bank-options-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        .bank-option-btn {
+            background-color: #121214; border: 1px solid var(--border); color: var(--text-color);
+            padding: 12px; border-radius: 10px; font-size: 0.9rem; font-weight: 500; cursor: pointer;
+            text-align: left; display: flex; align-items: center; gap: 10px; transition: background 0.2s, border-color 0.2s;
+        }
+        .bank-option-btn:hover { background-color: rgba(78, 168, 222, 0.08); border-color: var(--primary); }
+        .bank-modal-close {
+            background: none; border: 1px solid var(--border); color: var(--text-secondary);
+            padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.85rem;
+        }
+
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: var(--bg-color); display: none; flex-direction: column;
@@ -127,7 +158,6 @@
         
         .radio-group-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 12px; }
         .radio-group-3-method { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 12px; }
-        .radio-group-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
         .radio-btn { position: relative; }
         .radio-btn input { position: absolute; opacity: 0; width: 0; height: 0; }
         .radio-label { display: block; text-align: center; padding: 10px 4px; background-color: #121214; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.78rem; }
@@ -243,6 +273,18 @@
         </div>
     </div>
 
+    <!-- Modal Pop-up para Seleção de Banco no Pagamento -->
+    <div id="bank-modal-overlay">
+        <div class="bank-modal-card">
+            <div class="bank-modal-header" id="modal-title-text">💳 Selecionar Banco</div>
+            <div class="bank-modal-subtitle" id="modal-subtitle-text">De qual banco saiu o pagamento?</div>
+            <div class="bank-options-list" id="bank-options-list">
+                <!-- Preenchido via Script -->
+            </div>
+            <button class="bank-modal-close" onclick="fecharModalBanco()">Cancelar</button>
+        </div>
+    </div>
+
     <div id="login-screen">
         <div class="login-card">
             <div class="login-icon">🔒</div>
@@ -317,23 +359,24 @@
                             <label for="bank-origin">Banco de Origem (Sai o valor)</label>
                             <select id="bank-origin">
                                 <option value="" disabled selected>Selecione o banco de origem</option>
+                                <option value="260 - Nubank">260 - Nubank</option>
+                                <option value="341 - Itaú">341 - Itaú</option>
+                                <option value="336 - C6 Bank">336 - C6 Bank</option>
                                 <option value="001 - Banco do Brasil">001 - Banco do Brasil</option>
                                 <option value="033 - Santander">033 - Santander</option>
-                                <option value="104 - Caixa Econômica Federal">104 - Caixa Econômica Federal</option>
                                 <option value="237 - Bradesco">237 - Bradesco</option>
-                                <option value="341 - Itaú">341 - Itaú</option>
-                                <option value="260 - Nubank">260 - Nubank</option>
+                                <option value="104 - Caixa Econômica Federal">104 - Caixa Econômica Federal</option>
                                 <option value="077 - Banco Inter">077 - Banco Inter</option>
-                                <option value="336 - C6 Bank">336 - C6 Bank</option>
+                                <option value="041 - Banrisul">041 - Banrisul</option>
+                                <option value="389 - Mercado Pago">389 - Mercado Pago</option>
+                                <option value="380 - PicPay">380 - PicPay</option>
+                                <option value="290 - PagSeguro">290 - PagSeguro</option>
                                 <option value="212 - Banco Original">212 - Banco Original</option>
                                 <option value="655 - Neon (Votorantim)">655 - Neon (Votorantim)</option>
                                 <option value="623 - Banco Pan">623 - Banco Pan</option>
                                 <option value="208 - BTG Pactual">208 - BTG Pactual</option>
                                 <option value="748 - Sicredi">748 - Sicredi</option>
                                 <option value="756 - Sicoob">756 - Sicoob</option>
-                                <option value="389 - Mercado Pago">389 - Mercado Pago</option>
-                                <option value="380 - PicPay">380 - PicPay</option>
-                                <option value="290 - PagSeguro">290 - PagSeguro</option>
                                 <option value="Outro Banco...">Outro Banco...</option>
                             </select>
                         </div>
@@ -341,23 +384,24 @@
                             <label for="bank-destination">Banco de Destino (Entra o valor)</label>
                             <select id="bank-destination">
                                 <option value="" disabled selected>Selecione o banco de destino</option>
+                                <option value="260 - Nubank">260 - Nubank</option>
+                                <option value="341 - Itaú">341 - Itaú</option>
+                                <option value="336 - C6 Bank">336 - C6 Bank</option>
                                 <option value="001 - Banco do Brasil">001 - Banco do Brasil</option>
                                 <option value="033 - Santander">033 - Santander</option>
-                                <option value="104 - Caixa Econômica Federal">104 - Caixa Econômica Federal</option>
                                 <option value="237 - Bradesco">237 - Bradesco</option>
-                                <option value="341 - Itaú">341 - Itaú</option>
-                                <option value="260 - Nubank">260 - Nubank</option>
+                                <option value="104 - Caixa Econômica Federal">104 - Caixa Econômica Federal</option>
                                 <option value="077 - Banco Inter">077 - Banco Inter</option>
-                                <option value="336 - C6 Bank">336 - C6 Bank</option>
+                                <option value="041 - Banrisul">041 - Banrisul</option>
+                                <option value="389 - Mercado Pago">389 - Mercado Pago</option>
+                                <option value="380 - PicPay">380 - PicPay</option>
+                                <option value="290 - PagSeguro">290 - PagSeguro</option>
                                 <option value="212 - Banco Original">212 - Banco Original</option>
                                 <option value="655 - Neon (Votorantim)">655 - Neon (Votorantim)</option>
                                 <option value="623 - Banco Pan">623 - Banco Pan</option>
                                 <option value="208 - BTG Pactual">208 - BTG Pactual</option>
                                 <option value="748 - Sicredi">748 - Sicredi</option>
                                 <option value="756 - Sicoob">756 - Sicoob</option>
-                                <option value="389 - Mercado Pago">389 - Mercado Pago</option>
-                                <option value="380 - PicPay">380 - PicPay</option>
-                                <option value="290 - PagSeguro">290 - PagSeguro</option>
                                 <option value="Outro Banco...">Outro Banco...</option>
                             </select>
                         </div>
@@ -399,29 +443,30 @@
                         <label id="bank-label">Banco de Destino</label>
                         <select id="bank-select" required>
                             <option value="" disabled selected>Selecione um banco</option>
+                            <option value="260 - Nubank">260 - Nubank</option>
+                            <option value="341 - Itaú">341 - Itaú</option>
+                            <option value="336 - C6 Bank">336 - C6 Bank</option>
                             <option value="001 - Banco do Brasil">001 - Banco do Brasil</option>
                             <option value="033 - Santander">033 - Santander</option>
-                            <option value="104 - Caixa Econômica Federal">104 - Caixa Econômica Federal</option>
                             <option value="237 - Bradesco">237 - Bradesco</option>
-                            <option value="341 - Itaú">341 - Itaú</option>
-                            <option value="260 - Nubank">260 - Nubank</option>
+                            <option value="104 - Caixa Econômica Federal">104 - Caixa Econômica Federal</option>
                             <option value="077 - Banco Inter">077 - Banco Inter</option>
-                            <option value="336 - C6 Bank">336 - C6 Bank</option>
+                            <option value="041 - Banrisul">041 - Banrisul</option>
+                            <option value="389 - Mercado Pago">389 - Mercado Pago</option>
+                            <option value="380 - PicPay">380 - PicPay</option>
+                            <option value="290 - PagSeguro">290 - PagSeguro</option>
                             <option value="212 - Banco Original">212 - Banco Original</option>
                             <option value="655 - Neon (Votorantim)">655 - Neon (Votorantim)</option>
                             <option value="623 - Banco Pan">623 - Banco Pan</option>
                             <option value="208 - BTG Pactual">208 - BTG Pactual</option>
                             <option value="748 - Sicredi">748 - Sicredi</option>
                             <option value="756 - Sicoob">756 - Sicoob</option>
-                            <option value="389 - Mercado Pago">389 - Mercado Pago</option>
-                            <option value="380 - PicPay">380 - PicPay</option>
-                            <option value="290 - PagSeguro">290 - PagSeguro</option>
                             <option value="Outro Banco...">Outro Banco...</option>
                         </select>
                     </div>
 
                     <div class="form-group" id="desc-group">
-                        <label for="description" id="desc-label">Descrição do Lançamento</label>
+                        <label for="description">Descrição do Lançamento</label>
                         <input type="text" id="description" placeholder="Ex: Salario, Rendimento, Investimento..." required autocomplete="off">
                     </div>
 
@@ -533,7 +578,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.3.4"; 
+        const VERSAO_CODIGO = "1.3.5"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -541,6 +586,27 @@
             'user_master': { name: 'Principal', pwd: 'Touchrio@8512@', isMaster: true, node: NO_MASTER_ORIGINAL },
             'user_suelen_winnie': { name: 'Suelen Winnie', pwd: '12345', isMaster: false, node: 'lancamentos_suelen_winnie' }
         };
+
+        const LISTA_BANCOS_PADRAO = [
+            "260 - Nubank",
+            "341 - Itaú",
+            "336 - C6 Bank",
+            "001 - Banco do Brasil",
+            "033 - Santander",
+            "237 - Bradesco",
+            "104 - Caixa Econômica Federal",
+            "077 - Banco Inter",
+            "041 - Banrisul",
+            "389 - Mercado Pago",
+            "380 - PicPay",
+            "290 - PagSeguro",
+            "212 - Banco Original",
+            "655 - Neon (Votorantim)",
+            "623 - Banco Pan",
+            "208 - BTG Pactual",
+            "748 - Sicredi",
+            "756 - Sicoob"
+        ];
 
         function sanitizarChaveNode(str) {
             if (!str) return '';
@@ -554,6 +620,7 @@
         
         let currentTab = 'report';
         let reportMode = 'month';
+        let transactionToConfirmId = null;
         
         const hojeObj = new Date();
         const mesAtualGlobalKey = `${hojeObj.getFullYear()}-${String(hojeObj.getMonth() + 1).padStart(2, '0')}`;
@@ -641,7 +708,7 @@
             const senhaSalva = localStorage.getItem('saved_password');
             if (usuarioSalvo) loginUsernameInput.value = usuarioSalvo;
             if (senhaSalva) loginPassword.value = senhaSalva;
-            rememberMeCheckbox.checked = localStorage.getItem('remember_active') !== 'false';
+            rememberMeCheckbox.checked = localStorage.getItem('remember_active'] !== 'false';
 
             dbRoot.child('config_perfis').on('value', (snapshot) => {
                 const dadosNuvem = snapshot.val();
@@ -841,7 +908,7 @@
                 const novaSenhaTrim = novaSenha.trim();
                 perfisCadastrados[chaveAtiva].pwd = novaSenhaTrim;
                 dbRoot.child('config_perfis').set(perfisCadastrados).then(() => {
-                    if (localStorage.getItem('remember_active') === 'true' && localStorage.getItem('active_user_key') === chaveAtiva) localStorage.setItem('saved_password', novaSenhaTrim);
+                    if (localStorage.getItem('remember_active'] === 'true' && localStorage.getItem('active_user_key') === chaveAtiva) localStorage.setItem('saved_password', novaSenhaTrim);
                     alert("Senha alterada com sucesso!");
                 });
             }
@@ -963,48 +1030,63 @@
             }
         }
 
+        // Funções para Controle do Modal de Banco
         window.confirmTransaction = function(id) {
             if (!dbTransactions) return;
             const t = transactions.find(item => item.id === id);
             if (!t) return;
 
             if (t.type === 'pagar' && (t.method === 'conta' || t.method === 'credito') && !t.bank) {
-                let tituloPrompt = t.method === 'credito' ? "💳 PAGAMENTO DE FATURA DE CARTÃO" : "📄 PAGAMENTO DE CONTA";
-                const escolha = prompt(
-                    `${tituloPrompt}\n\n` +
-                    `De qual banco/conta saiu o dinheiro para pagar "${t.description}"?\n\n` +
-                    "1 - 260 - Nubank\n" +
-                    "2 - 341 - Itaú\n" +
-                    "3 - 001 - Banco do Brasil\n" +
-                    "4 - 033 - Santander\n" +
-                    "5 - 104 - Caixa Econômica Federal\n" +
-                    "6 - 237 - Bradesco\n" +
-                    "7 - 077 - Banco Inter\n" +
-                    "8 - 389 - Mercado Pago\n" +
-                    "9 - 380 - PicPay\n" +
-                    "10 - 290 - PagSeguro\n\n" +
-                    "Digite o número correspondente ou o nome do banco:"
-                );
-                if (!escolha) return; 
+                transactionToConfirmId = id;
+                const modalOverlay = document.getElementById('bank-modal-overlay');
+                const listEl = document.getElementById('bank-options-list');
+                const titleEl = document.getElementById('modal-title-text');
+                const subEl = document.getElementById('modal-subtitle-text');
 
-                const mapaBancos = {
-                    '1': '260 - Nubank',
-                    '2': '341 - Itaú',
-                    '3': '001 - Banco do Brasil',
-                    '4': '033 - Santander',
-                    '5': '104 - Caixa Econômica Federal',
-                    '6': '237 - Bradesco',
-                    '7': '077 - Banco Inter',
-                    '8': '389 - Mercado Pago',
-                    '9': '380 - PicPay',
-                    '10': '290 - PagSeguro'
-                };
+                titleEl.textContent = t.method === 'credito' ? "💳 Pagar Fatura do Cartão" : "📄 Pagar Conta";
+                subEl.textContent = `De qual banco saiu o dinheiro para pagar "${t.description}"?`;
 
-                let bancoEscolhido = mapaBancos[escolha.trim()] || escolha.trim();
-                dbTransactions.child(id).update({ done: true, bank: bancoEscolhido });
+                listEl.innerHTML = '';
+                LISTA_BANCOS_PADRAO.forEach(banco => {
+                    let nomeCurto = banco.includes('-') ? banco.split('-')[1].trim() : banco;
+                    let logoHtml = getBankLogo(nomeCurto);
+                    listEl.innerHTML += `
+                        <button class="bank-option-btn" onclick="selecionarBancoModal('${banco}')">
+                            ${logoHtml} <span>${banco}</span>
+                        </button>
+                    `;
+                });
+                // Opção Outro Banco
+                listEl.innerHTML += `
+                    <button class="bank-option-btn" onclick="selecionarOutroBancoModal()" style="color:var(--primary); font-weight:bold;">
+                        ➕ Outro Banco...
+                    </button>
+                `;
+
+                modalOverlay.style.display = 'flex';
             } else {
                 dbTransactions.child(id).update({ done: true });
             }
+        }
+
+        window.fecharModalBanco = function() {
+            document.getElementById('bank-modal-overlay').style.display = 'none';
+            transactionToConfirmId = null;
+        }
+
+        window.selecionarBancoModal = function(bancoEscolhido) {
+            if (transactionToConfirmId && dbTransactions) {
+                dbTransactions.child(transactionToConfirmId).update({ done: true, bank: bancoEscolhido });
+            }
+            fecharModalBanco();
+        }
+
+        window.selecionarOutroBancoModal = function() {
+            const outro = prompt("Digite o nome do banco:");
+            if (outro && outro.trim() !== "" && transactionToConfirmId && dbTransactions) {
+                dbTransactions.child(transactionToConfirmId).update({ done: true, bank: outro.trim() });
+            }
+            fecharModalBanco();
         }
 
         window.deleteTransaction = function(id) { if(confirm("Deseja apagar este lançamento?") && dbTransactions) dbTransactions.child(id).remove(); }
@@ -1064,7 +1146,7 @@
 
         function getBankLogo(bankName) {
             const domainMap = {
-                'Banco do Brasil': 'bb.com.br', 'Santander': 'santander.com.br', 'Caixa': 'caixa.gov.br', 'Caixa Econômica Federal': 'caixa.gov.br', 'Bradesco': 'bradesco.com.br', 'Itaú': 'itau.com.br', 'Nubank': 'nubank.com.br', 'Inter': 'bancointer.com.br', 'Banco Inter': 'bancointer.com.br', 'C6 Bank': 'c6bank.com.br', 'Original': 'original.com.br', 'Banco Original': 'original.com.br', 'Neon': 'neon.com.br', 'Pan': 'bancopan.com.br', 'Banco Pan': 'bancopan.com.br', 'BTG': 'btgpactual.com', 'BTG Pactual': 'btgpactual.com', 'Sicredi': 'sicredi.com.br', 'Sicoob': 'sicoob.com.br', 'Mercado Pago': 'mercadopago.com.br', 'PicPay': 'picpay.com', 'PagSeguro': 'pagseguro.uol.com.br'
+                'Banco do Brasil': 'bb.com.br', 'Santander': 'santander.com.br', 'Caixa': 'caixa.gov.br', 'Caixa Econômica Federal': 'caixa.gov.br', 'Bradesco': 'bradesco.com.br', 'Itaú': 'itau.com.br', 'Nubank': 'nubank.com.br', 'Inter': 'bancointer.com.br', 'Banco Inter': 'bancointer.com.br', 'C6 Bank': 'c6bank.com.br', 'Original': 'original.com.br', 'Banco Original': 'original.com.br', 'Neon': 'neon.com.br', 'Pan': 'bancopan.com.br', 'Banco Pan': 'bancopan.com.br', 'BTG': 'btgpactual.com', 'BTG Pactual': 'btgpactual.com', 'Sicredi': 'sicredi.com.br', 'Sicoob': 'sicoob.com.br', 'Mercado Pago': 'mercadopago.com.br', 'PicPay': 'picpay.com', 'PagSeguro': 'pagseguro.uol.com.br', 'Banrisul': 'banrisul.com.br'
             };
             let domain = null;
             for (let key in domainMap) { if (bankName.includes(key)) { domain = domainMap[key]; break; } }
