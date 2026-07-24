@@ -96,7 +96,6 @@
         .balance-sub-card h3 { font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; }
         .balance-value { font-size: 1.4rem; font-weight: bold; transition: color 0.3s ease, opacity 0.25s ease; }
         
-        /* Classes de cores unificadas */
         .unified-pos { color: var(--unified-pos) !important; }
         .unified-neg { color: var(--unified-neg) !important; }
         
@@ -130,6 +129,7 @@
         input:focus, select:focus { border-color: var(--primary); }
         
         .radio-group-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 12px; }
+        .radio-group-3-method { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 12px; }
         .radio-group-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
         .radio-btn { position: relative; }
         .radio-btn input { position: absolute; opacity: 0; width: 0; height: 0; }
@@ -139,6 +139,7 @@
         .radio-btn input:checked + .radio-label.lbl-transf { border-color: var(--warning); background-color: rgba(255, 184, 108, 0.1); color: var(--warning); }
         .radio-btn input:checked + .radio-label.lbl-debito { border-color: var(--primary); background-color: rgba(78, 168, 222, 0.1); color: var(--primary); }
         .radio-btn input:checked + .radio-label.lbl-credito { border-color: var(--warning); background-color: rgba(255, 184, 108, 0.1); color: var(--warning); }
+        .radio-btn input:checked + .radio-label.lbl-conta { border-color: #a78bfa; background-color: rgba(167, 139, 250, 0.1); color: #a78bfa; }
         
         button.submit-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--primary) 0%, #3a9ec2 100%); border: none; border-radius: 10px; color: #fff; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
 
@@ -368,14 +369,18 @@
                     <div id="expense-conditional-fields">
                         <div class="form-group" style="margin-bottom: 12px;">
                             <label>Forma de Lançamento</label>
-                            <div class="radio-group-2">
+                            <div class="radio-group-3-method">
                                 <div class="radio-btn">
-                                    <input type="radio" id="method-debito" name="method" value="debito" checked onclick="toggleCreditFields(false)">
+                                    <input type="radio" id="method-debito" name="method" value="debito" checked onclick="toggleMethodFields('debito')">
                                     <label for="method-debito" class="radio-label lbl-debito">Débito</label>
                                 </div>
                                 <div class="radio-btn">
-                                    <input type="radio" id="method-credito" name="method" value="credito" onclick="toggleCreditFields(true)">
+                                    <input type="radio" id="method-credito" name="method" value="credito" onclick="toggleMethodFields('credito')">
                                     <label for="method-credito" class="radio-label lbl-credito">Crédito</label>
+                                </div>
+                                <div class="radio-btn">
+                                    <input type="radio" id="method-conta" name="method" value="conta" onclick="toggleMethodFields('conta')">
+                                    <label for="method-conta" class="radio-label lbl-conta">Contas</label>
                                 </div>
                             </div>
                         </div>
@@ -531,7 +536,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.3.1"; 
+        const VERSAO_CODIGO = "1.3.2"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -601,7 +606,6 @@
 
         dateInput.value = new Date().toISOString().split('T')[0];
 
-        // Sistema de verificação e aviso de nova atualização
         function verificarAtualizacaoDoApp() {
             const versaoSalva = localStorage.getItem('app_version_cache');
             document.getElementById('toast-version-text').textContent = `Versão ${VERSAO_CODIGO} carregada com sucesso.`;
@@ -760,9 +764,9 @@
             if (tipo === 'receber') { dateLabel.textContent = "Data de Recebimento"; return; }
             if (tipo === 'transfer') { dateLabel.textContent = "Data da Transferência"; return; }
 
-            const isCredito = document.querySelector('input[name="method"]:checked').value === 'credito';
-            if (!isCredito) dateLabel.textContent = "Data de Pagamento";
-            else dateLabel.textContent = "Data de Vencimento";
+            const methodVal = document.querySelector('input[name="method"]:checked').value;
+            if (methodVal === 'credito') dateLabel.textContent = "Data de Vencimento";
+            else dateLabel.textContent = "Data de Pagamento";
         }
 
         window.toggleTypeFields = function() {
@@ -783,9 +787,9 @@
             } else if (tipo === 'pagar') {
                 descGroup.style.display = 'block';
                 descInput.required = true;
-                descInput.placeholder = "Ex: Mercado, Padaria, Combustivel...";
-                const isCredito = document.querySelector('input[name="method"]:checked').value === 'credito';
-                toggleCreditFields(isCredito);
+                descInput.placeholder = "Ex: IPTU, Condomínio, Luz...";
+                const methodVal = document.querySelector('input[name="method"]:checked').value;
+                toggleMethodFields(methodVal);
             } else if (tipo === 'transfer') {
                 bankGroup.style.display = 'none';
                 bankSelect.required = false;
@@ -797,21 +801,20 @@
             atualizarRotuloData();
         }
 
-        window.toggleCreditFields = function(isCredito) {
-            document.getElementById('credit-fields').style.display = isCredito ? 'block' : 'none';
-            const isPagar = document.querySelector('input[name="type"]:checked').value === 'pagar';
+        window.toggleMethodFields = function(method) {
+            const isCredito = (method === 'credito');
+            const isConta = (method === 'conta');
             
-            if (isPagar) {
-                if (isCredito) {
-                    cardGroup.style.display = 'block';
-                    bankGroup.style.display = 'none';
-                    bankSelect.required = false;
-                } else {
-                    cardGroup.style.display = 'none';
-                    bankGroup.style.display = 'block';
-                    bankLabel.textContent = 'Banco de Origem (Débito)';
-                    bankSelect.required = true;
-                }
+            document.getElementById('credit-fields').style.display = isCredito ? 'block' : 'none';
+            cardGroup.style.display = isCredito ? 'block' : 'none';
+            
+            if (isCredito || isConta) {
+                bankGroup.style.display = 'none';
+                bankSelect.required = false;
+            } else {
+                bankGroup.style.display = 'block';
+                bankLabel.textContent = 'Banco de Origem (Débito)';
+                bankSelect.required = true;
             }
             atualizarRotuloData();
         }
@@ -834,7 +837,7 @@
                 const novaSenhaTrim = novaSenha.trim();
                 perfisCadastrados[chaveAtiva].pwd = novaSenhaTrim;
                 dbRoot.child('config_perfis').set(perfisCadastrados).then(() => {
-                    if (localStorage.getItem('remember_active') === 'true' && localStorage.getItem('active_user_key') === chaveAtiva) localStorage.setItem('saved_password', novaSenhaTrim);
+                    if (localStorage.getItem('remember_active') === 'true' && localStorage.getItem('active_user_key'] === chaveAtiva) localStorage.setItem('saved_password', novaSenhaTrim);
                     alert("Senha alterada com sucesso!");
                 });
             }
@@ -956,7 +959,50 @@
             }
         }
 
-        window.confirmTransaction = function(id) { if (dbTransactions) dbTransactions.child(id).update({ done: true }); }
+        // Confirmação de Transação com prompt de escolha de banco para método "Contas"
+        window.confirmTransaction = function(id) {
+            if (!dbTransactions) return;
+            const t = transactions.find(item => item.id === id);
+            if (!t) return;
+
+            if (t.type === 'pagar' && t.method === 'conta' && !t.bank) {
+                const escolha = prompt(
+                    "💳 PAGAMENTO DE CONTA\n\n" +
+                    "De qual banco saiu o dinheiro para pagar esta conta?\n\n" +
+                    "1 - 260 - Nubank\n" +
+                    "2 - 341 - Itaú\n" +
+                    "3 - 001 - Banco do Brasil\n" +
+                    "4 - 033 - Santander\n" +
+                    "5 - 104 - Caixa Econômica Federal\n" +
+                    "6 - 237 - Bradesco\n" +
+                    "7 - 077 - Banco Inter\n" +
+                    "8 - 389 - Mercado Pago\n" +
+                    "9 - 380 - PicPay\n" +
+                    "10 - 290 - PagSeguro\n\n" +
+                    "Digite o número correspondente ou o nome do banco:"
+                );
+                if (!escolha) return; // cancelado
+
+                const mapaBancos = {
+                    '1': '260 - Nubank',
+                    '2': '341 - Itaú',
+                    '3': '001 - Banco do Brasil',
+                    '4': '033 - Santander',
+                    '5': '104 - Caixa Econômica Federal',
+                    '6': '237 - Bradesco',
+                    '7': '077 - Banco Inter',
+                    '8': '389 - Mercado Pago',
+                    '9': '380 - PicPay',
+                    '10': '290 - PagSeguro'
+                };
+
+                let bancoEscolhido = mapaBancos[escolha.trim()] || escolha.trim();
+                dbTransactions.child(id).update({ done: true, bank: bancoEscolhido });
+            } else {
+                dbTransactions.child(id).update({ done: true });
+            }
+        }
+
         window.deleteTransaction = function(id) { if(confirm("Deseja apagar este lançamento?") && dbTransactions) dbTransactions.child(id).remove(); }
 
         window.editTransaction = function(id) {
@@ -978,12 +1024,15 @@
                 document.getElementById('type-pagar').checked = true;
                 if (t.method === 'credito') {
                     document.getElementById('method-credito').checked = true;
-                    toggleCreditFields(true);
+                    toggleMethodFields('credito');
                     document.getElementById('installments').value = t.installmentsTotal || 1;
                     cardOriginInput.value = t.cardOrigin || '';
+                } else if (t.method === 'conta') {
+                    document.getElementById('method-conta').checked = true;
+                    toggleMethodFields('conta');
                 } else {
                     document.getElementById('method-debito').checked = true;
-                    toggleCreditFields(false);
+                    toggleMethodFields('debito');
                     bankSelect.value = t.bank || '';
                 }
             }
@@ -1035,7 +1084,7 @@
                     }
                 } else if (t.done) {
                     if (t.type === 'receber') realIncome += t.amount; else realExpense += t.amount;
-                    if (t.bank && (t.type === 'receber' || (t.type === 'pagar' && t.method === 'debito'))) {
+                    if (t.bank && (t.type === 'receber' || (t.type === 'pagar' && (t.method === 'debito' || t.method === 'conta')))) {
                         if (!bankRealBalances[t.bank]) bankRealBalances[t.bank] = 0;
                         if (t.type === 'receber') bankRealBalances[t.bank] += t.amount;
                         else bankRealBalances[t.bank] -= t.amount;
@@ -1053,7 +1102,6 @@
             atualizarTextoSeMudou(incomeEl, formatCurrency(pendingIncome));
             atualizarTextoSeMudou(expenseEl, formatCurrency(pendingExpense));
             
-            // Padrão de Cores Unificado Aplicado a Saldo Real, Saldo Previsto, A Receber e A Pagar
             realBalanceEl.className = 'balance-value ' + (saldoRealAtual >= 0 ? 'unified-pos' : 'unified-neg');
             balanceEl.className = 'balance-value ' + (saldoPrevistoGlobal >= 0 ? 'unified-pos' : 'unified-neg');
             incomeEl.className = (pendingIncome >= 0 ? 'unified-pos' : 'unified-neg');
@@ -1070,7 +1118,6 @@
                     
                     if(nomeCurto.length > 15) nomeCurto = nomeCurto.substring(0, 13) + '...';
                     
-                    // Terceiro padrão independente para os bancos
                     let corClasse = saldoReal >= 0 ? 'bank-pos' : 'bank-neg';
                     bankHtml += `
                         <div class="bank-card">
@@ -1099,8 +1146,19 @@
                 if (t.bank) { let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} ${nomeCurto}`; } 
                 else { badgeText = '💵 Entrada'; }
             } else {
-                if (t.method === 'credito') { badgeText = `💳 Crédito${t.installmentsTotal > 1 ? ' (' + t.installmentsNum + '/' + t.installmentsTotal + ')' : ''}`; } 
-                else { if (t.bank) { let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} Saída ${nomeCurto}`; } else { badgeText = '💵 Débito'; } }
+                if (t.method === 'credito') { 
+                    badgeText = `💳 Crédito${t.installmentsTotal > 1 ? ' (' + t.installmentsNum + '/' + t.installmentsTotal + ')' : ''}`; 
+                } else if (t.method === 'conta') {
+                    if (t.bank) {
+                        let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
+                        iconHtml = getBankLogo(nomeCurto);
+                        badgeText = `${iconHtml} Conta • ${nomeCurto}`;
+                    } else {
+                        badgeText = '📄 Conta a Pagar';
+                    }
+                } else { 
+                    if (t.bank) { let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} Saída ${nomeCurto}`; } else { badgeText = '💵 Débito'; } 
+                }
             }
 
             return `
@@ -1143,6 +1201,7 @@
                     groupKey = t.bank ? `Entrada: ${t.bank}` : 'Entradas Diversas'; 
                 } else { 
                     if (t.method === 'credito') { groupKey = `Crédito: ${t.cardOrigin || 'Cartão'}`; } 
+                    else if (t.method === 'conta') { groupKey = 'Contas e Boletos (Pendentes)'; }
                     else { groupKey = t.bank ? `Saída (Débito): ${t.bank}` : 'Saídas Diversas'; } 
                 }
                 if (!grouped[groupKey]) grouped[groupKey] = []; grouped[groupKey].push(t);
@@ -1295,7 +1354,7 @@
 
             const detailedExpList = document.getElementById('detailed-expenses-list'); detailedExpList.innerHTML = saidasDetalhadas.length ? '' : '<div class="empty-state">Nenhuma saída.</div>';
             saidasDetalhadas.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
-                let subTitle = t.type === 'pagar' && t.method === 'debito' && t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : ''; let iconHtml = subTitle ? getBankLogo(subTitle) : '';
+                let subTitle = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : ''; let iconHtml = subTitle ? getBankLogo(subTitle) : '';
                 detailedExpList.innerHTML += `<div class="detailed-item"><div class="detailed-info"><h4>${t.description}</h4><span style="display:inline-flex; align-items:center;">${formatDate(t.date)}${subTitle ? ' &nbsp;•&nbsp; ' + iconHtml + ' ' + subTitle : ''}</span></div><strong class="expense-text">${formatCurrency(t.amount)}</strong></div>`;
             });
         }
