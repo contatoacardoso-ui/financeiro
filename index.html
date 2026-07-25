@@ -64,26 +64,16 @@
             border-radius: 16px; padding: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
             display: flex; flex-direction: column; max-height: 90vh; animation: modalPop 0.3s ease;
         }
-        @keyframes modalPop {
-            from { opacity: 0; transform: scale(0.93); }
-            to { opacity: 1; transform: scale(1); }
-        }
+        @keyframes modalPop { from { opacity: 0; transform: scale(0.93); } to { opacity: 1; transform: scale(1); } }
         .modal-header { font-size: 1.1rem; font-weight: bold; margin-bottom: 6px; text-align: center; }
         .modal-subtitle { font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-bottom: 16px; }
-        .modal-close-btn {
-            background: none; border: 1px solid var(--border); color: var(--text-secondary);
-            padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.9rem; margin-top: 10px;
-        }
+        .modal-close-btn { background: none; border: 1px solid var(--border); color: var(--text-secondary); padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.9rem; margin-top: 10px; }
 
         /* Listas no modal de Pagamento */
         .bank-options-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 280px; padding-right: 4px; margin-bottom: 8px; }
         .bank-options-list::-webkit-scrollbar { width: 4px; }
         .bank-options-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-        .bank-option-btn {
-            background-color: #121214; border: 1px solid var(--border); color: var(--text-color);
-            padding: 12px; border-radius: 10px; font-size: 0.9rem; font-weight: 500; cursor: pointer;
-            text-align: left; display: flex; align-items: center; gap: 10px; transition: background 0.2s, border-color 0.2s;
-        }
+        .bank-option-btn { background-color: #121214; border: 1px solid var(--border); color: var(--text-color); padding: 12px; border-radius: 10px; font-size: 0.9rem; font-weight: 500; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px; transition: background 0.2s, border-color 0.2s; }
         .bank-option-btn:hover { background-color: rgba(78, 168, 222, 0.08); border-color: var(--primary); }
 
         /* Estilos do Gerenciador de Contas e Cartões */
@@ -102,57 +92,31 @@
         .manager-add-btn { background: linear-gradient(135deg, var(--primary) 0%, #3a9ec2 100%); border: none; color: #fff; padding: 14px; border-radius: 10px; font-size: 0.95rem; font-weight: bold; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
         /* Tela de Login */
-        #login-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--bg-color); display: none; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 10000; padding: 24px;
-        }
-        .login-card {
-            width: 100%; max-width: 320px; background-color: var(--card-bg);
-            border: 1px solid var(--border); padding: 30px 24px; border-radius: 16px;
-            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10000; padding: 24px; }
+        .login-card { width: 100%; max-width: 320px; background-color: var(--card-bg); border: 1px solid var(--border); padding: 30px 24px; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         .login-icon { font-size: 3rem; margin-bottom: 16px; }
         .login-card h2 { font-size: 1.2rem; margin-bottom: 8px; }
         .login-card p { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px; }
-        .login-card input {
-            text-align: center; font-size: 1rem; padding: 12px; margin-bottom: 14px;
-            width: 100%; background-color: #121214; border: 1px solid var(--border);
-            border-radius: 8px; color: var(--text-color); outline: none; transition: border-color 0.3s;
-        }
+        .login-card input { text-align: center; font-size: 1rem; padding: 12px; margin-bottom: 14px; width: 100%; background-color: #121214; border: 1px solid var(--border); border-radius: 8px; color: var(--text-color); outline: none; transition: border-color 0.3s; }
         .login-card input:focus { border-color: var(--primary); }
-        .remember-container {
-            display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
-            font-size: 0.82rem; color: var(--text-secondary); text-align: left; cursor: pointer;
-        }
+        .remember-container { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 0.82rem; color: var(--text-secondary); text-align: left; cursor: pointer; }
         .remember-container input { width: auto; margin-bottom: 0; cursor: pointer; }
         .login-error { color: var(--expense); font-size: 0.8rem; margin-bottom: 12px; display: none; }
 
         #app-container { display: none; }
         header { margin-bottom: 20px; text-align: center; }
         header h1 { font-size: 1.4rem; }
-        .profile-badge {
-            display: inline-block; background-color: rgba(78, 168, 222, 0.15);
-            color: var(--primary); padding: 4px 10px; border-radius: 12px;
-            font-size: 0.75rem; font-weight: 700; margin-top: 6px;
-            border: 1px solid rgba(78, 168, 222, 0.3);
-        }
+        .profile-badge { display: inline-block; background-color: rgba(78, 168, 222, 0.15); color: var(--primary); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; margin-top: 6px; border: 1px solid rgba(78, 168, 222, 0.3); }
 
         .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-        .balance-card {
-            grid-column: span 2; background: linear-gradient(135deg, #202024 0%, #121214 100%);
-            border: 1px solid var(--border); padding: 16px; border-radius: 12px;
-            text-align: center; display: flex; justify-content: space-around;
-        }
+        .balance-card { grid-column: span 2; background: linear-gradient(135deg, #202024 0%, #121214 100%); border: 1px solid var(--border); padding: 16px; border-radius: 12px; text-align: center; display: flex; justify-content: space-around; }
         .balance-sub-card h3 { font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; }
         .balance-value { font-size: 1.4rem; font-weight: bold; transition: color 0.3s ease, opacity 0.25s ease; }
         
         .unified-pos { color: var(--unified-pos) !important; }
         .unified-neg { color: var(--unified-neg) !important; }
-        
         .bank-pos { color: var(--bank-pos) !important; }
         .bank-neg { color: var(--bank-neg) !important; }
-
         .income-text { color: var(--unified-pos); }
         .expense-text { color: var(--unified-neg); }
 
@@ -176,9 +140,22 @@
         .form-content { padding: 16px; }
         .form-group { margin-bottom: 12px; }
         label { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 4px; }
-        input, select { width: 100%; padding: 12px; background-color: #121214; border: 1px solid var(--border); border-radius: 8px; color: var(--text-color); font-size: 0.95rem; outline: none; transition: border-color 0.3s; }
-        input:focus, select:focus { border-color: var(--primary); }
+        input { width: 100%; padding: 12px; background-color: #121214; border: 1px solid var(--border); border-radius: 8px; color: var(--text-color); font-size: 0.95rem; outline: none; transition: border-color 0.3s; }
+        input:focus { border-color: var(--primary); }
         
+        /* Sistema de Dropdown Customizado (Substitui o Select Nativo) */
+        .custom-select-wrapper { position: relative; width: 100%; user-select: none; }
+        .custom-select-display { display: flex; align-items: center; justify-content: space-between; padding: 12px; background-color: #121214; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color 0.3s; min-height: 46px; }
+        .custom-select-display:active { border-color: var(--primary); }
+        .custom-select-content { display: flex; align-items: center; font-size: 0.95rem; color: var(--text-color); }
+        .custom-select-arrow { font-size: 0.7rem; color: var(--text-secondary); transition: transform 0.3s; }
+        .custom-select-options { position: absolute; top: 100%; left: 0; right: 0; margin-top: 6px; background-color: #1d1d22; border: 1px solid var(--primary); border-radius: 8px; z-index: 100; max-height: 220px; overflow-y: auto; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.8); }
+        .custom-select-options.show { display: block; animation: fadeInOpts 0.15s ease; }
+        @keyframes fadeInOpts { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .custom-option { padding: 12px; display: flex; align-items: center; cursor: pointer; border-bottom: 1px solid #29292e; font-size: 0.95rem; transition: background 0.2s; }
+        .custom-option:last-child { border-bottom: none; }
+        .custom-option:hover { background-color: rgba(78, 168, 222, 0.15); }
+
         .btn-manager-inline { background-color: rgba(255,255,255,0.05); border: 1px dashed var(--text-secondary); color: var(--text-color); padding: 8px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; width: 100%; margin-top: 6px; text-align: center; transition: all 0.2s; }
         .btn-manager-inline:hover { background-color: rgba(255,255,255,0.1); border-color: var(--primary); color: var(--primary); }
 
@@ -230,7 +207,7 @@
         .transaction-item { background-color: var(--card-bg); border: 1px solid var(--border); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
         .item-details h4 { font-size: 0.9rem; margin-bottom: 2px; }
         .item-details span { font-size: 0.7rem; color: var(--text-secondary); display: block; }
-        .item-details .method-badge { font-size: 0.7rem; color: var(--text-secondary); background-color: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; border: 1px solid var(--border); }
+        .item-details .method-badge { font-size: 0.7rem; color: var(--text-secondary); background-color: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; margin-top: 6px; border: 1px solid var(--border); }
         .item-right { text-align: right; display: flex; align-items: center; gap: 8px; }
         .item-value { font-weight: bold; font-size: 0.95rem; }
         
@@ -415,22 +392,34 @@
                         </div>
                     </div>
 
+                    <!-- Campos de Transferência -->
                     <div id="transfer-fields">
                         <div class="form-group">
-                            <label for="bank-origin">Conta de Origem (Sai o valor)</label>
-                            <select id="bank-origin">
-                                <option value="" disabled selected>Carregando contas...</option>
-                            </select>
+                            <label>Conta de Origem (Sai o valor)</label>
+                            <input type="hidden" id="bank-origin" value="">
+                            <div class="custom-select-wrapper" id="custom-bank-origin">
+                                <div class="custom-select-display" onclick="toggleCustomSelect('custom-bank-origin')">
+                                    <div class="custom-select-content"><span style="color:var(--text-secondary)">Selecione a conta de origem</span></div>
+                                    <div class="custom-select-arrow">▼</div>
+                                </div>
+                                <div class="custom-select-options"></div>
+                            </div>
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
-                            <label for="bank-destination">Conta de Destino (Entra o valor)</label>
-                            <select id="bank-destination">
-                                <option value="" disabled selected>Carregando contas...</option>
-                            </select>
+                            <label>Conta de Destino (Entra o valor)</label>
+                            <input type="hidden" id="bank-destination" value="">
+                            <div class="custom-select-wrapper" id="custom-bank-destination">
+                                <div class="custom-select-display" onclick="toggleCustomSelect('custom-bank-destination')">
+                                    <div class="custom-select-content"><span style="color:var(--text-secondary)">Selecione a conta de destino</span></div>
+                                    <div class="custom-select-arrow">▼</div>
+                                </div>
+                                <div class="custom-select-options"></div>
+                            </div>
                             <button type="button" class="btn-manager-inline" onclick="abrirGerenciador()">⚙️ Adicionar ou Editar Contas</button>
                         </div>
                     </div>
 
+                    <!-- Campos Condicionais de Despesa -->
                     <div id="expense-conditional-fields">
                         <div class="form-group" style="margin-bottom: 12px;">
                             <label>Forma de Lançamento</label>
@@ -451,10 +440,15 @@
                         </div>
 
                         <div class="form-group" id="card-group">
-                            <label for="card-origin">Nome do Cartão (Crédito)</label>
-                            <select id="card-origin">
-                                <option value="" disabled selected>Carregando cartões...</option>
-                            </select>
+                            <label>Nome do Cartão (Crédito)</label>
+                            <input type="hidden" id="card-origin" value="">
+                            <div class="custom-select-wrapper" id="custom-card-origin">
+                                <div class="custom-select-display" onclick="toggleCustomSelect('custom-card-origin')">
+                                    <div class="custom-select-content"><span style="color:var(--text-secondary)">Selecione um cartão de crédito</span></div>
+                                    <div class="custom-select-arrow">▼</div>
+                                </div>
+                                <div class="custom-select-options"></div>
+                            </div>
                             <button type="button" class="btn-manager-inline" onclick="abrirGerenciador()">⚙️ Adicionar ou Editar Cartões</button>
                         </div>
 
@@ -468,9 +462,14 @@
                     
                     <div class="form-group" id="bank-group">
                         <label id="bank-label">Banco de Destino</label>
-                        <select id="bank-select">
-                            <option value="" disabled selected>Carregando contas...</option>
-                        </select>
+                        <input type="hidden" id="bank-select" value="">
+                        <div class="custom-select-wrapper" id="custom-bank-select">
+                            <div class="custom-select-display" onclick="toggleCustomSelect('custom-bank-select')">
+                                <div class="custom-select-content"><span style="color:var(--text-secondary)">Selecione uma conta bancária</span></div>
+                                <div class="custom-select-arrow">▼</div>
+                            </div>
+                            <div class="custom-select-options"></div>
+                        </div>
                         <button type="button" class="btn-manager-inline" onclick="abrirGerenciador()">⚙️ Adicionar ou Editar Contas</button>
                     </div>
 
@@ -588,7 +587,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.7.0"; 
+        const VERSAO_CODIGO = "1.8.0"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -597,7 +596,6 @@
             'user_suelen_winnie': { name: 'Suelen Winnie', pwd: '12345', isMaster: false, node: 'lancamentos_suelen_winnie' }
         };
 
-        // Lista Mestra Pré-definida (Bancos e Cartões do Brasil)
         const PREDEFINED_CONTAS = [
             'Nubank', 'Itaú', 'Banco do Brasil', 'Bradesco', 'Caixa Econômica', 'Santander', 
             'Banco Inter', 'C6 Bank', 'BTG Pactual', 'XP Investimentos', 'Sicredi', 'Sicoob', 
@@ -622,43 +620,33 @@
 
             if (!toast) return;
             toast.className = '';
-            
             if (type === 'success') { toastIcon.textContent = '✅'; toastTitle.textContent = title || 'Sucesso'; toast.classList.add('toast-success'); } 
             else if (type === 'error') { toastIcon.textContent = '⚠️'; toastTitle.textContent = title || 'Atenção'; toast.classList.add('toast-error'); } 
             else { toastIcon.textContent = '🚀'; toastTitle.textContent = title || 'Info'; toast.classList.add('toast-info'); }
-
-            toastMsg.textContent = message;
-            toast.classList.add('show');
+            toastMsg.textContent = message; toast.classList.add('show');
             setTimeout(() => { toast.classList.remove('show'); }, 4500);
         }
 
         function getLocalTodayString() {
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
+            const today = new Date(); const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0'); const day = String(today.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
 
         let dbRoot = null; let dbTransactions = null; let dbContas = null; let dbCartoes = null;
-        
-        let perfisCadastrados = DEFAULT_PROFILES;
-        let transactions = []; let listaContas = []; let listaCartoes = [];
-        
+        let perfisCadastrados = DEFAULT_PROFILES; let transactions = []; let listaContas = []; let listaCartoes = [];
         let currentTab = 'report'; let reportMode = 'month';
         let transactionToConfirmId = null; let bulkActionType = null; let bulkTargetName = null; 
         let currentManagerTab = 'contas';
 
         const estadoColapsoGrupos = {};
-        const hojeObj = new Date();
-        const mesAtualGlobalKey = `${hojeObj.getFullYear()}-${String(hojeObj.getMonth() + 1).padStart(2, '0')}`;
+        const hojeObj = new Date(); const mesAtualGlobalKey = `${hojeObj.getFullYear()}-${String(hojeObj.getMonth() + 1).padStart(2, '0')}`;
         let selectedMonthKey = mesAtualGlobalKey;
         
         let chartComparisonInstance = null; let chartIncomesPieInstance = null; let chartExpensesPieInstance = null;
-
         let loginScreen, loginForm, loginUsernameInput, loginPasswordInput, rememberMeCheckbox, loginError, appContainer, profileBadge, btnMasterPanel, securityPanelContent;
-        let formAccordion, form, editIdInput, descInput, descGroup, amountInput, dateInput, dateLabel, cardOriginSelect;
-        let bankGroup, bankLabel, bankSelect, cardGroup, transferFields, bankOriginSelect, bankDestinationSelect;
+        let formAccordion, form, editIdInput, descInput, descGroup, amountInput, dateInput, dateLabel;
+        let bankGroup, bankLabel, cardGroup, transferFields;
         let listContainer, monthSelector, realBalanceEl, balanceEl, incomeEl, expenseEl, bankBalancesContainer;
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -672,12 +660,9 @@
             editIdInput = document.getElementById('edit-id'); descInput = document.getElementById('description');
             descGroup = document.getElementById('desc-group'); amountInput = document.getElementById('amount');
             dateInput = document.getElementById('due-date'); dateLabel = document.getElementById('date-label');
-            cardOriginSelect = document.getElementById('card-origin');
             
             bankGroup = document.getElementById('bank-group'); bankLabel = document.getElementById('bank-label');
-            bankSelect = document.getElementById('bank-select'); cardGroup = document.getElementById('card-group');
-            transferFields = document.getElementById('transfer-fields'); bankOriginSelect = document.getElementById('bank-origin');
-            bankDestinationSelect = document.getElementById('bank-destination');
+            cardGroup = document.getElementById('card-group'); transferFields = document.getElementById('transfer-fields');
 
             listContainer = document.getElementById('transaction-list'); monthSelector = document.getElementById('month-selector');
             realBalanceEl = document.getElementById('real-balance'); balanceEl = document.getElementById('total-balance');
@@ -688,9 +673,8 @@
 
             try {
                 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-                firebase.database().goOnline();
-                dbRoot = firebase.database().ref();
-            } catch (err) { console.error("Erro ao iniciar Firebase:", err); }
+                firebase.database().goOnline(); dbRoot = firebase.database().ref();
+            } catch (err) {}
 
             try {
                 const usuarioSalvo = localStorage.getItem('saved_username'); const senhaSalva = localStorage.getItem('saved_password');
@@ -712,12 +696,9 @@
 
             if (amountInput) {
                 amountInput.addEventListener('input', (e) => {
-                    let value = e.target.value.replace(/\D/g, '');
-                    if (!value) { e.target.value = ''; return; }
-                    let numValue = (parseFloat(value) / 100).toFixed(2);
-                    let parts = numValue.split('.');
-                    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                    e.target.value = parts.join(',');
+                    let value = e.target.value.replace(/\D/g, ''); if (!value) { e.target.value = ''; return; }
+                    let numValue = (parseFloat(value) / 100).toFixed(2); let parts = numValue.split('.');
+                    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.'); e.target.value = parts.join(',');
                 });
             }
         });
@@ -728,12 +709,11 @@
             atualizacaoAgendada = true;
             requestAnimationFrame(() => {
                 atualizacaoAgendada = false;
-                try { gerarFiltroDeMeses(); updateDashboard(); renderView(); } 
-                catch(err) { console.error("Erro na renderização:", err); }
+                try { gerarFiltroDeMeses(); updateDashboard(); renderView(); } catch(err) {}
             });
         }
 
-        // --- SISTEMA INTELIGENTE DE ÍCONES PARA LISTAS E GERENCIADOR (Favicons Reais) ---
+        // --- SISTEMA INTELIGENTE DE ÍCONES DA WEB ---
         function getBankLogo(bankName) {
             if(!bankName) return '🏦 ';
             const nameToMatch = bankName.toLowerCase();
@@ -753,55 +733,76 @@
             return '🏦 '; 
         }
 
-        // --- SISTEMA DE EMOJIS (Apenas para as caixas de <select> Nativas do Celular) ---
-        function getBankEmoji(bankName) {
-            if(!bankName) return '🏦';
-            const name = bankName.toLowerCase();
-            if(name.includes('nubank')) return '🟪';
-            if(name.includes('itau') || name.includes('itaú') || name.includes('inter') || name.includes('bmg')) return '🟧';
-            if(name.includes('bradesco') || name.includes('santander') || name.includes('claro')) return '🟥';
-            if(name.includes('brasil') || name.includes('bb') || name.includes('xp')) return '🟨';
-            if(name.includes('caixa') || name.includes('neon') || name.includes('safra')) return '🟦';
-            if(name.includes('sicredi') || name.includes('sicoob') || name.includes('picpay')) return '🟩';
-            if(name.includes('c6') || name.includes('btg')) return '⬛';
-            return '💳';
+        // --- CONTROLE DOS DROPDOWNS CUSTOMIZADOS ---
+        function atualizarSelectsDinamicos() {
+            buildCustomSelect('bank-origin', listaContas, 'Selecione a conta de origem');
+            buildCustomSelect('bank-destination', listaContas, 'Selecione a conta de destino');
+            buildCustomSelect('bank-select', listaContas, 'Selecione uma conta bancária');
+            buildCustomSelect('card-origin', listaCartoes, 'Selecione um cartão de crédito');
+            renderizarGerenciador(); 
         }
 
-        function atualizarSelectsDinamicos() {
-            const atualizarSelect = (selectElement, lista, tipoTexto, optionVaziaTexto) => {
-                if (!selectElement) return;
-                const valorAtual = selectElement.value;
-                selectElement.innerHTML = '';
-                
-                const defaultOpt = document.createElement('option');
-                defaultOpt.value = ""; defaultOpt.disabled = true; defaultOpt.selected = !valorAtual;
-                defaultOpt.textContent = optionVaziaTexto;
-                selectElement.appendChild(defaultOpt);
+        function buildCustomSelect(inputId, lista, placeholder) {
+            const inputEl = document.getElementById(inputId); const wrapperId = 'custom-' + inputId;
+            const wrapper = document.getElementById(wrapperId); if(!wrapper) return;
+            const optionsContainer = wrapper.querySelector('.custom-select-options');
+            const displayContent = wrapper.querySelector('.custom-select-content');
 
-                const listaOrdenada = [...lista].sort((a, b) => a.nome.localeCompare(b.nome));
-                listaOrdenada.forEach(item => {
-                    const opt = document.createElement('option');
-                    opt.value = item.nome;
-                    // Insere o emoji de cor junto com o nome no Select nativo
-                    opt.textContent = `${getBankEmoji(item.nome)} ${item.nome}`;
-                    if (item.nome === valorAtual) opt.selected = true;
-                    selectElement.appendChild(opt);
-                });
-
-                if (listaOrdenada.length === 0) {
-                    const vaziaOpt = document.createElement('option');
-                    vaziaOpt.value = ""; vaziaOpt.disabled = true;
-                    vaziaOpt.textContent = `Nenhum(a) ${tipoTexto} cadastrado(a)`;
-                    selectElement.appendChild(vaziaOpt);
-                }
-            };
-
-            atualizarSelect(bankOriginSelect, listaContas, 'conta', 'Selecione a conta de origem');
-            atualizarSelect(bankDestinationSelect, listaContas, 'conta', 'Selecione a conta de destino');
-            atualizarSelect(bankSelect, listaContas, 'conta', 'Selecione uma conta bancária');
-            atualizarSelect(cardOriginSelect, listaCartoes, 'cartão', 'Selecione um cartão de crédito');
+            optionsContainer.innerHTML = '';
             
-            renderizarGerenciador(); 
+            const defaultOpt = document.createElement('div'); defaultOpt.className = 'custom-option empty-opt';
+            defaultOpt.innerHTML = `<span style="color:var(--text-secondary); width:100%; text-align:center;">${placeholder}</span>`;
+            defaultOpt.onclick = () => selectOption(inputId, '', placeholder, '');
+            optionsContainer.appendChild(defaultOpt);
+
+            const listaOrdenada = [...lista].sort((a, b) => a.nome.localeCompare(b.nome));
+            listaOrdenada.forEach(item => {
+                const opt = document.createElement('div'); opt.className = 'custom-option';
+                const logo = getBankLogo(item.nome);
+                opt.innerHTML = `<div style="display:flex; align-items:center; gap:10px; width:100%;">${logo} <span>${item.nome}</span></div>`;
+                opt.onclick = () => selectOption(inputId, item.nome, item.nome, logo);
+                optionsContainer.appendChild(opt);
+            });
+
+            if (listaOrdenada.length === 0) {
+                const emptyOpt = document.createElement('div'); emptyOpt.className = 'custom-option empty-opt';
+                emptyOpt.innerHTML = `<span style="color:var(--text-secondary); width:100%; text-align:center;">Nenhum item cadastrado</span>`;
+                optionsContainer.appendChild(emptyOpt);
+            }
+
+            const currentValue = inputEl.value;
+            if(currentValue && listaOrdenada.some(i => i.nome === currentValue)) {
+                displayContent.innerHTML = `${getBankLogo(currentValue)} <span style="margin-left:10px;">${currentValue}</span>`;
+            } else {
+                inputEl.value = ''; displayContent.innerHTML = `<span style="color:var(--text-secondary)">${placeholder}</span>`;
+            }
+        }
+
+        window.toggleCustomSelect = function(wrapperId) {
+            document.querySelectorAll('.custom-select-options.show').forEach(el => { if(el.parentElement.id !== wrapperId) el.classList.remove('show'); });
+            const wrapper = document.getElementById(wrapperId);
+            if(wrapper) wrapper.querySelector('.custom-select-options').classList.toggle('show');
+        }
+
+        window.selectOption = function(inputId, value, text, logoHtml) {
+            const inputEl = document.getElementById(inputId); const wrapper = document.getElementById('custom-' + inputId);
+            inputEl.value = value;
+            if(value === '') { wrapper.querySelector('.custom-select-content').innerHTML = `<span style="color:var(--text-secondary)">${text}</span>`; } 
+            else { wrapper.querySelector('.custom-select-content').innerHTML = `${logoHtml} <span style="margin-left:10px;">${text}</span>`; }
+            wrapper.querySelector('.custom-select-options').classList.remove('show');
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.custom-select-wrapper')) { document.querySelectorAll('.custom-select-options.show').forEach(el => el.classList.remove('show')); }
+        });
+
+        function setCustomSelectValue(inputId, value, placeholder = 'Selecione') {
+            const inputEl = document.getElementById(inputId); if(!inputEl) return;
+            inputEl.value = value; const wrapper = document.getElementById('custom-' + inputId); if(!wrapper) return;
+            if(value) {
+                const logoHtml = getBankLogo(value);
+                wrapper.querySelector('.custom-select-content').innerHTML = `${logoHtml} <span style="margin-left:10px;">${value}</span>`;
+            } else { wrapper.querySelector('.custom-select-content').innerHTML = `<span style="color:var(--text-secondary)">${placeholder}</span>`; }
         }
 
         // --- GERENCIADOR DE CONTAS E CARTÕES (UI) ---
@@ -810,10 +811,7 @@
             if (modal) modal.style.display = 'flex';
             switchManagerTab('contas'); renderizarGerenciador();
         }
-        window.fecharGerenciador = function() {
-            const modal = document.getElementById('manager-modal-overlay');
-            if (modal) modal.style.display = 'none';
-        }
+        window.fecharGerenciador = function() { const modal = document.getElementById('manager-modal-overlay'); if (modal) modal.style.display = 'none'; }
 
         window.switchManagerTab = function(tab) {
             currentManagerTab = tab;
@@ -829,9 +827,8 @@
 
             if (listaContasEl) {
                 listaContasEl.innerHTML = '';
-                if (listaContas.length === 0) {
-                    listaContasEl.innerHTML = '<div class="empty-state">Nenhuma conta. Adicione uma.</div>';
-                } else {
+                if (listaContas.length === 0) { listaContasEl.innerHTML = '<div class="empty-state">Nenhuma conta. Adicione uma.</div>'; } 
+                else {
                     [...listaContas].sort((a,b) => a.nome.localeCompare(b.nome)).forEach(conta => {
                         listaContasEl.innerHTML += `
                             <div class="manager-item">
@@ -847,9 +844,8 @@
 
             if (listaCartoesEl) {
                 listaCartoesEl.innerHTML = '';
-                if (listaCartoes.length === 0) {
-                    listaCartoesEl.innerHTML = '<div class="empty-state">Nenhum cartão. Adicione um.</div>';
-                } else {
+                if (listaCartoes.length === 0) { listaCartoesEl.innerHTML = '<div class="empty-state">Nenhum cartão. Adicione um.</div>'; } 
+                else {
                     [...listaCartoes].sort((a,b) => a.nome.localeCompare(b.nome)).forEach(cartao => {
                         listaCartoesEl.innerHTML += `
                             <div class="manager-item">
@@ -865,7 +861,7 @@
         }
 
         window.adicionarConta = function() {
-            const nome = prompt("Digite o nome da nova Conta (ex: Itaú Empresa):");
+            const nome = prompt("Digite o nome da nova Conta Bancária (ex: Itaú Empresa):");
             if (nome && nome.trim() !== "") { if(dbContas) dbContas.push({ nome: nome.trim() }).then(() => showToast("Conta adicionada!")); }
         }
         window.editarConta = function(id, nomeAtual) {
@@ -873,13 +869,11 @@
             if (nome && nome.trim() !== "" && nome.trim() !== nomeAtual) { if(dbContas) dbContas.child(id).update({ nome: nome.trim() }).then(() => showToast("Conta atualizada!")); }
         }
         window.excluirConta = function(id) {
-            if (confirm("⚠️ Deseja realmente excluir esta conta da sua lista? (Lançamentos passados não serão alterados)")) {
-                if(dbContas) dbContas.child(id).remove().then(() => showToast("Conta removida!"));
-            }
+            if (confirm("⚠️ Deseja realmente excluir esta conta da sua lista? (Lançamentos passados não serão alterados)")) { if(dbContas) dbContas.child(id).remove().then(() => showToast("Conta removida!")); }
         }
 
         window.adicionarCartao = function() {
-            const nome = prompt("Digite o nome do novo Cartão (ex: Cartão Nubank Marido):");
+            const nome = prompt("Digite o nome do novo Cartão de Crédito (ex: Cartão Nubank Marido):");
             if (nome && nome.trim() !== "") { if(dbCartoes) dbCartoes.push({ nome: nome.trim() }).then(() => showToast("Cartão adicionado!")); }
         }
         window.editarCartao = function(id, nomeAtual) {
@@ -887,45 +881,29 @@
             if (nome && nome.trim() !== "" && nome.trim() !== nomeAtual) { if(dbCartoes) dbCartoes.child(id).update({ nome: nome.trim() }).then(() => showToast("Cartão atualizado!")); }
         }
         window.excluirCartao = function(id) {
-            if (confirm("⚠️ Deseja realmente excluir este cartão da sua lista?")) {
-                if(dbCartoes) dbCartoes.child(id).remove().then(() => showToast("Cartão removido!"));
-            }
+            if (confirm("⚠️ Deseja realmente excluir este cartão da sua lista?")) { if(dbCartoes) dbCartoes.child(id).remove().then(() => showToast("Cartão removido!")); }
         }
 
-        // ----------------------------------------------------
         function verificarSessaoSalva() {
             try {
-                const jaLogado = localStorage.getItem('user_authenticated') === 'true';
-                const chaveAtiva = localStorage.getItem('active_user_key');
+                const jaLogado = localStorage.getItem('user_authenticated') === 'true'; const chaveAtiva = localStorage.getItem('active_user_key');
                 if (jaLogado && chaveAtiva && perfisCadastrados && perfisCadastrados[chaveAtiva]) {
-                    if (loginScreen) loginScreen.style.display = 'none';
-                    entrarNoAplicativo(perfisCadastrados[chaveAtiva], chaveAtiva);
-                } else {
-                    if (loginScreen) loginScreen.style.display = 'flex';
-                    if (appContainer) appContainer.style.display = 'none';
-                }
-            } catch(e) {
-                if (loginScreen) loginScreen.style.display = 'flex';
-                if (appContainer) appContainer.style.display = 'none';
-            }
+                    if (loginScreen) loginScreen.style.display = 'none'; entrarNoAplicativo(perfisCadastrados[chaveAtiva], chaveAtiva);
+                } else { if (loginScreen) loginScreen.style.display = 'flex'; if (appContainer) appContainer.style.display = 'none'; }
+            } catch(e) { if (loginScreen) loginScreen.style.display = 'flex'; if (appContainer) appContainer.style.display = 'none'; }
         }
 
         function handleLoginSubmit(e) {
             e.preventDefault();
-            const usernameInput = loginUsernameInput ? loginUsernameInput.value.trim() : '';
-            const passwordInput = loginPasswordInput ? loginPasswordInput.value.trim() : '';
-            const nomeNorm = sanitizarChaveNode(usernameInput);
+            const usernameInput = loginUsernameInput ? loginUsernameInput.value.trim() : ''; const passwordInput = loginPasswordInput ? loginPasswordInput.value.trim() : '';
+            const nomeNorm = sanitizarChaveNode(usernameInput); let perfilEncontradoKey = null, perfilEncontradoObj = null;
 
-            let perfilEncontradoKey = null, perfilEncontradoObj = null;
             for (const key in perfisCadastrados) {
                 const p = perfisCadastrados[key]; if (!p) continue;
                 const pNameNorm = sanitizarChaveNode(p.name); const keyNorm = sanitizarChaveNode(key);
                 const ehMasterAlias = p.isMaster && (nomeNorm === 'principal' || nomeNorm === 'master' || nomeNorm === 'user_master');
                 const ehNomeMatch = pNameNorm === nomeNorm || keyNorm === nomeNorm;
-
-                if ((ehMasterAlias || ehNomeMatch) && String(p.pwd) === String(passwordInput)) {
-                    perfilEncontradoKey = key; perfilEncontradoObj = p; break;
-                }
+                if ((ehMasterAlias || ehNomeMatch) && String(p.pwd) === String(passwordInput)) { perfilEncontradoKey = key; perfilEncontradoObj = p; break; }
             }
 
             if (perfilEncontradoObj) {
@@ -935,22 +913,18 @@
                         localStorage.setItem('remember_active', 'true'); localStorage.setItem('saved_username', usernameInput); localStorage.setItem('saved_password', passwordInput);
                     } else { localStorage.setItem('remember_active', 'false'); localStorage.removeItem('saved_username'); localStorage.removeItem('saved_password'); }
                 } catch(e) {}
-                if (loginError) loginError.style.display = 'none';
-                entrarNoAplicativo(perfilEncontradoObj, perfilEncontradoKey);
+                if (loginError) loginError.style.display = 'none'; entrarNoAplicativo(perfilEncontradoObj, perfilEncontradoKey);
             } else {
-                if (loginError) loginError.style.display = 'block';
-                if (loginPasswordInput) loginPasswordInput.value = '';
+                if (loginError) loginError.style.display = 'block'; if (loginPasswordInput) loginPasswordInput.value = '';
             }
         }
 
         function entrarNoAplicativo(perfil, chaveKey) {
-            if (loginScreen) loginScreen.style.display = 'none';
-            if (appContainer) appContainer.style.display = 'block';
+            if (loginScreen) loginScreen.style.display = 'none'; if (appContainer) appContainer.style.display = 'block';
             if (profileBadge) profileBadge.textContent = `👤 Perfil: ${perfil.name}${perfil.isMaster ? ' (Master)' : ''}`;
             if (btnMasterPanel) btnMasterPanel.style.display = perfil.isMaster ? 'flex' : 'none';
 
             const nodeTarget = perfil.isMaster ? NO_MASTER_ORIGINAL : (perfil.node || ('lancamentos_' + sanitizarChaveNode(perfil.name)));
-
             if (dbTransactions) dbTransactions.off(); if (dbContas) dbContas.off(); if (dbCartoes) dbCartoes.off();
 
             if (dbRoot) {
@@ -961,12 +935,9 @@
                     transactions = novasTransacoes; agendarAtualizacaoDaTela();
                 });
 
-                // Lógica Inteligente para Auto-Preencher as Contas e Cartões
                 dbContas = dbRoot.child(nodeTarget + '_contas');
                 dbContas.once('value').then(snap => {
-                    if (!snap.exists()) {
-                        PREDEFINED_CONTAS.forEach(c => dbContas.push({ nome: c }));
-                    }
+                    if (!snap.exists()) { PREDEFINED_CONTAS.forEach(c => dbContas.push({ nome: c })); }
                     dbContas.on('value', (snapshot) => {
                         const data = snapshot.val(); listaContas = [];
                         if (data) Object.keys(data).forEach(key => listaContas.push({ id: key, nome: data[key].nome }));
@@ -976,9 +947,7 @@
 
                 dbCartoes = dbRoot.child(nodeTarget + '_cartoes');
                 dbCartoes.once('value').then(snap => {
-                    if (!snap.exists()) {
-                        PREDEFINED_CARTOES.forEach(c => dbCartoes.push({ nome: c }));
-                    }
+                    if (!snap.exists()) { PREDEFINED_CARTOES.forEach(c => dbCartoes.push({ nome: c })); }
                     dbCartoes.on('value', (snapshot) => {
                         const data = snapshot.val(); listaCartoes = [];
                         if (data) Object.keys(data).forEach(key => listaCartoes.push({ id: key, nome: data[key].nome }));
@@ -989,8 +958,7 @@
         }
 
         window.abrirPainelMaster = function() {
-            const chaveAtiva = localStorage.getItem('active_user_key');
-            const perfilAtivo = perfisCadastrados[chaveAtiva];
+            const chaveAtiva = localStorage.getItem('active_user_key'); const perfilAtivo = perfisCadastrados[chaveAtiva];
             if (!perfilAtivo || !perfilAtivo.isMaster) return showToast("Acesso restrito ao Administrador Master.", "error", "Permissão Negada");
 
             let listaPerfisTexto = "--- PERFIS CADASTRADOS ---\n"; let index = 1; const chaves = Object.keys(perfisCadastrados);
@@ -1021,37 +989,29 @@
         }
 
         window.atualizarRotuloData = function() {
-            const tipoEl = document.querySelector('input[name="type"]:checked');
-            if (!tipoEl) return;
+            const tipoEl = document.querySelector('input[name="type"]:checked'); if (!tipoEl) return;
             const tipo = tipoEl.value;
             if (tipo === 'receber') { dateLabel.textContent = "Data de Recebimento"; return; }
             if (tipo === 'transfer') { dateLabel.textContent = "Data da Transferência"; return; }
-
-            const methodEl = document.querySelector('input[name="method"]:checked');
-            const methodVal = methodEl ? methodEl.value : 'debito';
-            if (methodVal === 'credito') dateLabel.textContent = "Data de Vencimento da Fatura";
-            else dateLabel.textContent = "Data de Pagamento";
+            const methodEl = document.querySelector('input[name="method"]:checked'); const methodVal = methodEl ? methodEl.value : 'debito';
+            if (methodVal === 'credito') dateLabel.textContent = "Data de Vencimento da Fatura"; else dateLabel.textContent = "Data de Pagamento";
         }
 
         window.toggleTypeFields = function() {
-            const tipoEl = document.querySelector('input[name="type"]:checked');
-            if (!tipoEl) return;
-            const tipo = tipoEl.value;
-            const expFields = document.getElementById('expense-conditional-fields');
-            const transFields = document.getElementById('transfer-fields');
+            const tipoEl = document.querySelector('input[name="type"]:checked'); if (!tipoEl) return;
+            const tipo = tipoEl.value; const expFields = document.getElementById('expense-conditional-fields'); const transFields = document.getElementById('transfer-fields');
             
             if (expFields) expFields.style.display = (tipo === 'pagar') ? 'block' : 'none';
             if (transFields) transFields.style.display = (tipo === 'transfer') ? 'block' : 'none';
             
             if (tipo === 'receber') {
                 if (descGroup) descGroup.style.display = 'block';
-                if (descInput) { descInput.placeholder = "Ex: Salario, Rendimento, Investimento..."; }
+                if (descInput) descInput.placeholder = "Ex: Salario, Rendimento, Investimento...";
                 if (bankGroup) bankGroup.style.display = 'block';
                 if (bankLabel) bankLabel.textContent = 'Conta de Destino (Recebimento)';
             } else if (tipo === 'pagar') {
                 if (descGroup) descGroup.style.display = 'block';
-                const methodEl = document.querySelector('input[name="method"]:checked');
-                const methodVal = methodEl ? methodEl.value : 'debito';
+                const methodEl = document.querySelector('input[name="method"]:checked'); const methodVal = methodEl ? methodEl.value : 'debito';
                 toggleMethodFields(methodVal);
             } else if (tipo === 'transfer') {
                 if (bankGroup) bankGroup.style.display = 'none';
@@ -1087,8 +1047,7 @@
         }
 
         window.alterarSenhaDoSistema = function() {
-            const chaveAtiva = localStorage.getItem('active_user_key'); const perfil = perfisCadastrados[chaveAtiva];
-            if (!perfil) return;
+            const chaveAtiva = localStorage.getItem('active_user_key'); const perfil = perfisCadastrados[chaveAtiva]; if (!perfil) return;
             const novaSenha = prompt("Digite a SUA NOVA senha:");
             if (novaSenha && novaSenha.trim().length >= 4) {
                 const novaSenhaTrim = novaSenha.trim(); perfisCadastrados[chaveAtiva].pwd = novaSenhaTrim;
@@ -1102,8 +1061,7 @@
         }
 
         window.limparBancoDeDados = function() {
-            const chaveAtiva = localStorage.getItem('active_user_key'); const perfil = perfisCadastrados[chaveAtiva];
-            if (!perfil) return;
+            const chaveAtiva = localStorage.getItem('active_user_key'); const perfil = perfisCadastrados[chaveAtiva]; if (!perfil) return;
             if (confirm("⚠️ APAGAR todos os lançamentos deste perfil?")) {
                 const senha = prompt("Digite sua SENHA:");
                 if (senha && senha.trim() === String(perfil.pwd) && dbTransactions) dbTransactions.remove().then(() => showToast("Banco de dados zerado."));
@@ -1160,8 +1118,7 @@
         function formatCurrencyInput(val) { let num = (val).toFixed(2); let parts = num.split('.'); parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.'); return parts.join(','); }
 
         window.switchTab = function(tab) {
-            if (currentTab === tab) return;
-            currentTab = tab;
+            if (currentTab === tab) return; currentTab = tab;
             const wrapper = document.getElementById('transactions-wrapper'); const reportSection = document.getElementById('report-section');
             if(wrapper) { wrapper.classList.remove('fade-in'); void wrapper.offsetWidth; wrapper.classList.add('fade-in'); }
             if(reportSection) { reportSection.classList.remove('fade-in'); void reportSection.offsetWidth; reportSection.classList.add('fade-in'); }
@@ -1171,8 +1128,7 @@
         window.setReportMode = function(mode) {
             reportMode = mode;
             const rMonth = document.getElementById('rep-mode-month'); const rYear = document.getElementById('rep-mode-year');
-            if (rMonth) rMonth.classList.toggle('active', mode === 'month');
-            if (rYear) rYear.classList.toggle('active', mode === 'year');
+            if (rMonth) rMonth.classList.toggle('active', mode === 'month'); if (rYear) rYear.classList.toggle('active', mode === 'year');
             const reportSection = document.getElementById('report-section');
             if(reportSection) { reportSection.classList.remove('fade-in'); void reportSection.offsetWidth; reportSection.classList.add('fade-in'); }
             renderReport();
@@ -1183,16 +1139,12 @@
             if (tabRep) tabRep.classList.toggle('active', currentTab === 'report'); if (tabPend) tabPend.classList.toggle('active', currentTab === 'pending'); if (tabDon) tabDon.classList.toggle('active', currentTab === 'done');
             const wrapper = document.getElementById('transactions-wrapper'); const reportSection = document.getElementById('report-section');
 
-            if (currentTab === 'report') {
-                if (wrapper) wrapper.style.display = 'none'; if (reportSection) reportSection.style.display = 'flex'; renderReport();
-            } else {
-                if (wrapper) wrapper.style.display = 'block'; if (reportSection) reportSection.style.display = 'none'; renderList();
-            }
+            if (currentTab === 'report') { if (wrapper) wrapper.style.display = 'none'; if (reportSection) reportSection.style.display = 'flex'; renderReport(); } 
+            else { if (wrapper) wrapper.style.display = 'block'; if (reportSection) reportSection.style.display = 'none'; renderList(); }
         }
 
         window.confirmTransaction = function(id) {
-            if (!dbTransactions) return;
-            const t = transactions.find(item => item.id === id); if (!t) return;
+            if (!dbTransactions) return; const t = transactions.find(item => item.id === id); if (!t) return;
 
             if (t.type === 'pagar' && (t.method === 'conta' || t.method === 'credito') && !t.bank) {
                 transactionToConfirmId = id; bulkActionType = null;
@@ -1204,9 +1156,8 @@
 
                 if (listEl) {
                     listEl.innerHTML = '';
-                    if(listaContas.length === 0) {
-                        listEl.innerHTML = '<div class="empty-state" style="font-size:0.8rem;">Nenhuma conta cadastrada.<br>Clique em Gerenciar para adicionar.</div>';
-                    } else {
+                    if(listaContas.length === 0) { listEl.innerHTML = '<div class="empty-state" style="font-size:0.8rem;">Nenhuma conta cadastrada.<br>Clique em Gerenciar para adicionar.</div>'; } 
+                    else {
                         [...listaContas].sort((a,b) => a.nome.localeCompare(b.nome)).forEach(conta => {
                             let logoHtml = getBankLogo(conta.nome);
                             listEl.innerHTML += `<button class="bank-option-btn" onclick="selecionarBancoModal('${conta.nome}')">${logoHtml} <span>${conta.nome}</span></button>`;
@@ -1215,9 +1166,7 @@
                     listEl.innerHTML += `<button class="bank-option-btn" onclick="selecionarOutroBancoModal()" style="color:var(--primary); font-weight:bold; margin-top:8px;">➕ Usar Outra (Sem Cadastrar)...</button>`;
                 }
                 if (modalOverlay) modalOverlay.style.display = 'flex';
-            } else {
-                dbTransactions.child(id).update({ done: true }); showToast("Lançamento confirmado!");
-            }
+            } else { dbTransactions.child(id).update({ done: true }); showToast("Lançamento confirmado!"); }
         }
 
         window.confirmarFaturaOuGrupo = function(tipoAcao, nomeAlvo) {
@@ -1230,9 +1179,8 @@
 
             if (listEl) {
                 listEl.innerHTML = '';
-                if(listaContas.length === 0) {
-                    listEl.innerHTML = '<div class="empty-state" style="font-size:0.8rem;">Nenhuma conta cadastrada.<br>Clique em Gerenciar para adicionar.</div>';
-                } else {
+                if(listaContas.length === 0) { listEl.innerHTML = '<div class="empty-state" style="font-size:0.8rem;">Nenhuma conta cadastrada.<br>Clique em Gerenciar para adicionar.</div>'; } 
+                else {
                     [...listaContas].sort((a,b) => a.nome.localeCompare(b.nome)).forEach(conta => {
                         let logoHtml = getBankLogo(conta.nome);
                         listEl.innerHTML += `<button class="bank-option-btn" onclick="selecionarBancoModal('${conta.nome}')">${logoHtml} <span>${conta.nome}</span></button>`;
@@ -1244,8 +1192,7 @@
         }
 
         window.fecharModalBanco = function() {
-            const modal = document.getElementById('bank-modal-overlay');
-            if (modal) modal.style.display = 'none';
+            const modal = document.getElementById('bank-modal-overlay'); if (modal) modal.style.display = 'none';
             transactionToConfirmId = null; bulkActionType = null; bulkTargetName = null;
         }
 
@@ -1290,20 +1237,21 @@
             
             if (t.type === 'receber') {
                 const rEl = document.getElementById('type-receber'); if (rEl) rEl.checked = true;
-                if (bankSelect) bankSelect.value = t.bank || '';
+                setCustomSelectValue('bank-select', t.bank || '', 'Selecione uma conta bancária');
             } else {
                 const pEl = document.getElementById('type-pagar'); if (pEl) pEl.checked = true;
                 if (t.method === 'credito') {
                     const mCred = document.getElementById('method-credito'); if (mCred) mCred.checked = true;
                     toggleMethodFields('credito');
                     const instEl = document.getElementById('installments'); if (instEl) instEl.value = t.installmentsTotal || 1;
-                    if (cardOriginSelect) cardOriginSelect.value = t.cardOrigin || '';
+                    setCustomSelectValue('card-origin', t.cardOrigin || '', 'Selecione um cartão de crédito');
                 } else if (t.method === 'conta') {
                     const mConta = document.getElementById('method-conta'); if (mConta) mConta.checked = true;
                     toggleMethodFields('conta');
                 } else {
                     const mDeb = document.getElementById('method-debito'); if (mDeb) mDeb.checked = true;
-                    toggleMethodFields('debito'); if (bankSelect) bankSelect.value = t.bank || '';
+                    toggleMethodFields('debito'); 
+                    setCustomSelectValue('bank-select', t.bank || '', 'Selecione a conta de origem');
                 }
             }
             toggleTypeFields();
@@ -1319,6 +1267,11 @@
         window.cancelarEdicao = function() {
             if (editIdInput) editIdInput.value = ''; if (form) form.reset(); if (dateInput) dateInput.value = getLocalTodayString();
             
+            setCustomSelectValue('bank-origin', '', 'Selecione a conta de origem');
+            setCustomSelectValue('bank-destination', '', 'Selecione a conta de destino');
+            setCustomSelectValue('bank-select', '', 'Selecione uma conta bancária');
+            setCustomSelectValue('card-origin', '', 'Selecione um cartão de crédito');
+
             toggleTypeFields();
             const accTitle = document.getElementById('form-accordion-title'); const btnSalvar = document.getElementById('btn-salvar-lancamento'); const btnCancel = document.getElementById('btn-cancelar-edicao');
 
@@ -1333,7 +1286,6 @@
 
         function updateDashboard() {
             let pendingIncome = 0, pendingExpense = 0, realIncome = 0, realExpense = 0; const bankRealBalances = {};
-
             transactions.forEach(t => {
                 if (t.type === 'transfer') {
                     if (t.bankOrigin) { if (!bankRealBalances[t.bankOrigin]) bankRealBalances[t.bankOrigin] = 0; bankRealBalances[t.bankOrigin] -= t.amount; }
@@ -1344,9 +1296,7 @@
                         if (!bankRealBalances[t.bank]) bankRealBalances[t.bank] = 0;
                         if (t.type === 'receber') bankRealBalances[t.bank] += t.amount; else bankRealBalances[t.bank] -= t.amount;
                     }
-                } else {
-                    if (t.type === 'receber') pendingIncome += t.amount; else pendingExpense += t.amount;
-                }
+                } else { if (t.type === 'receber') pendingIncome += t.amount; else pendingExpense += t.amount; }
             });
 
             const saldoRealAtual = realIncome - realExpense; const saldoPrevistoGlobal = saldoRealAtual + pendingIncome - pendingExpense;
@@ -1424,8 +1374,7 @@
         function renderList() {
             if (!listContainer) return;
             const filtered = transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey)).filter(t => {
-                if (currentTab === 'done') return t.done || t.type === 'transfer';
-                return !t.done && t.type !== 'transfer';
+                if (currentTab === 'done') return t.done || t.type === 'transfer'; return !t.done && t.type !== 'transfer';
             });
             
             listContainer.querySelectorAll('.group-container').forEach(g => g.remove());
@@ -1467,7 +1416,7 @@
                             else if (groupKey === 'Contas e Boletos') botaoPagarFaturaHtml = `<button class="group-action-btn" onclick="event.stopPropagation(); confirmarFaturaOuGrupo('conta', '${subKey}')">✓ Pagar Contas</button>`;
                         }
 
-                        contentHtml += `<div class="subgroup-header" onclick="toggleSubGroupCollapse('${subGroupId}')"><span style="display:flex; align-items:center;">${logoHtml} ${subKey}</span><div style="display:flex; align-items:center; gap:8px;">${botaoPagarFaturaHtml}<span>${isSubCollapsed ? '➕' : '➖'}</span></div></div>`;
+                        contentHtml += `<div class="subgroup-header" onclick="toggleSubGroupCollapse('${subGroupId}')"><span style="display:flex; align-items:center;">${logoHtml} <span style="margin-left:6px;">${subKey}</span></span><div style="display:flex; align-items:center; gap:8px;">${botaoPagarFaturaHtml}<span>${isSubCollapsed ? '➕' : '➖'}</span></div></div>`;
                         contentHtml += `<div class="subgroup-content-wrapper transaction-list" style="display: ${isSubCollapsed ? 'none' : 'flex'};">`;
                         subGroupObj[subKey].forEach(t => { contentHtml += `<div class="transaction-item">${montarHtmlDoItem(t)}</div>`; });
                         contentHtml += `</div>`;
@@ -1489,8 +1438,7 @@
             if (entradasOrdenadas.length <= limiteMaxFatias) return dadosObjeto;
             const resultadoConsolidado = {}; let somaOutros = 0;
             entradasOrdenadas.forEach((item, index) => { if (index < limiteMaxFatias - 1) resultadoConsolidado[item[0]] = item[1]; else somaOutros += item[1]; });
-            if (somaOutros > 0) resultadoConsolidado['Outros'] = somaOutros;
-            return resultadoConsolidado;
+            if (somaOutros > 0) resultadoConsolidado['Outros'] = somaOutros; return resultadoConsolidado;
         }
 
         function obterCategoriaRelatorio(t) {
@@ -1540,7 +1488,6 @@
                 let analiseAnualHtml = `Total Entradas: <strong class="income-text">${formatCurrency(totalEntradas)}</strong> | Total Saídas: <strong class="expense-text">${formatCurrency(totalSaidas)}</strong><br><br>`;
                 if (diff < 0) analiseAnualHtml += `⚠️ <strong>Alerta Anual:</strong> Seus gastos superam as receitas! O maior impacto é gerado por <strong>"${maiorDespesaNome}"</strong> (${formatCurrency(maiorDespesaValor)}).`;
                 else analiseAnualHtml += `✅ <strong>Desempenho Anual Saudável:</strong> Entradas superam saídas no período.<br>💡 <strong>Oportunidade de Redução:</strong> A categoria que mais consome recursos é <strong>"${maiorDespesaNome}"</strong> (${formatCurrency(maiorDespesaValor)}).`;
-
                 if (analysisText) analysisText.innerHTML = analiseAnualHtml;
                 if (compTitle) compTitle.textContent = "📊 Evolução Mensal Anual (Entradas vs Saídas)";
             }
@@ -1629,8 +1576,8 @@
                 if (totalAmount <= 0 || !baseDate) return showToast("Preencha um valor e uma data válidos.", "error");
 
                 if (selectedType === 'transfer') {
-                    const bOrigem = bankOriginSelect ? bankOriginSelect.value : '';
-                    const bDestino = bankDestinationSelect ? bankDestinationSelect.value : '';
+                    const bOrigem = document.getElementById('bank-origin') ? document.getElementById('bank-origin').value : '';
+                    const bDestino = document.getElementById('bank-destination') ? document.getElementById('bank-destination').value : '';
                     if (!bOrigem || !bDestino) return showToast("Selecione a conta de origem e destino.", "error");
                     if (bOrigem === bDestino) return showToast("Origem e destino devem ser diferentes.", "error");
 
@@ -1645,11 +1592,11 @@
                     let cardOrigin = ''; let bankSelected = '';
                     
                     if (selectedType === 'receber' || (selectedType === 'pagar' && methodVal === 'debito')) {
-                        bankSelected = bankSelect ? bankSelect.value : '';
+                        bankSelected = document.getElementById('bank-select') ? document.getElementById('bank-select').value : '';
                         if (!bankSelected) return showToast("Selecione uma conta.", "error");
                     }
                     if (selectedType === 'pagar' && methodVal === 'credito') {
-                        cardOrigin = cardOriginSelect ? cardOriginSelect.value.trim() : '';
+                        cardOrigin = document.getElementById('card-origin') ? document.getElementById('card-origin').value.trim() : '';
                         if (!cardOrigin) return showToast("Selecione um cartão de crédito.", "error");
                     }
                     if (!description) return showToast("Preencha a descrição.", "error");
