@@ -594,7 +594,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.4.4"; 
+        const VERSAO_CODIGO = "1.4.5"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -1024,7 +1024,6 @@
             const mesesOrdenados = Array.from(mesesSet).sort();
 
             if (!selectedMonthKey || !mesesSet.has(selectedMonthKey)) {
-                // Se o mês atual não tiver transações mas houver transações em outros meses, garante que selecione um mês válido com dados
                 selectedMonthKey = mesesOrdenados[mesesOrdenados.length - 1] || mesAtualGlobalKey;
             }
 
@@ -1448,7 +1447,7 @@
 
                 if (!grouped[groupKey]) grouped[groupKey] = { items: [], subGroups: {} };
                 
-                if (subGroupKey) {
+                if (subGroupKey && subGroupKey !== 'null' && subGroupKey !== 'undefined') {
                     if (!grouped[groupKey].subGroups[subGroupKey]) grouped[groupKey].subGroups[subGroupKey] = [];
                     grouped[groupKey].subGroups[subGroupKey].push(t);
                 } else {
