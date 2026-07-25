@@ -516,6 +516,7 @@
                     <button class="master-btn" id="btn-master-panel" onclick="abrirPainelMaster()" style="display: none;"><span>👑</span> Gerenciar Perfis (Painel Master)</button>
                     <button onclick="fazerBackup()"><span>📥</span> Exportar Dados (Backup)</button>
                     <button onclick="alterarSenhaDoSistema()"><span>🔑</span> Alterar Minha Senha</button>
+                    <button onclick="abrirGerenciadorBancosCartoes()"><span>🏦</span> Gerenciar Bancos e Cartões</button>
                     <button class="danger-btn" onclick="limparBancoDeDados()"><span>🗑️</span> Zerar Banco de Dados deste Perfil</button>
                 </div>
             </div>
@@ -534,7 +535,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.4.15"; 
+        const VERSAO_CODIGO = "1.4.16"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -566,6 +567,9 @@
         let dbTransactions = null;
         let perfisCadastrados = DEFAULT_PROFILES;
         let transactions = [];
+        
+        let bancosCustomizados = [];
+        let cartoesCustomizados = [];
         
         let currentTab = 'report';
         let reportMode = 'month';
@@ -721,15 +725,30 @@
             });
         }
 
-        function atualizarOpcoesBancosForm() {
+        function obterListaBancosCompleta() {
             const bancosSet = new Set(BANCOS_BRASIL_PADRAO);
+            bancosCustomizados.forEach(b => bancosSet.add(b));
             transactions.forEach(t => {
                 if (t.bank && t.bank.trim() !== '') bancosSet.add(t.bank.trim());
                 if (t.bankOrigin && t.bankOrigin.trim() !== '') bancosSet.add(t.bankOrigin.trim());
                 if (t.bankDestination && t.bankDestination.trim() !== '') bancosSet.add(t.bankDestination.trim());
             });
+            return Array.from(bancosSet).sort();
+        }
 
-            const listaBancosOrdenada = Array.from(bancosSet).sort();
+        function obterListaCartoesCompleta() {
+            const cartoesSet = new Set(CARTOES_BRASIL_PADRAO);
+            cartoesCustomizados.forEach(c => cartoesSet.add(c));
+            transactions.forEach(t => {
+                if (t.cardOrigin && t.cardOrigin.trim() !== '') {
+                    cartoesSet.add(t.cardOrigin.trim());
+                }
+            });
+            return Array.from(cartoesSet).sort();
+        }
+
+        function atualizarOpcoesBancosForm() {
+            const listaBancosOrdenada = obterListaBancosCompleta();
 
             [bankSelect, bankOriginSelect, bankDestinationSelect].forEach(selectEl => {
                 if (!selectEl) return;
@@ -740,7 +759,7 @@
                 defaultOpt.value = "";
                 defaultOpt.disabled = true;
                 defaultOpt.selected = !valorAtual;
-                defaultOpt.textContent = selectEl === bankSelect ? "Selecione um banco" : "Selecione o banco";
+                defaultOpt.textContent = selectEl === bankSelect ? "Selecione uma conta ou banco" : "Selecione o banco";
                 selectEl.appendChild(defaultOpt);
 
                 listaBancosOrdenada.forEach(banco => {
@@ -760,13 +779,7 @@
 
         function atualizarOpcoesCartoesForm() {
             if (!cardOriginSelect) return;
-            const cartoesSet = new Set(CARTOES_BRASIL_PADRAO);
-            transactions.forEach(t => {
-                if (t.cardOrigin && t.cardOrigin.trim() !== '') {
-                    cartoesSet.add(t.cardOrigin.trim());
-                }
-            });
-
+            const listaCartoesOrdenada = obterListaCartoesCompleta();
             const valorAtual = cardOriginSelect.value;
             cardOriginSelect.innerHTML = '';
             
@@ -777,7 +790,7 @@
             defaultOpt.textContent = "Selecione o cartão";
             cardOriginSelect.appendChild(defaultOpt);
 
-            Array.from(cartoesSet).sort().forEach(cartao => {
+            listaCartoesOrdenada.forEach(cartao => {
                 const opt = document.createElement('option');
                 opt.value = cartao;
                 opt.textContent = cartao;
@@ -798,10 +811,11 @@
                         const novoBanco = prompt("Digite o nome da conta ou banco (ex: Bradesco (Poupança), Itaú Corrente):");
                         if (novoBanco && novoBanco.trim() !== "") {
                             const nomeFormatado = novoBanco.trim();
-                            const opt = document.createElement('option');
-                            opt.value = nomeFormatado;
-                            opt.textContent = nomeFormatado;
-                            e.target.insertBefore(opt, e.target.lastElementChild);
+                            if (!bancosCustomizados.includes(nomeFormatado)) {
+                                bancosCustomizados.push(nomeFormatado);
+                                salvarCustomizacoesNuvem();
+                            }
+                            atualizarOpcoesBancosForm();
                             e.target.value = nomeFormatado;
                         } else {
                             e.target.value = "";
@@ -817,10 +831,11 @@
                     const novoCartao = prompt("Digite o nome do cartão (ex: Nubank (Master), Cartão Extra):");
                     if (novoCartao && novoCartao.trim() !== "") {
                         const nomeFormatado = novoCartao.trim();
-                        const opt = document.createElement('option');
-                        opt.value = nomeFormatado;
-                        opt.textContent = nomeFormatado;
-                        cardOriginSelect.insertBefore(opt, cardOriginSelect.lastElementChild);
+                        if (!cartoesCustomizados.includes(nomeFormatado)) {
+                            cartoesCustomizados.push(nomeFormatado);
+                            salvarCustomizacoesNuvem();
+                        }
+                        atualizarOpcoesCartoesForm();
                         cardOriginSelect.value = nomeFormatado;
                     } else {
                         cardOriginSelect.value = "";
@@ -828,6 +843,66 @@
                 }
             });
         }
+
+        function salvarCustomizacoesNuvem() {
+            if (dbTransactions) {
+                dbTransactions.parent().child('config_contas_cartoes').set({
+                    bancos: bancosCustomizados,
+                    cartoes: cartoesCustomizados
+                });
+            }
+        }
+
+        window.abrirGerenciadorBancosCartoes = function() {
+            const acao = prompt("Gerenciar Bancos e Cartões:\n1 - Editar nome de um Banco existente\n2 - Adicionar Novo Banco/Conta\n3 - Adicionar Novo Cartão de Crédito\n0 - Cancelar");
+            if (acao === '1') {
+                const listaBancos = obterListaBancosCompleta();
+                let txt = "Selecione o número do banco para editar:\n";
+                listaBancos.forEach((b, i) => txt += `${i + 1} - ${b}\n`);
+                const num = prompt(txt);
+                const idx = parseInt(num) - 1;
+                if (!isNaN(idx) && idx >= 0 && idx < listaBancos.length) {
+                    const bancoAntigo = listaBancos[idx];
+                    const novoNome = prompt(`Digite o novo nome para "${bancoAntigo}":`, bancoAntigo);
+                    if (novoNome && novoNome.trim() !== "" && novoNome.trim() !== bancoAntigo) {
+                        const novoNomeTrim = novoNome.trim();
+                        if (!bancosCustomizados.includes(novoNomeTrim)) bancosCustomizados.push(novoNomeTrim);
+                        
+                        // Atualizar transações existentes que usavam esse banco
+                        let updates = {};
+                        transactions.forEach(t => {
+                            if (t.bank === bancoAntigo) updates[`${t.id}/bank`] = novoNomeTrim;
+                            if (t.bankOrigin === bancoAntigo) updates[`${t.id}/bankOrigin`] = novoNomeTrim;
+                            if (t.bankDestination === bancoAntigo) updates[`${t.id}/bankDestination`] = novoNomeTrim;
+                        });
+                        if (Object.keys(updates).length > 0 && dbTransactions) {
+                            dbTransactions.update(updates);
+                        }
+                        salvarCustomizacoesNuvem();
+                        alert("Banco renomeado com sucesso!");
+                        agendarAtualizacaoDaTela();
+                    }
+                }
+            } else if (acao === '2') {
+                const novo = prompt("Digite o nome da nova conta/banco:");
+                if (novo && novo.trim() !== "") {
+                    const n = novo.trim();
+                    if (!bancosCustomizados.includes(n)) bancosCustomizados.push(n);
+                    salvarCustomizacoesNuvem();
+                    atualizarOpcoesBancosForm();
+                    alert("Banco adicionado com sucesso!");
+                }
+            } else if (acao === '3') {
+                const novoC = prompt("Digite o nome do novo cartão de crédito:");
+                if (novoC && novoC.trim() !== "") {
+                    const nc = novoC.trim();
+                    if (!cartoesCustomizados.includes(nc)) cartoesCustomizados.push(nc);
+                    salvarCustomizacoesNuvem();
+                    atualizarOpcoesCartoesForm();
+                    alert("Cartão adicionado com sucesso!");
+                }
+            }
+        };
 
         function verificarSessaoSalva() {
             try {
@@ -900,6 +975,16 @@
 
             if (dbTransactions) dbTransactions.off();
             if (dbRoot) {
+                // Carregar customizações de bancos e cartões
+                dbRoot.child('config_contas_cartoes').on('value', (snap) => {
+                    const val = snap.val();
+                    if (val) {
+                        bancosCustomizados = val.bancos || [];
+                        cartoesCustomizados = val.cartoes || [];
+                        agendarAtualizacaoDaTela();
+                    }
+                });
+
                 dbTransactions = dbRoot.child(nodeTarget);
                 dbTransactions.on('value', (snapshot) => {
                     const data = snapshot.val();
@@ -1178,7 +1263,7 @@
 
                 if (listEl) {
                     listEl.innerHTML = '';
-                    BANCOS_BRASIL_PADRAO.forEach(banco => {
+                    obterListaBancosCompleta().forEach(banco => {
                         let logoHtml = getBankLogo(banco);
                         listEl.innerHTML += `
                             <button class="bank-option-btn" onclick="selecionarBancoModal('${banco}')">
@@ -1214,7 +1299,7 @@
 
             if (listEl) {
                 listEl.innerHTML = '';
-                BANCOS_BRASIL_PADRAO.forEach(banco => {
+                obterListaBancosCompleta().forEach(banco => {
                     let logoHtml = getBankLogo(banco);
                     listEl.innerHTML += `
                         <button class="bank-option-btn" onclick="selecionarBancoModal('${banco}')">
@@ -1271,7 +1356,12 @@
         window.selecionarOutroBancoModal = function() {
             const outro = prompt("Digite o nome da conta ou banco:");
             if (outro && outro.trim() !== "") {
-                selecionarBancoModal(outro.trim());
+                const nomeTrim = outro.trim();
+                if (!bancosCustomizados.includes(nomeTrim)) {
+                    bancosCustomizados.push(nomeTrim);
+                    salvarCustomizacoesNuvem();
+                }
+                selecionarBancoModal(nomeTrim);
             } else {
                 fecharModalBanco();
             }
@@ -1726,7 +1816,7 @@
             if (canvasExp) {
                 const dadosPizzaSaidas = consolidarDadosParaPizza(agrupaSaidasDesc, 4);
                 if (chartExpensesPieInstance) chartExpensesPieInstance.destroy();
-                chartExpensesPieInstance = new Chart(canvasExp.getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(dadosPizzaSaidas).length ? Object.keys(dadosPizzaSaidas) : ['Nenhuma'], datasets: [{ data: Object.values(dadosPizzaSaidas).length ? Object.values(dadosPizzaSaidas) : [1], backgroundColor: paletaCoresPizza, borderWidth: 2, borderColor: '#1d1d22', hoverOffset: 4 }] }, options: { ...commonChartOptions, cutout: '60%' } });
+                chartExpensesPieInstance = new Chart(canvasExp.getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(dadosPizzaSaidas).length ? Object.keys(dadosPizzaSaidas) : [1], backgroundColor: paletaCoresPizza, borderWidth: 2, borderColor: '#1d1d22', hoverOffset: 4 }] }, options: { ...commonChartOptions, cutout: '60%' } });
             }
 
             const detailedIncList = document.getElementById('detailed-incomes-list');
