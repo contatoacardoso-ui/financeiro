@@ -595,7 +595,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.4.10"; 
+        const VERSAO_CODIGO = "1.4.11"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -1801,7 +1801,7 @@
                     if (!description) return alert("Preencha a descrição do lançamento.");
 
                     const instInput = document.getElementById('installments');
-                    const qtdParcelas = selectedType === 'pagar' && methodVal === 'credito' ? (instInput ? (parseInt(instInput.value) || 1) : 1) : 1;
+                    const qtdParcelas = (selectedType === 'pagar' && methodVal === 'credito') ? (instInput ? (parseInt(instInput.value) || 1) : 1) : 1;
 
                     if (dbTransactions) {
                         if (editId) {
@@ -1816,7 +1816,7 @@
                                 let anoStr = novaData.getFullYear(); 
                                 let mesStr = String(novaData.getMonth() + 1).padStart(2, '0'); 
                                 let diaStr = String(novaData.getDate()).padStart(2, '0');
-                                dbTransactions.push({ type: selectedType, description: qtdParcelas > 1 ? `${description} (${i + 1}/${qtdParcelas})` : description, amount: valorParcela, date: `${anoStr}-${mesStr}-${diaStr}`, cardOrigin: cardOrigin || '', bank: bankSelected || '', method: methodVal, installmentsNum: i + 1, installmentsTotal: qtdParcelas, done: (selectedType === 'pagar' && methodVal === 'debito') ? true : false });
+                                dbTransactions.push({ type: selectedType, description: qtdParcelas > 1 ? `${description} (${i + 1}/${qtdParcelas})` : description, amount: valorParcela, date: `${anoStr}-${mesStr}-${diaStr}`, cardOrigin: cardOrigin || '', bank: '', method: methodVal, installmentsNum: i + 1, installmentsTotal: qtdParcelas, done: false });
                             }
                         }
                     }
