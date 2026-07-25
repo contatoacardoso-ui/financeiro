@@ -81,7 +81,7 @@
 
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--bg-color); display: flex; flex-direction: column;
+            background-color: var(--bg-color); display: none; flex-direction: column;
             justify-content: center; align-items: center; z-index: 10000; padding: 24px;
         }
         .login-card {
@@ -295,7 +295,8 @@
         </div>
     </div>
 
-    <div id="login-screen">
+    <!-- Tela de Login (Inicia oculta por padrão para evitar piscar) -->
+    <div id="login-screen" style="display: none;">
         <div class="login-card">
             <div class="login-icon">🔒</div>
             <h2>Acesso Restrito</h2>
@@ -594,7 +595,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.4.8"; 
+        const VERSAO_CODIGO = "1.4.9"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -643,7 +644,6 @@
         let listContainer, monthSelector, realBalanceEl, balanceEl, incomeEl, expenseEl, bankBalancesContainer;
 
         window.addEventListener('DOMContentLoaded', () => {
-            // Inicializa referências DOM com segurança
             loginScreen = document.getElementById('login-screen');
             loginForm = document.getElementById('login-form');
             loginUsernameInput = document.getElementById('login-username');
@@ -688,7 +688,6 @@
 
             verificarAtualizacaoDoApp();
 
-            // Inicialização segura do Firebase
             try {
                 if (!firebase.apps.length) {
                     firebase.initializeApp(firebaseConfig);
@@ -699,7 +698,6 @@
                 console.error("Erro ao iniciar Firebase:", err);
             }
 
-            // Recuperação segura de credenciais salvas
             try {
                 const usuarioSalvo = localStorage.getItem('saved_username');
                 const senhaSalva = localStorage.getItem('saved_password');
@@ -822,6 +820,7 @@
                 const jaLogado = localStorage.getItem('user_authenticated') === 'true';
                 const chaveAtiva = localStorage.getItem('active_user_key');
                 if (jaLogado && chaveAtiva && perfisCadastrados && perfisCadastrados[chaveAtiva]) {
+                    if (loginScreen) loginScreen.style.display = 'none';
                     entrarNoAplicativo(perfisCadastrados[chaveAtiva], chaveAtiva);
                 } else {
                     if (loginScreen) loginScreen.style.display = 'flex';
