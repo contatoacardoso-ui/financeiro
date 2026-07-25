@@ -42,7 +42,7 @@
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
             background: linear-gradient(135deg, #1d1d22 0%, #29292e 100%);
             border: 1px solid var(--primary); color: var(--text-color); padding: 12px 20px;
-            border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 20000;
+            border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 40000;
             display: flex; align-items: center; gap: 12px; font-size: 0.85rem; font-weight: 500;
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0;
             min-width: 280px;
@@ -53,24 +53,30 @@
         .toast-error { border-color: var(--unified-neg) !important; }
         .toast-info { border-color: var(--primary) !important; }
 
-        /* Estilo do Modal de Seleção de Banco */
-        #bank-modal-overlay {
+        /* Estilo dos Modais */
+        .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px);
             display: none; justify-content: center; align-items: center; z-index: 30000; padding: 20px;
         }
-        .bank-modal-card {
+        .modal-card {
             background-color: var(--card-bg); border: 1px solid var(--border); width: 100%; max-width: 360px;
             border-radius: 16px; padding: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-            display: flex; flex-direction: column; max-height: 85vh; animation: modalPop 0.3s ease;
+            display: flex; flex-direction: column; max-height: 90vh; animation: modalPop 0.3s ease;
         }
         @keyframes modalPop {
             from { opacity: 0; transform: scale(0.93); }
             to { opacity: 1; transform: scale(1); }
         }
-        .bank-modal-header { font-size: 1.05rem; font-weight: bold; margin-bottom: 6px; text-align: center; }
-        .bank-modal-subtitle { font-size: 0.8rem; color: var(--text-secondary); text-align: center; margin-bottom: 16px; }
-        .bank-options-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 280px; padding-right: 4px; margin-bottom: 16px; }
+        .modal-header { font-size: 1.05rem; font-weight: bold; margin-bottom: 6px; text-align: center; }
+        .modal-subtitle { font-size: 0.8rem; color: var(--text-secondary); text-align: center; margin-bottom: 16px; }
+        .modal-close-btn {
+            background: none; border: 1px solid var(--border); color: var(--text-secondary);
+            padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.85rem; margin-top: 10px;
+        }
+
+        /* Listas no modal de Pagamento */
+        .bank-options-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 280px; padding-right: 4px; margin-bottom: 8px; }
         .bank-options-list::-webkit-scrollbar { width: 4px; }
         .bank-options-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
         .bank-option-btn {
@@ -79,11 +85,21 @@
             text-align: left; display: flex; align-items: center; gap: 10px; transition: background 0.2s, border-color 0.2s;
         }
         .bank-option-btn:hover { background-color: rgba(78, 168, 222, 0.08); border-color: var(--primary); }
-        .bank-modal-close {
-            background: none; border: 1px solid var(--border); color: var(--text-secondary);
-            padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.85rem;
-        }
 
+        /* Estilos do Gerenciador de Contas e Cartões */
+        .manager-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 16px; }
+        .manager-tab-btn { background-color: #121214; border: 1px solid var(--border); color: var(--text-secondary); padding: 10px; border-radius: 8px; font-weight: bold; font-size: 0.8rem; cursor: pointer; text-align: center; transition: all 0.2s; }
+        .manager-tab-btn.active { border-color: var(--primary); color: var(--primary); background-color: rgba(78, 168, 222, 0.1); }
+        .manager-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 350px; margin-bottom: 16px; }
+        .manager-item { background-color: #121214; border: 1px solid var(--border); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .manager-item span { font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+        .manager-actions { display: flex; gap: 6px; }
+        .manager-actions button { background: none; border: 1px solid var(--border); border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .manager-btn-edit { color: var(--primary); }
+        .manager-btn-delete { color: var(--unified-neg); }
+        .manager-add-btn { background: linear-gradient(135deg, var(--primary) 0%, #3a9ec2 100%); border: none; color: #fff; padding: 12px; border-radius: 10px; font-size: 0.9rem; font-weight: bold; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+        /* Tela de Login */
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: var(--bg-color); display: none; flex-direction: column;
@@ -189,7 +205,6 @@
         .tab-btn { background-color: var(--card-bg); border: 1px solid var(--border); color: var(--text-secondary); padding: 10px 4px; border-radius: 8px; font-weight: bold; font-size: 0.8rem; cursor: pointer; text-align: center; transition: all 0.2s; }
         .tab-btn.active { border-color: var(--primary); color: var(--primary); background-color: rgba(78, 168, 222, 0.1); }
 
-        /* Animação suave entre abas */
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -207,12 +222,7 @@
         .group-action-btn:hover { background: rgba(0, 179, 126, 0.25); }
 
         .transaction-list { display: flex; flex-direction: column; gap: 8px; }
-        .transaction-item {
-            background-color: var(--card-bg); border: 1px solid var(--border); padding: 12px; border-radius: 8px;
-            display: flex; justify-content: space-between; align-items: center; opacity: 1; transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-        .transaction-item.tx-entering { opacity: 0; transform: translateY(-6px); }
-        .transaction-item.tx-leaving { opacity: 0; transform: translateY(6px); }
+        .transaction-item { background-color: var(--card-bg); border: 1px solid var(--border); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
         .item-details h4 { font-size: 0.9rem; margin-bottom: 2px; }
         .item-details span { font-size: 0.7rem; color: var(--text-secondary); display: block; }
         .item-details .method-badge { font-size: 0.65rem; color: var(--text-secondary); background-color: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; border: 1px solid var(--border); }
@@ -231,10 +241,8 @@
         .report-mode-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
         .report-mode-btn { background-color: #121214; border: 1px solid var(--border); color: var(--text-secondary); padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; cursor: pointer; text-align: center; }
         .report-mode-btn.active { background-color: rgba(78, 168, 222, 0.15); border-color: var(--primary); color: var(--primary); }
-        
         .report-actions { display: flex; margin-bottom: 4px; }
         .report-action-btn { width: 100%; background: linear-gradient(135deg, var(--primary) 0%, #3a9ec2 100%); border: none; color: #fff; padding: 14px; border-radius: 10px; font-size: 0.95rem; font-weight: bold; cursor: pointer; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(78,168,222,0.2); }
-
         .report-card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
         .report-card h3 { font-size: 0.95rem; color: var(--text-color); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
         .chart-container { position: relative; width: 100%; height: 320px; display: flex; justify-content: center; align-items: center; }
@@ -261,12 +269,13 @@
         .security-panel-content button { background: none; border: none; border-bottom: 1px solid var(--border); padding: 14px 20px; color: var(--text-color); font-size: 0.85rem; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 12px; width: 100%; }
         .security-panel-content button.danger-btn { color: var(--unified-neg); }
         .security-panel-content button.master-btn { color: var(--unified-pos); font-weight: bold; }
+        .security-panel-content button.info-btn { color: var(--primary); font-weight: bold; }
         .logout-outer-btn { width: 100%; background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; color: var(--text-color); font-size: 0.9rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
         @media print {
             @page { size: portrait; margin: 10mm; }
             body { background-color: #fff; color: #000; padding: 0; width: 100%; max-width: 100%; }
-            .install-banner, .tabs, .form-accordion, .month-selector, .security-footer, .report-mode-toggle, .report-actions, .action-btn, .dashboard, .bank-balances-scroll, header { display: none !important; }
+            .tabs, .form-accordion, .month-selector, .security-footer, .report-mode-toggle, .report-actions, .dashboard, .bank-balances-scroll, header { display: none !important; }
             #report-section { display: flex !important; width: 100% !important; gap: 6mm !important; }
             .report-card { border: 1px solid #ccc; background: #fff; color: #000; box-shadow: none; margin-bottom: 6mm; padding: 6mm; page-break-inside: avoid; width: 100% !important; max-width: 100% !important; display: flex; flex-direction: column; align-items: center; }
             .report-card h3 { width: 100%; text-align: left; font-size: 14pt !important; }
@@ -289,20 +298,45 @@
     <div id="app-toast">
         <span id="toast-icon">🚀</span>
         <div>
-            <strong id="toast-title">Atualizado!</strong><br>
-            <span id="toast-message" style="color:var(--text-secondary);">Versão mais recente carregada.</span>
+            <strong id="toast-title">Mensagem</strong><br>
+            <span id="toast-message" style="color:var(--text-secondary);">Aviso.</span>
         </div>
     </div>
 
     <!-- Modal Pop-up para Seleção de Banco no Pagamento -->
-    <div id="bank-modal-overlay">
-        <div class="bank-modal-card">
-            <div class="bank-modal-header" id="modal-title-text">💳 Selecionar Banco</div>
-            <div class="bank-modal-subtitle" id="modal-subtitle-text">De qual banco saiu o pagamento?</div>
+    <div id="bank-modal-overlay" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header" id="modal-title-text">💳 Selecionar Banco</div>
+            <div class="modal-subtitle" id="modal-subtitle-text">De qual banco saiu o pagamento?</div>
             <div class="bank-options-list" id="bank-options-list">
-                <!-- Preenchido via Script -->
+                <!-- Preenchido via Script com as Contas Dinâmicas -->
             </div>
-            <button class="bank-modal-close" onclick="fecharModalBanco()">Cancelar</button>
+            <button class="modal-close-btn" onclick="fecharModalBanco()">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Modal Gerenciador de Contas e Cartões -->
+    <div id="manager-modal-overlay" class="modal-overlay">
+        <div class="modal-card" style="max-width: 400px;">
+            <div class="modal-header">⚙️ Gerenciar Contas e Cartões</div>
+            <div class="modal-subtitle">Adicione, edite ou exclua suas carteiras.</div>
+            
+            <div class="manager-tabs">
+                <button class="manager-tab-btn active" id="tab-manager-contas" onclick="switchManagerTab('contas')">Contas Bancárias</button>
+                <button class="manager-tab-btn" id="tab-manager-cartoes" onclick="switchManagerTab('cartoes')">Cartões de Crédito</button>
+            </div>
+
+            <div id="manager-content-contas">
+                <div class="manager-list" id="list-manager-contas"></div>
+                <button class="manager-add-btn" onclick="adicionarConta()">➕ Adicionar Nova Conta</button>
+            </div>
+
+            <div id="manager-content-cartoes" style="display: none;">
+                <div class="manager-list" id="list-manager-cartoes"></div>
+                <button class="manager-add-btn" onclick="adicionarCartao()">➕ Adicionar Novo Cartão</button>
+            </div>
+
+            <button class="modal-close-btn" onclick="fecharGerenciador()">Voltar ao Aplicativo</button>
         </div>
     </div>
 
@@ -378,53 +412,15 @@
 
                     <div id="transfer-fields">
                         <div class="form-group">
-                            <label for="bank-origin">Banco de Origem (Sai o valor)</label>
+                            <label for="bank-origin">Conta de Origem (Sai o valor)</label>
                             <select id="bank-origin">
-                                <option value="" disabled selected>Selecione o banco de origem</option>
-                                <option value="260 - Nubank">260 - Nubank</option>
-                                <option value="341 - Itaú">341 - Itaú</option>
-                                <option value="336 - C6 Bank">336 - C6 Bank</option>
-                                <option value="001 - Banco do Brasil">001 - Banco do Brasil</option>
-                                <option value="033 - Santander">033 - Santander</option>
-                                <option value="237 - Bradesco">237 - Bradesco</option>
-                                <option value="104 - Caixa Econômica Federal">104 - Caixa Econômica Federal</option>
-                                <option value="077 - Banco Inter">077 - Banco Inter</option>
-                                <option value="041 - Banrisul">041 - Banrisul</option>
-                                <option value="389 - Mercado Pago">389 - Mercado Pago</option>
-                                <option value="380 - PicPay">380 - PicPay</option>
-                                <option value="290 - PagSeguro">290 - PagSeguro</option>
-                                <option value="212 - Banco Original">212 - Banco Original</option>
-                                <option value="655 - Neon (Votorantim)">655 - Neon (Votorantim)</option>
-                                <option value="623 - Banco Pan">623 - Banco Pan</option>
-                                <option value="208 - BTG Pactual">208 - BTG Pactual</option>
-                                <option value="748 - Sicredi">748 - Sicredi</option>
-                                <option value="756 - Sicoob">756 - Sicoob</option>
-                                <option value="Outro Banco...">Outro Banco...</option>
+                                <option value="" disabled selected>Carregando contas...</option>
                             </select>
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
-                            <label for="bank-destination">Banco de Destino (Entra o valor)</label>
+                            <label for="bank-destination">Conta de Destino (Entra o valor)</label>
                             <select id="bank-destination">
-                                <option value="" disabled selected>Selecione o banco de destino</option>
-                                <option value="260 - Nubank">260 - Nubank</option>
-                                <option value="341 - Itaú">341 - Itaú</option>
-                                <option value="336 - C6 Bank">336 - C6 Bank</option>
-                                <option value="001 - Banco do Brasil">001 - Banco do Brasil</option>
-                                <option value="033 - Santander">033 - Santander</option>
-                                <option value="237 - Bradesco">237 - Bradesco</option>
-                                <option value="104 - Caixa Econômica Federal">104 - Caixa Econômica Federal</option>
-                                <option value="077 - Banco Inter">077 - Banco Inter</option>
-                                <option value="041 - Banrisul">041 - Banrisul</option>
-                                <option value="389 - Mercado Pago">389 - Mercado Pago</option>
-                                <option value="380 - PicPay">380 - PicPay</option>
-                                <option value="290 - PagSeguro">290 - PagSeguro</option>
-                                <option value="212 - Banco Original">212 - Banco Original</option>
-                                <option value="655 - Neon (Votorantim)">655 - Neon (Votorantim)</option>
-                                <option value="623 - Banco Pan">623 - Banco Pan</option>
-                                <option value="208 - BTG Pactual">208 - BTG Pactual</option>
-                                <option value="748 - Sicredi">748 - Sicredi</option>
-                                <option value="756 - Sicoob">756 - Sicoob</option>
-                                <option value="Outro Banco...">Outro Banco...</option>
+                                <option value="" disabled selected>Carregando contas...</option>
                             </select>
                         </div>
                     </div>
@@ -451,11 +447,7 @@
                         <div class="form-group" id="card-group">
                             <label for="card-origin">Nome do Cartão (Crédito)</label>
                             <select id="card-origin">
-                                <option value="" disabled selected>Selecione ou adicione um cartão</option>
-                                <option value="Cartão C6 Bank">Cartão C6 Bank</option>
-                                <option value="Cartão Nubank">Cartão Nubank</option>
-                                <option value="Cartão Itaú">Cartão Itaú</option>
-                                <option value="Outro Cartão...">➕ Outro Cartão...</option>
+                                <option value="" disabled selected>Carregando cartões...</option>
                             </select>
                         </div>
 
@@ -470,26 +462,7 @@
                     <div class="form-group" id="bank-group">
                         <label id="bank-label">Banco de Destino</label>
                         <select id="bank-select">
-                            <option value="" disabled selected>Selecione um banco</option>
-                            <option value="260 - Nubank">260 - Nubank</option>
-                            <option value="341 - Itaú">341 - Itaú</option>
-                            <option value="336 - C6 Bank">336 - C6 Bank</option>
-                            <option value="001 - Banco do Brasil">001 - Banco do Brasil</option>
-                            <option value="033 - Santander">033 - Santander</option>
-                            <option value="237 - Bradesco">237 - Bradesco</option>
-                            <option value="104 - Caixa Econômica Federal">104 - Caixa Econômica Federal</option>
-                            <option value="077 - Banco Inter">077 - Banco Inter</option>
-                            <option value="041 - Banrisul">041 - Banrisul</option>
-                            <option value="389 - Mercado Pago">389 - Mercado Pago</option>
-                            <option value="380 - PicPay">380 - PicPay</option>
-                            <option value="290 - PagSeguro">290 - PagSeguro</option>
-                            <option value="212 - Banco Original">212 - Banco Original</option>
-                            <option value="655 - Neon (Votorantim)">655 - Neon (Votorantim)</option>
-                            <option value="623 - Banco Pan">623 - Banco Pan</option>
-                            <option value="208 - BTG Pactual">208 - BTG Pactual</option>
-                            <option value="748 - Sicredi">748 - Sicredi</option>
-                            <option value="756 - Sicoob">756 - Sicoob</option>
-                            <option value="Outro Banco...">Outro Banco...</option>
+                            <option value="" disabled selected>Carregando contas...</option>
                         </select>
                     </div>
 
@@ -585,6 +558,7 @@
             <div class="security-accordion">
                 <button class="security-header-btn" onclick="tentarAbrirConfiguracoes()"><span>⚙️</span> Configurações de Segurança</button>
                 <div class="security-panel-content" id="security-panel-content">
+                    <button class="info-btn" onclick="abrirGerenciador()"><span>💼</span> Gerenciar Contas e Cartões</button>
                     <button class="master-btn" id="btn-master-panel" onclick="abrirPainelMaster()" style="display: none;"><span>👑</span> Gerenciar Perfis (Painel Master)</button>
                     <button onclick="fazerBackup()"><span>📥</span> Exportar Dados (Backup)</button>
                     <button onclick="alterarSenhaDoSistema()"><span>🔑</span> Alterar Minha Senha</button>
@@ -606,8 +580,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        // Versão atualizada para forçar aviso visual da novidade
-        const VERSAO_CODIGO = "1.5.0"; 
+        const VERSAO_CODIGO = "1.6.0"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -616,20 +589,11 @@
             'user_suelen_winnie': { name: 'Suelen Winnie', pwd: '12345', isMaster: false, node: 'lancamentos_suelen_winnie' }
         };
 
-        const LISTA_BANCOS_PADRAO = [
-            "260 - Nubank", "341 - Itaú", "336 - C6 Bank", "001 - Banco do Brasil",
-            "033 - Santander", "237 - Bradesco", "104 - Caixa Econômica Federal",
-            "077 - Banco Inter", "041 - Banrisul", "389 - Mercado Pago", "380 - PicPay",
-            "290 - PagSeguro", "212 - Banco Original", "655 - Neon (Votorantim)",
-            "623 - Banco Pan", "208 - BTG Pactual", "748 - Sicredi", "756 - Sicoob"
-        ];
-
         function sanitizarChaveNode(str) {
             if (!str) return '';
             return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '_').replace(/^_+|_+$/g, '');
         }
 
-        // --- SISTEMA DE TOAST ---
         function showToast(message, type = 'success', title = null) {
             const toast = document.getElementById('app-toast');
             const toastTitle = document.getElementById('toast-title');
@@ -637,31 +601,17 @@
             const toastIcon = document.getElementById('toast-icon');
 
             if (!toast) return;
-
-            // Remove classes anteriores
             toast.className = '';
             
-            if (type === 'success') {
-                toastIcon.textContent = '✅';
-                toastTitle.textContent = title || 'Sucesso';
-                toast.classList.add('toast-success');
-            } else if (type === 'error') {
-                toastIcon.textContent = '⚠️';
-                toastTitle.textContent = title || 'Atenção';
-                toast.classList.add('toast-error');
-            } else {
-                toastIcon.textContent = '🚀';
-                toastTitle.textContent = title || 'Info';
-                toast.classList.add('toast-info');
-            }
+            if (type === 'success') { toastIcon.textContent = '✅'; toastTitle.textContent = title || 'Sucesso'; toast.classList.add('toast-success'); } 
+            else if (type === 'error') { toastIcon.textContent = '⚠️'; toastTitle.textContent = title || 'Atenção'; toast.classList.add('toast-error'); } 
+            else { toastIcon.textContent = '🚀'; toastTitle.textContent = title || 'Info'; toast.classList.add('toast-info'); }
 
             toastMsg.textContent = message;
             toast.classList.add('show');
-
             setTimeout(() => { toast.classList.remove('show'); }, 4500);
         }
 
-        // --- CORREÇÃO DE DATA PARA FUSO LOCAL BRASIL ---
         function getLocalTodayString() {
             const today = new Date();
             const year = today.getFullYear();
@@ -672,14 +622,20 @@
 
         let dbRoot = null;
         let dbTransactions = null;
+        let dbContas = null;
+        let dbCartoes = null;
+        
         let perfisCadastrados = DEFAULT_PROFILES;
         let transactions = [];
+        let listaContas = [];
+        let listaCartoes = [];
         
         let currentTab = 'report';
         let reportMode = 'month';
         let transactionToConfirmId = null;
         let bulkActionType = null; 
         let bulkTargetName = null; 
+        let currentManagerTab = 'contas';
 
         const estadoColapsoGrupos = {};
 
@@ -687,9 +643,7 @@
         const mesAtualGlobalKey = `${hojeObj.getFullYear()}-${String(hojeObj.getMonth() + 1).padStart(2, '0')}`;
         let selectedMonthKey = mesAtualGlobalKey;
         
-        let chartComparisonInstance = null;
-        let chartIncomesPieInstance = null;
-        let chartExpensesPieInstance = null;
+        let chartComparisonInstance = null; let chartIncomesPieInstance = null; let chartExpensesPieInstance = null;
 
         let loginScreen, loginForm, loginUsernameInput, loginPasswordInput, rememberMeCheckbox, loginError, appContainer, profileBadge, btnMasterPanel, securityPanelContent;
         let formAccordion, form, editIdInput, descInput, descGroup, amountInput, dateInput, dateLabel, cardOriginSelect;
@@ -697,91 +651,54 @@
         let listContainer, monthSelector, realBalanceEl, balanceEl, incomeEl, expenseEl, bankBalancesContainer;
 
         window.addEventListener('DOMContentLoaded', () => {
-            loginScreen = document.getElementById('login-screen');
-            loginForm = document.getElementById('login-form');
-            loginUsernameInput = document.getElementById('login-username');
-            loginPasswordInput = document.getElementById('login-password');
-            rememberMeCheckbox = document.getElementById('remember-me');
-            loginError = document.getElementById('login-error');
-            appContainer = document.getElementById('app-container');
-            profileBadge = document.getElementById('profile-name-badge');
-            btnMasterPanel = document.getElementById('btn-master-panel');
-            securityPanelContent = document.getElementById('security-panel-content');
+            loginScreen = document.getElementById('login-screen'); loginForm = document.getElementById('login-form');
+            loginUsernameInput = document.getElementById('login-username'); loginPasswordInput = document.getElementById('login-password');
+            rememberMeCheckbox = document.getElementById('remember-me'); loginError = document.getElementById('login-error');
+            appContainer = document.getElementById('app-container'); profileBadge = document.getElementById('profile-name-badge');
+            btnMasterPanel = document.getElementById('btn-master-panel'); securityPanelContent = document.getElementById('security-panel-content');
 
-            formAccordion = document.getElementById('form-accordion');
-            form = document.getElementById('finance-form');
-            editIdInput = document.getElementById('edit-id');
-            descInput = document.getElementById('description');
-            descGroup = document.getElementById('desc-group');
-            amountInput = document.getElementById('amount');
-            dateInput = document.getElementById('due-date');
-            dateLabel = document.getElementById('date-label');
+            formAccordion = document.getElementById('form-accordion'); form = document.getElementById('finance-form');
+            editIdInput = document.getElementById('edit-id'); descInput = document.getElementById('description');
+            descGroup = document.getElementById('desc-group'); amountInput = document.getElementById('amount');
+            dateInput = document.getElementById('due-date'); dateLabel = document.getElementById('date-label');
             cardOriginSelect = document.getElementById('card-origin');
             
-            bankGroup = document.getElementById('bank-group');
-            bankLabel = document.getElementById('bank-label');
-            bankSelect = document.getElementById('bank-select');
-            cardGroup = document.getElementById('card-group');
-            transferFields = document.getElementById('transfer-fields');
-            bankOriginSelect = document.getElementById('bank-origin');
+            bankGroup = document.getElementById('bank-group'); bankLabel = document.getElementById('bank-label');
+            bankSelect = document.getElementById('bank-select'); cardGroup = document.getElementById('card-group');
+            transferFields = document.getElementById('transfer-fields'); bankOriginSelect = document.getElementById('bank-origin');
             bankDestinationSelect = document.getElementById('bank-destination');
 
-            listContainer = document.getElementById('transaction-list');
-            monthSelector = document.getElementById('month-selector');
-            
-            realBalanceEl = document.getElementById('real-balance');
-            balanceEl = document.getElementById('total-balance');
-            incomeEl = document.getElementById('total-income');
-            expenseEl = document.getElementById('total-expense');
+            listContainer = document.getElementById('transaction-list'); monthSelector = document.getElementById('month-selector');
+            realBalanceEl = document.getElementById('real-balance'); balanceEl = document.getElementById('total-balance');
+            incomeEl = document.getElementById('total-income'); expenseEl = document.getElementById('total-expense');
             bankBalancesContainer = document.getElementById('bank-balances-container');
 
-            // Resolve o bug da data do fuso horário
-            if (dateInput) {
-                dateInput.value = getLocalTodayString();
-            }
-
-            verificarAtualizacaoDoApp();
+            if (dateInput) dateInput.value = getLocalTodayString();
 
             try {
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(firebaseConfig);
-                }
+                if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
                 firebase.database().goOnline();
                 dbRoot = firebase.database().ref();
-            } catch (err) {
-                console.error("Erro ao iniciar Firebase:", err);
-            }
+            } catch (err) { console.error("Erro ao iniciar Firebase:", err); }
 
             try {
                 const usuarioSalvo = localStorage.getItem('saved_username');
                 const senhaSalva = localStorage.getItem('saved_password');
                 if (usuarioSalvo && loginUsernameInput) loginUsernameInput.value = usuarioSalvo;
                 if (senhaSalva && loginPasswordInput) loginPasswordInput.value = senhaSalva;
-                if (rememberMeCheckbox) {
-                    rememberMeCheckbox.checked = localStorage.getItem('remember_active') !== 'false';
-                }
+                if (rememberMeCheckbox) rememberMeCheckbox.checked = localStorage.getItem('remember_active') !== 'false';
             } catch(e) {}
 
             if (dbRoot) {
                 dbRoot.child('config_perfis').on('value', (snapshot) => {
                     const dadosNuvem = snapshot.val();
-                    if (!dadosNuvem) {
-                        dbRoot.child('config_perfis').set(DEFAULT_PROFILES);
-                        perfisCadastrados = DEFAULT_PROFILES;
-                    } else {
-                        perfisCadastrados = dadosNuvem;
-                    }
+                    if (!dadosNuvem) { dbRoot.child('config_perfis').set(DEFAULT_PROFILES); perfisCadastrados = DEFAULT_PROFILES; } 
+                    else { perfisCadastrados = dadosNuvem; }
                     verificarSessaoSalva();
-                }, (error) => {
-                    verificarSessaoSalva();
-                });
-            } else {
-                verificarSessaoSalva();
-            }
+                }, (error) => { verificarSessaoSalva(); });
+            } else { verificarSessaoSalva(); }
 
-            if (loginForm) {
-                loginForm.addEventListener('submit', handleLoginSubmit);
-            }
+            if (loginForm) loginForm.addEventListener('submit', handleLoginSubmit);
 
             if (amountInput) {
                 amountInput.addEventListener('input', (e) => {
@@ -795,17 +712,6 @@
             }
         });
 
-        function verificarAtualizacaoDoApp() {
-            try {
-                const versaoSalva = localStorage.getItem('app_version_cache');
-                
-                if (versaoSalva !== VERSAO_CODIGO) {
-                    localStorage.setItem('app_version_cache', VERSAO_CODIGO);
-                    showToast(`Versão ${VERSAO_CODIGO} carregada com sucesso.`, 'info', 'Aplicativo Atualizado!');
-                }
-            } catch(e) {}
-        }
-
         let atualizacaoAgendada = false;
         function agendarAtualizacaoDaTela() {
             if (atualizacaoAgendada) return;
@@ -813,66 +719,153 @@
             requestAnimationFrame(() => {
                 atualizacaoAgendada = false;
                 try {
-                    atualizarOpcoesCartoesForm();
                     gerarFiltroDeMeses();
                     updateDashboard();
                     renderView();
-                } catch(err) {
-                    console.error("Erro na renderização:", err);
-                }
+                } catch(err) { console.error("Erro na renderização:", err); }
             });
         }
 
-        function atualizarOpcoesCartoesForm() {
-            if (!cardOriginSelect) return;
-            const cartoesSet = new Set(["Cartão C6 Bank", "Cartão Nubank", "Cartão Itaú"]);
-            transactions.forEach(t => {
-                if (t.cardOrigin && t.cardOrigin.trim() !== '') {
-                    cartoesSet.add(t.cardOrigin.trim());
-                }
-            });
+        // --- SISTEMA DINÂMICO DE SELECTS (BANCOS E CARTÕES) ---
+        function atualizarSelectsDinamicos() {
+            const atualizarSelect = (selectElement, lista, tipoTexto, optionVaziaTexto) => {
+                if (!selectElement) return;
+                const valorAtual = selectElement.value;
+                selectElement.innerHTML = '';
+                
+                const defaultOpt = document.createElement('option');
+                defaultOpt.value = "";
+                defaultOpt.disabled = true;
+                defaultOpt.selected = !valorAtual;
+                defaultOpt.textContent = optionVaziaTexto;
+                selectElement.appendChild(defaultOpt);
 
-            const valorAtual = cardOriginSelect.value;
-            cardOriginSelect.innerHTML = '';
+                const listaOrdenada = [...lista].sort((a, b) => a.nome.localeCompare(b.nome));
+                listaOrdenada.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.nome;
+                    opt.textContent = item.nome;
+                    if (item.nome === valorAtual) opt.selected = true;
+                    selectElement.appendChild(opt);
+                });
+
+                if (listaOrdenada.length === 0) {
+                    const vaziaOpt = document.createElement('option');
+                    vaziaOpt.value = "";
+                    vaziaOpt.disabled = true;
+                    vaziaOpt.textContent = `Nenhum(a) ${tipoTexto} cadastrado(a)`;
+                    selectElement.appendChild(vaziaOpt);
+                }
+            };
+
+            atualizarSelect(bankOriginSelect, listaContas, 'conta', 'Selecione a conta de origem');
+            atualizarSelect(bankDestinationSelect, listaContas, 'conta', 'Selecione a conta de destino');
+            atualizarSelect(bankSelect, listaContas, 'conta', 'Selecione uma conta bancária');
+            atualizarSelect(cardOriginSelect, listaCartoes, 'cartão', 'Selecione um cartão de crédito');
             
-            const defaultOpt = document.createElement('option');
-            defaultOpt.value = "";
-            defaultOpt.disabled = true;
-            defaultOpt.selected = !valorAtual;
-            defaultOpt.textContent = "Selecione o cartão";
-            cardOriginSelect.appendChild(defaultOpt);
-
-            Array.from(cartoesSet).sort().forEach(cartao => {
-                const opt = document.createElement('option');
-                opt.value = cartao;
-                opt.textContent = cartao;
-                if (cartao === valorAtual) opt.selected = true;
-                cardOriginSelect.appendChild(opt);
-            });
-
-            const outroOpt = document.createElement('option');
-            outroOpt.value = "OUTRO_CARTAO_CUSTOM";
-            outroOpt.textContent = "➕ Outro Cartão...";
-            cardOriginSelect.appendChild(outroOpt);
+            renderizarGerenciador(); // Atualiza a UI do gerenciador se ele estiver aberto
         }
 
-        if (cardOriginSelect) {
-            cardOriginSelect.addEventListener('change', (e) => {
-                if (e.target.value === "OUTRO_CARTAO_CUSTOM") {
-                    const novoCartao = prompt("Digite o nome do novo cartão (ex: Cartão Santander):");
-                    if (novoCartao && novoCartao.trim() !== "") {
-                        const nomeFormatado = novoCartao.trim();
-                        const opt = document.createElement('option');
-                        opt.value = nomeFormatado;
-                        opt.textContent = nomeFormatado;
-                        cardOriginSelect.insertBefore(opt, cardOriginSelect.lastElementChild);
-                        cardOriginSelect.value = nomeFormatado;
-                    } else {
-                        cardOriginSelect.value = "";
-                    }
+        // --- GERENCIADOR DE CONTAS E CARTÕES (UI) ---
+        window.abrirGerenciador = function() {
+            const modal = document.getElementById('manager-modal-overlay');
+            if (modal) modal.style.display = 'flex';
+            switchManagerTab('contas');
+            renderizarGerenciador();
+        }
+
+        window.fecharGerenciador = function() {
+            const modal = document.getElementById('manager-modal-overlay');
+            if (modal) modal.style.display = 'none';
+        }
+
+        window.switchManagerTab = function(tab) {
+            currentManagerTab = tab;
+            document.getElementById('tab-manager-contas').classList.toggle('active', tab === 'contas');
+            document.getElementById('tab-manager-cartoes').classList.toggle('active', tab === 'cartoes');
+            document.getElementById('manager-content-contas').style.display = tab === 'contas' ? 'block' : 'none';
+            document.getElementById('manager-content-cartoes').style.display = tab === 'cartoes' ? 'block' : 'none';
+        }
+
+        function renderizarGerenciador() {
+            const listaContasEl = document.getElementById('list-manager-contas');
+            const listaCartoesEl = document.getElementById('list-manager-cartoes');
+
+            if (listaContasEl) {
+                listaContasEl.innerHTML = '';
+                if (listaContas.length === 0) {
+                    listaContasEl.innerHTML = '<div class="empty-state">Você ainda não tem contas cadastradas.</div>';
+                } else {
+                    [...listaContas].sort((a,b) => a.nome.localeCompare(b.nome)).forEach(conta => {
+                        listaContasEl.innerHTML += `
+                            <div class="manager-item">
+                                <span>${getBankLogo(conta.nome)} ${conta.nome}</span>
+                                <div class="manager-actions">
+                                    <button class="manager-btn-edit" onclick="editarConta('${conta.id}', '${conta.nome}')">✏️</button>
+                                    <button class="manager-btn-delete" onclick="excluirConta('${conta.id}')">×</button>
+                                </div>
+                            </div>
+                        `;
+                    });
                 }
-            });
+            }
+
+            if (listaCartoesEl) {
+                listaCartoesEl.innerHTML = '';
+                if (listaCartoes.length === 0) {
+                    listaCartoesEl.innerHTML = '<div class="empty-state">Você ainda não tem cartões cadastrados.</div>';
+                } else {
+                    [...listaCartoes].sort((a,b) => a.nome.localeCompare(b.nome)).forEach(cartao => {
+                        listaCartoesEl.innerHTML += `
+                            <div class="manager-item">
+                                <span>💳 ${cartao.nome}</span>
+                                <div class="manager-actions">
+                                    <button class="manager-btn-edit" onclick="editarCartao('${cartao.id}', '${cartao.nome}')">✏️</button>
+                                    <button class="manager-btn-delete" onclick="excluirCartao('${cartao.id}')">×</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            }
         }
+
+        window.adicionarConta = function() {
+            const nome = prompt("Digite o nome da nova Conta (ex: Itaú - Conta Corrente):");
+            if (nome && nome.trim() !== "") {
+                if(dbContas) dbContas.push({ nome: nome.trim() }).then(() => showToast("Conta adicionada!"));
+            }
+        }
+        window.editarConta = function(id, nomeAtual) {
+            const nome = prompt("Edite o nome da conta:", nomeAtual);
+            if (nome && nome.trim() !== "" && nome.trim() !== nomeAtual) {
+                if(dbContas) dbContas.child(id).update({ nome: nome.trim() }).then(() => showToast("Conta atualizada!"));
+            }
+        }
+        window.excluirConta = function(id) {
+            if (confirm("Deseja realmente excluir esta conta da sua lista? (Lançamentos passados não serão alterados)")) {
+                if(dbContas) dbContas.child(id).remove().then(() => showToast("Conta removida!"));
+            }
+        }
+
+        window.adicionarCartao = function() {
+            const nome = prompt("Digite o nome do novo Cartão (ex: Cartão Nubank Principal):");
+            if (nome && nome.trim() !== "") {
+                if(dbCartoes) dbCartoes.push({ nome: nome.trim() }).then(() => showToast("Cartão adicionado!"));
+            }
+        }
+        window.editarCartao = function(id, nomeAtual) {
+            const nome = prompt("Edite o nome do cartão:", nomeAtual);
+            if (nome && nome.trim() !== "" && nome.trim() !== nomeAtual) {
+                if(dbCartoes) dbCartoes.child(id).update({ nome: nome.trim() }).then(() => showToast("Cartão atualizado!"));
+            }
+        }
+        window.excluirCartao = function(id) {
+            if (confirm("Deseja realmente excluir este cartão da sua lista?")) {
+                if(dbCartoes) dbCartoes.child(id).remove().then(() => showToast("Cartão removido!"));
+            }
+        }
+        // ----------------------------------------------------
 
         function verificarSessaoSalva() {
             try {
@@ -944,7 +937,11 @@
             const nodeTarget = perfil.isMaster ? NO_MASTER_ORIGINAL : (perfil.node || ('lancamentos_' + sanitizarChaveNode(perfil.name)));
 
             if (dbTransactions) dbTransactions.off();
+            if (dbContas) dbContas.off();
+            if (dbCartoes) dbCartoes.off();
+
             if (dbRoot) {
+                // Carregar Lançamentos
                 dbTransactions = dbRoot.child(nodeTarget);
                 dbTransactions.on('value', (snapshot) => {
                     const data = snapshot.val();
@@ -952,8 +949,24 @@
                     if (data) Object.keys(data).forEach(key => novasTransacoes.push({ id: key, ...data[key] }));
                     transactions = novasTransacoes;
                     agendarAtualizacaoDaTela();
-                }, (error) => {
-                    agendarAtualizacaoDaTela();
+                });
+
+                // Carregar Contas Dinâmicas do Perfil
+                dbContas = dbRoot.child(nodeTarget + '_contas');
+                dbContas.on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    listaContas = [];
+                    if (data) Object.keys(data).forEach(key => listaContas.push({ id: key, nome: data[key].nome }));
+                    atualizarSelectsDinamicos();
+                });
+
+                // Carregar Cartões Dinâmicos do Perfil
+                dbCartoes = dbRoot.child(nodeTarget + '_cartoes');
+                dbCartoes.on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    listaCartoes = [];
+                    if (data) Object.keys(data).forEach(key => listaCartoes.push({ id: key, nome: data[key].nome }));
+                    atualizarSelectsDinamicos();
                 });
             }
         }
@@ -1026,7 +1039,7 @@
                 if (descGroup) descGroup.style.display = 'block';
                 if (descInput) { descInput.placeholder = "Ex: Salario, Rendimento, Investimento..."; }
                 if (bankGroup) bankGroup.style.display = 'block';
-                if (bankLabel) bankLabel.textContent = 'Banco de Destino (Recebimento)';
+                if (bankLabel) bankLabel.textContent = 'Conta de Destino (Recebimento)';
             } else if (tipo === 'pagar') {
                 if (descGroup) descGroup.style.display = 'block';
                 const methodEl = document.querySelector('input[name="method"]:checked');
@@ -1057,7 +1070,7 @@
                 if (bankGroup) bankGroup.style.display = 'none';
             } else {
                 if (bankGroup) bankGroup.style.display = 'block';
-                if (bankLabel) bankLabel.textContent = 'Banco de Origem (Débito)';
+                if (bankLabel) bankLabel.textContent = 'Conta de Origem (Débito)';
             }
             atualizarRotuloData();
         }
@@ -1099,10 +1112,7 @@
         }
 
         window.fazerLogout = function() {
-            try {
-                localStorage.removeItem('user_authenticated');
-                localStorage.removeItem('active_user_key');
-            } catch(e){}
+            try { localStorage.removeItem('user_authenticated'); localStorage.removeItem('active_user_key'); } catch(e){}
             window.location.reload();
         }
 
@@ -1158,9 +1168,7 @@
 
         function selectMonth(key) {
             selectedMonthKey = key;
-            if (monthSelector) {
-                monthSelector.querySelectorAll('.month-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.monthKey === key));
-            }
+            if (monthSelector) { monthSelector.querySelectorAll('.month-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.monthKey === key)); }
             renderView();
         }
 
@@ -1170,10 +1178,9 @@
         function formatCurrencyInput(val) { let num = (val).toFixed(2); let parts = num.split('.'); parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.'); return parts.join(','); }
 
         window.switchTab = function(tab) {
-            if (currentTab === tab) return; // evita re-renderizar desnecessariamente
+            if (currentTab === tab) return;
             currentTab = tab;
             
-            // Adiciona ou reseta a classe de animação para transição fluida
             const wrapper = document.getElementById('transactions-wrapper');
             const reportSection = document.getElementById('report-section');
             if(wrapper) { wrapper.classList.remove('fade-in'); void wrapper.offsetWidth; wrapper.classList.add('fade-in'); }
@@ -1232,26 +1239,28 @@
                 const subEl = document.getElementById('modal-subtitle-text');
 
                 if (titleEl) titleEl.textContent = t.method === 'credito' ? "💳 Pagar Fatura do Cartão" : "📄 Pagar Conta";
-                if (subEl) subEl.textContent = `De qual banco saiu o dinheiro para pagar "${t.description}"?`;
+                if (subEl) subEl.textContent = `De qual conta saiu o dinheiro para pagar "${t.description}"?`;
 
                 if (listEl) {
                     listEl.innerHTML = '';
-                    LISTA_BANCOS_PADRAO.forEach(banco => {
-                        let nomeCurto = banco.includes('-') ? banco.split('-')[1].trim() : banco;
-                        let logoHtml = getBankLogo(nomeCurto);
-                        listEl.innerHTML += `
-                            <button class="bank-option-btn" onclick="selecionarBancoModal('${banco}')">
-                                ${logoHtml} <span>${banco}</span>
-                            </button>
-                        `;
-                    });
+                    if(listaContas.length === 0) {
+                        listEl.innerHTML = '<div class="empty-state" style="font-size:0.8rem;">Nenhuma conta cadastrada.<br>Vá em Configurações > Gerenciar Contas para adicionar.</div>';
+                    } else {
+                        [...listaContas].sort((a,b) => a.nome.localeCompare(b.nome)).forEach(conta => {
+                            let logoHtml = getBankLogo(conta.nome);
+                            listEl.innerHTML += `
+                                <button class="bank-option-btn" onclick="selecionarBancoModal('${conta.nome}')">
+                                    ${logoHtml} <span>${conta.nome}</span>
+                                </button>
+                            `;
+                        });
+                    }
                     listEl.innerHTML += `
-                        <button class="bank-option-btn" onclick="selecionarOutroBancoModal()" style="color:var(--primary); font-weight:bold;">
-                            ➕ Outro Banco...
+                        <button class="bank-option-btn" onclick="selecionarOutroBancoModal()" style="color:var(--primary); font-weight:bold; margin-top:8px;">
+                            ➕ Usar Outra (Sem Cadastrar)...
                         </button>
                     `;
                 }
-
                 if (modalOverlay) modalOverlay.style.display = 'flex';
             } else {
                 dbTransactions.child(id).update({ done: true });
@@ -1270,26 +1279,28 @@
             const subEl = document.getElementById('modal-subtitle-text');
 
             if (titleEl) titleEl.textContent = tipoAcao === 'card' ? `💳 Pagar Fatura: ${nomeAlvo}` : `📄 Pagar Subgrupo: ${nomeAlvo}`;
-            if (subEl) subEl.textContent = `De qual banco saiu o dinheiro para o pagamento?`;
+            if (subEl) subEl.textContent = `De qual conta saiu o dinheiro para o pagamento?`;
 
             if (listEl) {
                 listEl.innerHTML = '';
-                LISTA_BANCOS_PADRAO.forEach(banco => {
-                    let nomeCurto = banco.includes('-') ? banco.split('-')[1].trim() : banco;
-                    let logoHtml = getBankLogo(nomeCurto);
-                    listEl.innerHTML += `
-                        <button class="bank-option-btn" onclick="selecionarBancoModal('${banco}')">
-                            ${logoHtml} <span>${banco}</span>
-                        </button>
-                    `;
-                });
+                if(listaContas.length === 0) {
+                    listEl.innerHTML = '<div class="empty-state" style="font-size:0.8rem;">Nenhuma conta cadastrada.<br>Vá em Configurações > Gerenciar Contas para adicionar.</div>';
+                } else {
+                    [...listaContas].sort((a,b) => a.nome.localeCompare(b.nome)).forEach(conta => {
+                        let logoHtml = getBankLogo(conta.nome);
+                        listEl.innerHTML += `
+                            <button class="bank-option-btn" onclick="selecionarBancoModal('${conta.nome}')">
+                                ${logoHtml} <span>${conta.nome}</span>
+                            </button>
+                        `;
+                    });
+                }
                 listEl.innerHTML += `
-                    <button class="bank-option-btn" onclick="selecionarOutroBancoModal()" style="color:var(--primary); font-weight:bold;">
-                        ➕ Outro Banco...
+                    <button class="bank-option-btn" onclick="selecionarOutroBancoModal()" style="color:var(--primary); font-weight:bold; margin-top:8px;">
+                        ➕ Usar Outra (Sem Cadastrar)...
                     </button>
                 `;
             }
-
             if (modalOverlay) modalOverlay.style.display = 'flex';
         }
 
@@ -1308,7 +1319,6 @@
                 showToast("Lançamento confirmado!");
             } else if (bulkActionType && bulkTargetName) {
                 const pendentesFiltrados = transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey) && !t.done && t.type !== 'transfer');
-                
                 let atualizacoes = {};
                 pendentesFiltrados.forEach(t => {
                     let match = false;
@@ -1332,7 +1342,7 @@
         }
 
         window.selecionarOutroBancoModal = function() {
-            const outro = prompt("Digite o nome do banco:");
+            const outro = prompt("Digite o nome da conta que pagou (Ela não ficará salva na lista):");
             if (outro && outro.trim() !== "") {
                 selecionarBancoModal(outro.trim());
             } else {
@@ -1400,7 +1410,6 @@
             if (editIdInput) editIdInput.value = '';
             if (form) form.reset();
             
-            // Garantir que reseta para a data local correta
             if (dateInput) dateInput.value = getLocalTodayString();
             
             toggleTypeFields();
@@ -1418,11 +1427,13 @@
         function atualizarTextoSeMudou(el, novoTexto) { if (el && el.textContent !== novoTexto) el.textContent = novoTexto; }
 
         function getBankLogo(bankName) {
+            if(!bankName) return '🏦 ';
+            const nameToMatch = bankName.toLowerCase();
             const domainMap = {
-                'Banco do Brasil': 'bb.com.br', 'Santander': 'santander.com.br', 'Caixa': 'caixa.gov.br', 'Caixa Econômica Federal': 'caixa.gov.br', 'Bradesco': 'bradesco.com.br', 'Itaú': 'itau.com.br', 'Nubank': 'nubank.com.br', 'Inter': 'bancointer.com.br', 'Banco Inter': 'bancointer.com.br', 'C6 Bank': 'c6bank.com.br', 'Original': 'original.com.br', 'Banco Original': 'original.com.br', 'Neon': 'neon.com.br', 'Pan': 'bancopan.com.br', 'Banco Pan': 'bancopan.com.br', 'BTG': 'btgpactual.com', 'BTG Pactual': 'btgpactual.com', 'Sicredi': 'sicredi.com.br', 'Sicoob': 'sicoob.com.br', 'Mercado Pago': 'mercadopago.com.br', 'PicPay': 'picpay.com', 'PagSeguro': 'pagseguro.uol.com.br', 'Banrisul': 'banrisul.com.br'
+                'banco do brasil': 'bb.com.br', 'santander': 'santander.com.br', 'caixa': 'caixa.gov.br', 'bradesco': 'bradesco.com.br', 'itau': 'itau.com.br', 'itaú': 'itau.com.br', 'nubank': 'nubank.com.br', 'inter': 'bancointer.com.br', 'c6': 'c6bank.com.br', 'original': 'original.com.br', 'neon': 'neon.com.br', 'pan': 'bancopan.com.br', 'btg': 'btgpactual.com', 'sicredi': 'sicredi.com.br', 'sicoob': 'sicoob.com.br', 'mercado pago': 'mercadopago.com.br', 'picpay': 'picpay.com', 'pagseguro': 'pagseguro.uol.com.br', 'banrisul': 'banrisul.com.br'
             };
             let domain = null;
-            for (let key in domainMap) { if (bankName.includes(key)) { domain = domainMap[key]; break; } }
+            for (let key in domainMap) { if (nameToMatch.includes(key)) { domain = domainMap[key]; break; } }
             if (domain) return `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" class="bank-logo" alt="logo">`;
             return '🏦 '; 
         }
@@ -1490,15 +1501,8 @@
             }
         }
 
-        window.toggleGroupCollapse = function(groupId) {
-            estadoColapsoGrupos[groupId] = !estadoColapsoGrupos[groupId];
-            renderList();
-        }
-
-        window.toggleSubGroupCollapse = function(subGroupId) {
-            estadoColapsoGrupos[subGroupId] = !estadoColapsoGrupos[subGroupId];
-            renderList();
-        }
+        window.toggleGroupCollapse = function(groupId) { estadoColapsoGrupos[groupId] = !estadoColapsoGrupos[groupId]; renderList(); }
+        window.toggleSubGroupCollapse = function(subGroupId) { estadoColapsoGrupos[subGroupId] = !estadoColapsoGrupos[subGroupId]; renderList(); }
 
         function montarHtmlDoItem(t) {
             const isRec = t.type === 'receber';
@@ -1520,19 +1524,16 @@
                         let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
                         iconHtml = getBankLogo(nomeCurto);
                         badgeText = `${cartaoInfo}${parcelamento} • Pago via ${iconHtml} ${nomeCurto}`;
-                    } else {
-                        badgeText = `${cartaoInfo}${parcelamento} • Fatura Pendente`;
-                    }
+                    } else { badgeText = `${cartaoInfo}${parcelamento} • Fatura Pendente`; }
                 } else if (t.method === 'conta') {
                     if (t.bank) {
                         let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
                         iconHtml = getBankLogo(nomeCurto);
                         badgeText = `${iconHtml} ${nomeCurto}`;
-                    } else {
-                        badgeText = '📄 Conta a Pagar';
-                    }
+                    } else { badgeText = '📄 Conta a Pagar'; }
                 } else { 
-                    if (t.bank) { let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} ${nomeCurto}`; } else { badgeText = '💵 Débito'; } 
+                    if (t.bank) { let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} ${nomeCurto}`; } 
+                    else { badgeText = '💵 Débito'; } 
                 }
             }
 
@@ -1563,8 +1564,7 @@
             listContainer.querySelectorAll('.group-container').forEach(g => g.remove());
 
             if (filtered.length === 0) {
-                listContainer.innerHTML = `<div class="empty-state">Nenhum lançamento encontrado para este mês.</div>`;
-                return;
+                listContainer.innerHTML = `<div class="empty-state">Nenhum lançamento encontrado para este mês.</div>`; return;
             }
             
             const existingEmpty = listContainer.querySelector('.empty-state');
@@ -1572,30 +1572,22 @@
 
             const grouped = {};
             filtered.forEach(t => {
-                let groupKey = '';
-                let subGroupKey = null;
+                let groupKey = ''; let subGroupKey = null;
 
-                if (t.type === 'transfer') {
-                    groupKey = 'Transferências entre Contas';
-                } else if (t.type === 'receber') {
+                if (t.type === 'transfer') { groupKey = 'Transferências entre Contas'; } 
+                else if (t.type === 'receber') {
                     groupKey = 'Entrada';
-                    if (t.bank && t.bank.trim() !== '') {
-                        subGroupKey = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
-                    }
+                    if (t.bank && t.bank.trim() !== '') subGroupKey = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
                 } else { 
                     if (t.method === 'credito') { 
                         groupKey = 'Cartão de Crédito';
                         subGroupKey = t.cardOrigin ? t.cardOrigin.trim() : 'Cartão Geral';
                     } else if (t.method === 'conta') { 
                         groupKey = 'Contas e Boletos';
-                        if (t.bank && t.bank.trim() !== '') {
-                            subGroupKey = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
-                        }
+                        if (t.bank && t.bank.trim() !== '') subGroupKey = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
                     } else { 
                         groupKey = 'Débito';
-                        if (t.bank && t.bank.trim() !== '') {
-                            subGroupKey = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
-                        }
+                        if (t.bank && t.bank.trim() !== '') subGroupKey = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
                     } 
                 }
 
@@ -1617,12 +1609,7 @@
                 groupDiv.className = 'group-container';
                 groupDiv.dataset.groupKey = groupKey;
 
-                let groupHtml = `
-                    <div class="group-header" onclick="toggleGroupCollapse('${groupId}')">
-                        <span>📂 ${groupKey}</span>
-                        <span>${isGroupCollapsed ? '➕' : '➖'}</span>
-                    </div>
-                `;
+                let groupHtml = `<div class="group-header" onclick="toggleGroupCollapse('${groupId}')"><span>📂 ${groupKey}</span><span>${isGroupCollapsed ? '➕' : '➖'}</span></div>`;
 
                 let contentHtml = `<div class="group-content-wrapper" style="display: ${isGroupCollapsed ? 'none' : 'flex'};">`;
                 const subGroupObj = grouped[groupKey].subGroups;
@@ -1637,35 +1624,20 @@
 
                         let botaoPagarFaturaHtml = '';
                         if (currentTab === 'pending') {
-                            if (groupKey === 'Cartão de Crédito') {
-                                botaoPagarFaturaHtml = `<button class="group-action-btn" onclick="event.stopPropagation(); confirmarFaturaOuGrupo('card', '${subKey}')">✓ Pagar Fatura</button>`;
-                            } else if (groupKey === 'Contas e Boletos') {
-                                botaoPagarFaturaHtml = `<button class="group-action-btn" onclick="event.stopPropagation(); confirmarFaturaOuGrupo('conta', '${subKey}')">✓ Pagar Contas</button>`;
-                            }
+                            if (groupKey === 'Cartão de Crédito') botaoPagarFaturaHtml = `<button class="group-action-btn" onclick="event.stopPropagation(); confirmarFaturaOuGrupo('card', '${subKey}')">✓ Pagar Fatura</button>`;
+                            else if (groupKey === 'Contas e Boletos') botaoPagarFaturaHtml = `<button class="group-action-btn" onclick="event.stopPropagation(); confirmarFaturaOuGrupo('conta', '${subKey}')">✓ Pagar Contas</button>`;
                         }
 
-                        contentHtml += `
-                            <div class="subgroup-header" onclick="toggleSubGroupCollapse('${subGroupId}')">
-                                <span style="display:flex; align-items:center;">${logoHtml} ${subKey}</span>
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    ${botaoPagarFaturaHtml}
-                                    <span>${isSubCollapsed ? '➕' : '➖'}</span>
-                                </div>
-                            </div>
-                        `;
+                        contentHtml += `<div class="subgroup-header" onclick="toggleSubGroupCollapse('${subGroupId}')"><span style="display:flex; align-items:center;">${logoHtml} ${subKey}</span><div style="display:flex; align-items:center; gap:8px;">${botaoPagarFaturaHtml}<span>${isSubCollapsed ? '➕' : '➖'}</span></div></div>`;
                         contentHtml += `<div class="subgroup-content-wrapper transaction-list" style="display: ${isSubCollapsed ? 'none' : 'flex'};">`;
-                        subGroupObj[subKey].forEach(t => {
-                            contentHtml += `<div class="transaction-item">${montarHtmlDoItem(t)}</div>`;
-                        });
+                        subGroupObj[subKey].forEach(t => { contentHtml += `<div class="transaction-item">${montarHtmlDoItem(t)}</div>`; });
                         contentHtml += `</div>`;
                     });
                 }
 
                 if (directItems.length > 0) {
                     contentHtml += `<div class="transaction-list">`;
-                    directItems.forEach(t => {
-                        contentHtml += `<div class="transaction-item">${montarHtmlDoItem(t)}</div>`;
-                    });
+                    directItems.forEach(t => { contentHtml += `<div class="transaction-item">${montarHtmlDoItem(t)}</div>`; });
                     contentHtml += `</div>`;
                 }
                 contentHtml += `</div>`;
@@ -1685,13 +1657,7 @@
         }
 
         function obterCategoriaRelatorio(t) {
-            if (t.type === 'pagar' && t.method === 'credito' && t.cardOrigin && t.cardOrigin.trim() !== '') {
-                const origemLimpa = t.cardOrigin.trim(); const origemLower = origemLimpa.toLowerCase();
-                if (origemLower.includes('c6')) return 'Cartão C6 Bank'; if (origemLower.includes('nubank')) return 'Cartão Nubank';
-                if (origemLower.includes('itau') || origemLower.includes('itaú')) return 'Cartão Itaú';
-                if (origemLower.includes('mastercard')) return 'Cartão Mastercard'; if (origemLower.includes('visa')) return 'Cartão Visa';
-                return `Cartão ${origemLimpa}`;
-            }
+            if (t.type === 'pagar' && t.method === 'credito' && t.cardOrigin && t.cardOrigin.trim() !== '') return t.cardOrigin.trim();
             return t.description;
         }
 
@@ -1712,28 +1678,21 @@
             });
 
             const diff = totalEntradas - totalSaidas;
-
-            const kpiMargem = document.getElementById('kpi-margin');
-            const kpiFlow = document.getElementById('kpi-flow');
-            const analysisText = document.getElementById('analysis-summary-text');
-            const compTitle = document.getElementById('chart-comparison-title');
+            const kpiMargem = document.getElementById('kpi-margin'); const kpiFlow = document.getElementById('kpi-flow');
+            const analysisText = document.getElementById('analysis-summary-text'); const compTitle = document.getElementById('chart-comparison-title');
 
             if (reportMode === 'month') {
                 const margem = totalEntradas > 0 ? ((diff / totalEntradas) * 100).toFixed(1) : 0;
-                const l1 = document.getElementById('label-kpi-1');
-                const l2 = document.getElementById('label-kpi-2');
-                if (l1) l1.textContent = "Margem Líquida";
-                if (l2) l2.textContent = "Fluxo Líquido";
+                const l1 = document.getElementById('label-kpi-1'); const l2 = document.getElementById('label-kpi-2');
+                if (l1) l1.textContent = "Margem Líquida"; if (l2) l2.textContent = "Fluxo Líquido";
                 if (kpiMargem) { kpiMargem.textContent = `${margem}%`; kpiMargem.className = margem >= 0 ? 'income-text' : 'expense-text'; }
                 if (kpiFlow) { kpiFlow.textContent = formatCurrency(diff); kpiFlow.className = diff >= 0 ? 'income-text' : 'expense-text'; }
                 if (analysisText) analysisText.innerHTML = `Total de Entradas: <strong class="income-text">${formatCurrency(totalEntradas)}</strong> | Total de Saídas: <strong class="expense-text">${formatCurrency(totalSaidas)}</strong><br><br>${diff >= 0 ? `✅ Excelente! Suas <strong>entradas superam as saídas</strong> em ${formatCurrency(diff)}.` : `⚠️ Alerta Executivo: Suas <strong>saídas superam as entradas</strong> em ${formatCurrency(Math.abs(diff))}.`}`;
                 if (compTitle) compTitle.textContent = "📊 Demonstrativo Mensal (Entradas vs Saídas)";
             } else {
                 const margemAnual = totalEntradas > 0 ? ((diff / totalEntradas) * 100).toFixed(1) : 0;
-                const l1 = document.getElementById('label-kpi-1');
-                const l2 = document.getElementById('label-kpi-2');
-                if (l1) l1.textContent = "Margem Anual";
-                if (l2) l2.textContent = "Fluxo Líquido Anual";
+                const l1 = document.getElementById('label-kpi-1'); const l2 = document.getElementById('label-kpi-2');
+                if (l1) l1.textContent = "Margem Anual"; if (l2) l2.textContent = "Fluxo Líquido Anual";
                 if (kpiMargem) { kpiMargem.textContent = `${margemAnual}%`; kpiMargem.className = margemAnual >= 0 ? 'income-text' : 'expense-text'; }
                 if (kpiFlow) { kpiFlow.textContent = formatCurrency(diff); kpiFlow.className = diff >= 0 ? 'income-text' : 'expense-text'; }
 
@@ -1752,18 +1711,14 @@
             const topExpRanking = document.getElementById('top-expenses-ranking');
             if (topExpRanking) {
                 topExpRanking.innerHTML = '';
-                Object.entries(agrupaSaidasDesc).sort((a, b) => b[1] - a[1]).slice(0, 3).forEach(([desc, val], idx) => {
-                    topExpRanking.innerHTML += `<div class="ranking-item"><span>#${idx+1} ${desc}</span><strong class="expense-text">${formatCurrency(val)}</strong></div>`;
-                });
+                Object.entries(agrupaSaidasDesc).sort((a, b) => b[1] - a[1]).slice(0, 3).forEach(([desc, val], idx) => { topExpRanking.innerHTML += `<div class="ranking-item"><span>#${idx+1} ${desc}</span><strong class="expense-text">${formatCurrency(val)}</strong></div>`; });
                 if(topExpRanking.innerHTML === '') topExpRanking.innerHTML = '<div class="empty-state">Sem dados de despesas.</div>';
             }
 
             const topIncRanking = document.getElementById('top-incomes-ranking');
             if (topIncRanking) {
                 topIncRanking.innerHTML = '';
-                Object.entries(agrupaEntradasOrigem).sort((a, b) => b[1] - a[1]).slice(0, 3).forEach(([orig, val], idx) => {
-                    topIncRanking.innerHTML += `<div class="ranking-item"><span>#${idx+1} ${orig}</span><strong class="income-text">${formatCurrency(val)}</strong></div>`;
-                });
+                Object.entries(agrupaEntradasOrigem).sort((a, b) => b[1] - a[1]).slice(0, 3).forEach(([orig, val], idx) => { topIncRanking.innerHTML += `<div class="ranking-item"><span>#${idx+1} ${orig}</span><strong class="income-text">${formatCurrency(val)}</strong></div>`; });
                 if(topIncRanking.innerHTML === '') topIncRanking.innerHTML = '<div class="empty-state">Sem dados de entradas.</div>';
             }
 
@@ -1831,48 +1786,23 @@
             try {
                 const editId = editIdInput ? editIdInput.value : ''; 
                 const selectedTypeEl = document.querySelector('input[name="type"]:checked');
-                if (!selectedTypeEl) {
-                    showToast("Selecione o tipo de transação.", "error");
-                    return;
-                }
+                if (!selectedTypeEl) return showToast("Selecione o tipo de transação.", "error");
                 const selectedType = selectedTypeEl.value; 
                 const totalAmount = parseFormattedValue(amountInput ? amountInput.value : ''); 
                 const baseDate = dateInput ? dateInput.value : ''; 
 
-                if (totalAmount <= 0 || !baseDate) {
-                    showToast("Preencha um valor e uma data válidos.", "error");
-                    return;
-                }
+                if (totalAmount <= 0 || !baseDate) return showToast("Preencha um valor e uma data válidos.", "error");
 
                 if (selectedType === 'transfer') {
                     const bOrigem = bankOriginSelect ? bankOriginSelect.value : '';
                     const bDestino = bankDestinationSelect ? bankDestinationSelect.value : '';
-                    if (!bOrigem || !bDestino) {
-                        showToast("Selecione o banco de origem e o destino.", "error");
-                        return;
-                    }
-                    if (bOrigem === bDestino) {
-                        showToast("Origem e destino devem ser diferentes.", "error");
-                        return;
-                    }
+                    if (!bOrigem || !bDestino) return showToast("Selecione a conta de origem e destino.", "error");
+                    if (bOrigem === bDestino) return showToast("Origem e destino devem ser diferentes.", "error");
 
                     if (dbTransactions) {
                         dbTransactions.push({
-                            type: 'transfer',
-                            description: 'Transferência entre Contas',
-                            amount: totalAmount,
-                            date: baseDate,
-                            bankOrigin: bOrigem,
-                            bankDestination: bDestino,
-                            done: true
-                        }).then(() => {
-                            showToast("Transferência salva!");
-                            cancelarEdicao(); // Fecha o formulário
-                        }).catch(err => {
-                            showToast("Erro ao salvar: " + err.message, "error");
-                        });
-                    } else {
-                        showToast("Erro: Banco de dados desconectado.", "error");
+                            type: 'transfer', description: 'Transferência entre Contas', amount: totalAmount, date: baseDate, bankOrigin: bOrigem, bankDestination: bDestino, done: true
+                        }).then(() => { showToast("Transferência salva!"); cancelarEdicao(); }).catch(err => { showToast("Erro ao salvar.", "error"); });
                     }
                 } else {
                     const description = descInput ? descInput.value.trim() : '';
@@ -1882,50 +1812,25 @@
                     
                     if (selectedType === 'receber' || (selectedType === 'pagar' && methodVal === 'debito')) {
                         bankSelected = bankSelect ? bankSelect.value : '';
-                        if (!bankSelected) {
-                            showToast("Selecione um banco.", "error");
-                            return;
-                        }
+                        if (!bankSelected) return showToast("Selecione uma conta.", "error");
                     }
                     if (selectedType === 'pagar' && methodVal === 'credito') {
                         cardOrigin = cardOriginSelect ? cardOriginSelect.value.trim() : '';
-                        if (!cardOrigin) {
-                            showToast("Selecione um cartão de crédito.", "error");
-                            return;
-                        }
+                        if (!cardOrigin) return showToast("Selecione um cartão de crédito.", "error");
                     }
-                    if (!description) {
-                        showToast("Preencha a descrição do lançamento.", "error");
-                        return;
-                    }
+                    if (!description) return showToast("Preencha a descrição.", "error");
 
                     const instInput = document.getElementById('installments');
                     const qtdParcelas = (selectedType === 'pagar' && methodVal === 'credito') ? (instInput ? (parseInt(instInput.value) || 1) : 1) : 1;
-                    
-                    const isDebitoDireto = (selectedType === 'pagar' && methodVal === 'debito');
-                    const statusDoneInicial = isDebitoDireto ? true : false;
+                    const statusDoneInicial = (selectedType === 'pagar' && methodVal === 'debito') ? true : false;
 
                     if (dbTransactions) {
                         if (editId) {
                             const transAntiga = transactions.find(item => item.id === editId); 
                             const statusDone = transAntiga ? !!transAntiga.done : statusDoneInicial;
                             dbTransactions.child(editId).update({ 
-                                type: selectedType, 
-                                description, 
-                                amount: totalAmount, 
-                                date: baseDate, 
-                                cardOrigin: cardOrigin || '', 
-                                bank: bankSelected || '', 
-                                method: methodVal, 
-                                installmentsNum: 1, 
-                                installmentsTotal: 1, 
-                                done: statusDone 
-                            }).then(() => {
-                                showToast("Lançamento atualizado!");
-                                cancelarEdicao(); // Fecha o formulário
-                            }).catch(err => {
-                                showToast("Erro ao atualizar: " + err.message, "error");
-                            });
+                                type: selectedType, description, amount: totalAmount, date: baseDate, cardOrigin: cardOrigin || '', bank: bankSelected || '', method: methodVal, installmentsNum: 1, installmentsTotal: 1, done: statusDone 
+                            }).then(() => { showToast("Lançamento atualizado!"); cancelarEdicao(); }).catch(err => showToast("Erro ao atualizar.", "error"));
                         } else {
                             const valorParcela = parseFloat((totalAmount / qtdParcelas).toFixed(2));
                             let [ano, mes, dia] = baseDate.split('-').map(Number);
@@ -1938,35 +1843,15 @@
                                 let diaStr = String(novaData.getDate()).padStart(2, '0');
                                 
                                 let p = dbTransactions.push({ 
-                                    type: selectedType, 
-                                    description: qtdParcelas > 1 ? `${description} (${i + 1}/${qtdParcelas})` : description, 
-                                    amount: valorParcela, 
-                                    date: `${anoStr}-${mesStr}-${diaStr}`, 
-                                    cardOrigin: cardOrigin || '', 
-                                    bank: bankSelected || '', 
-                                    method: methodVal, 
-                                    installmentsNum: i + 1, 
-                                    installmentsTotal: qtdParcelas, 
-                                    done: statusDoneInicial 
+                                    type: selectedType, description: qtdParcelas > 1 ? `${description} (${i + 1}/${qtdParcelas})` : description, amount: valorParcela, date: `${anoStr}-${mesStr}-${diaStr}`, cardOrigin: cardOrigin || '', bank: bankSelected || '', method: methodVal, installmentsNum: i + 1, installmentsTotal: qtdParcelas, done: statusDoneInicial 
                                 });
                                 promessas.push(p);
                             }
-                            
-                            Promise.all(promessas).then(() => {
-                                showToast("Lançamento salvo com sucesso!");
-                                cancelarEdicao(); // Fecha o formulário para limpar a tela
-                            }).catch(err => {
-                                showToast("Erro ao salvar: " + err.message, "error");
-                            });
+                            Promise.all(promessas).then(() => { showToast("Lançamento salvo com sucesso!"); cancelarEdicao(); }).catch(err => showToast("Erro ao salvar.", "error"));
                         }
-                    } else {
-                        showToast("Erro: Banco desconectado.", "error");
                     }
                 }
-            } catch(e) {
-                console.error("Erro crítico no processarSalvamentoFormulario:", e);
-                showToast("Erro ao processar. Verifique o formulário.", "error");
-            }
+            } catch(e) { showToast("Erro ao processar.", "error"); }
         };
     </script>
 </body>
