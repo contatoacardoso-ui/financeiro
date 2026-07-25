@@ -585,7 +585,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.4.0"; 
+        const VERSAO_CODIGO = "1.4.1"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -1321,7 +1321,7 @@
                         groupKey = 'Contas e Boletos';
                         subGroupKey = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : (currentTab === 'done' ? 'Contas Pagas' : 'Pendentes');
                     } else { 
-                        groupKey = 'Saída (Débito)';
+                        groupKey = 'Saída';
                         subGroupKey = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : 'Diversos';
                     } 
                 }
