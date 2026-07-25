@@ -595,7 +595,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.4.13"; 
+        const VERSAO_CODIGO = "1.4.14"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -1520,7 +1520,7 @@
                             subGroupKey = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
                         }
                     } else { 
-                        groupKey = 'Saída';
+                        groupKey = 'Débito';
                         if (t.bank && t.bank.trim() !== '') {
                             subGroupKey = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
                         }
@@ -1830,11 +1830,15 @@
 
                     const instInput = document.getElementById('installments');
                     const qtdParcelas = (selectedType === 'pagar' && methodVal === 'credito') ? (instInput ? (parseInt(instInput.value) || 1) : 1) : 1;
+                    
+                    // Se for pagamento no débito (pagar com método débito), o status done deve ser true (vai direto para Realizados)
+                    const isDebitoDireto = (selectedType === 'pagar' && methodVal === 'debito');
+                    const statusDoneInicial = isDebitoDireto ? true : false;
 
                     if (dbTransactions) {
                         if (editId) {
                             const transAntiga = transactions.find(item => item.id === editId); 
-                            const statusDone = transAntiga ? !!transAntiga.done : false;
+                            const statusDone = transAntiga ? !!transAntiga.done : statusDoneInicial;
                             dbTransactions.child(editId).update({ 
                                 type: selectedType, 
                                 description, 
@@ -1873,7 +1877,7 @@
                                     method: methodVal, 
                                     installmentsNum: i + 1, 
                                     installmentsTotal: qtdParcelas, 
-                                    done: false 
+                                    done: statusDoneInicial 
                                 });
                                 promessas.push(p);
                             }
