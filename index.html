@@ -266,7 +266,7 @@
             .kpi-grid { width: 100%; }
             .top-rankings-wrapper { display: flex !important; flex-direction: row !important; gap: 10px !important; width: 100% !important; }
             .ranking-column { flex: 1 !important; width: 50% !important; }
-            .detailed-report-list { max-height: none !important; overflow: visible !important; display: flex !important; flex-direction: column !important; gap: 6px !important; width: 100%; }
+            .detailed-report-list { max-height: none !important; overflow: visible !important; display: flex !important; flex-direction: column !important; gap: 6mm !important; width: 100%; }
             .income-text { color: #008000 !important; }
             .expense-text { color: #ff0000 !important; }
         }
@@ -295,15 +295,15 @@
         </div>
     </div>
 
-    <!-- Tela de Login (Inicia oculta por padrão para evitar piscar) -->
+    <!-- Tela de Login -->
     <div id="login-screen" style="display: none;">
         <div class="login-card">
             <div class="login-icon">🔒</div>
             <h2>Acesso Restrito</h2>
             <p>Informe seu usuário e senha</p>
             <form id="login-form">
-                <input type="text" id="login-username" placeholder="Nome do Usuário" required autocomplete="username">
-                <input type="password" id="login-password" placeholder="Sua Senha" required autocomplete="current-password">
+                <input type="text" id="login-username" placeholder="Nome do Usuário" autocomplete="username">
+                <input type="password" id="login-password" placeholder="Sua Senha" autocomplete="current-password">
                 <label class="remember-container"><input type="checkbox" id="remember-me" checked> Lembrar senha neste aparelho</label>
                 <div class="login-error" id="login-error">Usuário ou senha incorretos.</div>
                 <button type="submit" class="submit-btn">Entrar</button>
@@ -497,7 +497,7 @@
                         <input type="date" id="due-date">
                     </div>
 
-                    <button type="submit" class="submit-btn" id="btn-salvar-lancamento">Salvar Lançamento</button>
+                    <button type="button" class="submit-btn" id="btn-salvar-lancamento" onclick="processarSalvamentoFormulario()">Salvar Lançamento</button>
                     <button type="button" id="btn-cancelar-edicao" onclick="cancelarEdicao()" style="display:none; width:100%; padding:10px; background:none; border:1px solid var(--border); border-radius:8px; color:var(--text-secondary); margin-top:8px; cursor:pointer;">Cancelar Edição</button>
                 </form>
             </div>
@@ -595,7 +595,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.4.12"; 
+        const VERSAO_CODIGO = "1.4.13"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -1755,23 +1755,35 @@
             }
         }
 
-        if (form) {
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
+        window.processarSalvamentoFormulario = function() {
+            try {
+                console.log("Iniciando salvamento do formulário...");
                 const editId = editIdInput ? editIdInput.value : ''; 
                 const selectedTypeEl = document.querySelector('input[name="type"]:checked');
-                if (!selectedTypeEl) return;
+                if (!selectedTypeEl) {
+                    alert("Selecione o tipo de transação.");
+                    return;
+                }
                 const selectedType = selectedTypeEl.value; 
                 const totalAmount = parseFormattedValue(amountInput ? amountInput.value : ''); 
                 const baseDate = dateInput ? dateInput.value : ''; 
 
-                if (totalAmount <= 0 || !baseDate) return alert("Preencha um valor e uma data válidos.");
+                if (totalAmount <= 0 || !baseDate) {
+                    alert("Preencha um valor e uma data válidos.");
+                    return;
+                }
 
                 if (selectedType === 'transfer') {
                     const bOrigem = bankOriginSelect ? bankOriginSelect.value : '';
                     const bDestino = bankDestinationSelect ? bankDestinationSelect.value : '';
-                    if (!bOrigem || !bDestino) return alert("Selecione o banco de origem e o banco de destino.");
-                    if (bOrigem === bDestino) return alert("O banco de origem e o destino devem ser diferentes.");
+                    if (!bOrigem || !bDestino) {
+                        alert("Selecione o banco de origem e o banco de destino.");
+                        return;
+                    }
+                    if (bOrigem === bDestino) {
+                        alert("O banco de origem e o destino devem ser diferentes.");
+                        return;
+                    }
 
                     if (dbTransactions) {
                         dbTransactions.push({
@@ -1782,7 +1794,14 @@
                             bankOrigin: bOrigem,
                             bankDestination: bDestino,
                             done: true
+                        }).then(() => {
+                            console.log("Transferência salva com sucesso!");
+                        }).catch(err => {
+                            console.error("Erro Firebase Transferência:", err);
+                            alert("Erro ao salvar no Firebase: " + err.message);
                         });
+                    } else {
+                        alert("Erro: Banco de dados não conectado.");
                     }
                 } else {
                     const description = descInput ? descInput.value.trim() : '';
@@ -1792,13 +1811,22 @@
                     
                     if (selectedType === 'receber' || (selectedType === 'pagar' && methodVal === 'debito')) {
                         bankSelected = bankSelect ? bankSelect.value : '';
-                        if (!bankSelected) return alert("Selecione um banco.");
+                        if (!bankSelected) {
+                            alert("Selecione um banco.");
+                            return;
+                        }
                     }
                     if (selectedType === 'pagar' && methodVal === 'credito') {
                         cardOrigin = cardOriginSelect ? cardOriginSelect.value.trim() : '';
-                        if (!cardOrigin) return alert("Selecione um cartão de crédito.");
+                        if (!cardOrigin) {
+                            alert("Selecione um cartão de crédito.");
+                            return;
+                        }
                     }
-                    if (!description) return alert("Preencha a descrição do lançamento.");
+                    if (!description) {
+                        alert("Preencha a descrição do lançamento.");
+                        return;
+                    }
 
                     const instInput = document.getElementById('installments');
                     const qtdParcelas = (selectedType === 'pagar' && methodVal === 'credito') ? (instInput ? (parseInt(instInput.value) || 1) : 1) : 1;
@@ -1807,23 +1835,66 @@
                         if (editId) {
                             const transAntiga = transactions.find(item => item.id === editId); 
                             const statusDone = transAntiga ? !!transAntiga.done : false;
-                            dbTransactions.child(editId).update({ type: selectedType, description, amount: totalAmount, date: baseDate, cardOrigin: cardOrigin || '', bank: bankSelected || '', method: methodVal, installmentsNum: 1, installmentsTotal: 1, done: statusDone });
+                            dbTransactions.child(editId).update({ 
+                                type: selectedType, 
+                                description, 
+                                amount: totalAmount, 
+                                date: baseDate, 
+                                cardOrigin: cardOrigin || '', 
+                                bank: bankSelected || '', 
+                                method: methodVal, 
+                                installmentsNum: 1, 
+                                installmentsTotal: 1, 
+                                done: statusDone 
+                            }).then(() => {
+                                console.log("Lançamento atualizado com sucesso!");
+                            }).catch(err => {
+                                console.error("Erro Firebase Atualização:", err);
+                                alert("Erro ao atualizar no Firebase: " + err.message);
+                            });
                         } else {
                             const valorParcela = parseFloat((totalAmount / qtdParcelas).toFixed(2));
                             let [ano, mes, dia] = baseDate.split('-').map(Number);
+                            
+                            let promessas = [];
                             for (let i = 0; i < qtdParcelas; i++) {
                                 let novaData = new Date(ano, mes - 1 + i, dia); 
                                 let anoStr = novaData.getFullYear(); 
                                 let mesStr = String(novaData.getMonth() + 1).padStart(2, '0'); 
                                 let diaStr = String(novaData.getDate()).padStart(2, '0');
-                                dbTransactions.push({ type: selectedType, description: qtdParcelas > 1 ? `${description} (${i + 1}/${qtdParcelas})` : description, amount: valorParcela, date: `${anoStr}-${mesStr}-${diaStr}`, cardOrigin: cardOrigin || '', bank: '', method: methodVal, installmentsNum: i + 1, installmentsTotal: qtdParcelas, done: false });
+                                
+                                let p = dbTransactions.push({ 
+                                    type: selectedType, 
+                                    description: qtdParcelas > 1 ? `${description} (${i + 1}/${qtdParcelas})` : description, 
+                                    amount: valorParcela, 
+                                    date: `${anoStr}-${mesStr}-${diaStr}`, 
+                                    cardOrigin: cardOrigin || '', 
+                                    bank: bankSelected || '', 
+                                    method: methodVal, 
+                                    installmentsNum: i + 1, 
+                                    installmentsTotal: qtdParcelas, 
+                                    done: false 
+                                });
+                                promessas.push(p);
                             }
+                            
+                            Promise.all(promessas).then(() => {
+                                console.log("Lançamento(s) salvo(s) com sucesso no Firebase!");
+                            }).catch(err => {
+                                console.error("Erro Firebase Inclusão:", err);
+                                alert("Erro ao salvar no Firebase: " + err.message);
+                            });
                         }
+                    } else {
+                        alert("Erro: Banco de dados não conectado.");
                     }
                 }
                 cancelarEdicao();
-            });
-        }
+            } catch(e) {
+                console.error("Erro crítico no processarSalvamentoFormulario:", e);
+                alert("Ocorreu um erro ao processar o formulário. Verifique o console.");
+            }
+        };
     </script>
 </body>
 </html>
