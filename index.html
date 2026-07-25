@@ -193,6 +193,9 @@
         .group-content-wrapper { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; }
         .subgroup-content-wrapper { display: flex; flex-direction: column; gap: 8px; padding: 4px 0 8px 16px; }
 
+        .group-action-btn { background: rgba(0, 179, 126, 0.15); border: 1px solid var(--unified-pos); color: var(--unified-pos); font-size: 0.75rem; padding: 4px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+        .group-action-btn:hover { background: rgba(0, 179, 126, 0.25); }
+
         .transaction-list { display: flex; flex-direction: column; gap: 8px; }
         .transaction-item {
             background-color: var(--card-bg); border: 1px solid var(--border); padding: 12px; border-radius: 8px;
@@ -435,7 +438,13 @@
 
                         <div class="form-group" id="card-group">
                             <label for="card-origin">Nome do Cartão (Crédito)</label>
-                            <input type="text" id="card-origin" placeholder="Ex: Cartão C6 Bank, Cartão Nubank" autocomplete="off">
+                            <select id="card-origin">
+                                <option value="" disabled selected>Selecione ou adicione um cartão</option>
+                                <option value="Cartão C6 Bank">Cartão C6 Bank</option>
+                                <option value="Cartão Nubank">Cartão Nubank</option>
+                                <option value="Cartão Itaú">Cartão Itaú</option>
+                                <option value="Outro Cartão...">➕ Outro Cartão...</option>
+                            </select>
                         </div>
 
                         <div id="credit-fields">
@@ -585,7 +594,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.4.1"; 
+        const VERSAO_CODIGO = "1.4.2"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -628,7 +637,9 @@
         let currentTab = 'report';
         let reportMode = 'month';
         let transactionToConfirmId = null;
-        
+        let bulkActionType = null; // 'card' ou 'conta'
+        let bulkTargetName = null; // Nome do cartão ou da conta
+
         const estadoColapsoGrupos = {};
 
         const hojeObj = new Date();
@@ -658,7 +669,7 @@
         const amountInput = document.getElementById('amount');
         const dateInput = document.getElementById('due-date');
         const dateLabel = document.getElementById('date-label');
-        const cardOriginInput = document.getElementById('card-origin');
+        const cardOriginSelect = document.getElementById('card-origin');
         
         const bankGroup = document.getElementById('bank-group');
         const bankLabel = document.getElementById('bank-label');
@@ -699,11 +710,60 @@
             atualizacaoAgendada = true;
             requestAnimationFrame(() => {
                 atualizacaoAgendada = false;
+                atualizarOpcoesCartoesForm();
                 gerarFiltroDeMeses();
                 updateDashboard();
                 renderView();
             });
         }
+
+        function atualizarOpcoesCartoesForm() {
+            const cartoesSet = new Set(["Cartão C6 Bank", "Cartão Nubank", "Cartão Itaú"]);
+            transactions.forEach(t => {
+                if (t.cardOrigin && t.cardOrigin.trim() !== '') {
+                    cartoesSet.add(t.cardOrigin.trim());
+                }
+            });
+
+            const valorAtual = cardOriginSelect.value;
+            cardOriginSelect.innerHTML = '';
+            
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = "";
+            defaultOpt.disabled = true;
+            defaultOpt.selected = !valorAtual;
+            defaultOpt.textContent = "Selecione o cartão";
+            cardOriginSelect.appendChild(defaultOpt);
+
+            Array.from(cartoesSet).sort().forEach(cartao => {
+                const opt = document.createElement('option');
+                opt.value = cartao;
+                opt.textContent = cartao;
+                if (cartao === valorAtual) opt.selected = true;
+                cardOriginSelect.appendChild(opt);
+            });
+
+            const outroOpt = document.createElement('option');
+            outroOpt.value = "OUTRO_CARTAO_CUSTOM";
+            outroOpt.textContent = "➕ Outro Cartão...";
+            cardOriginSelect.appendChild(outroOpt);
+        }
+
+        cardOriginSelect.addEventListener('change', (e) => {
+            if (e.target.value === "OUTRO_CARTAO_CUSTOM") {
+                const novoCartao = prompt("Digite o nome do novo cartão (ex: Cartão Santander):");
+                if (novoCartao && novoCartao.trim() !== "") {
+                    const nomeFormatado = novoCartao.trim();
+                    const opt = document.createElement('option');
+                    opt.value = nomeFormatado;
+                    opt.textContent = nomeFormatado;
+                    cardOriginSelect.insertBefore(opt, cardOriginSelect.lastElementChild);
+                    cardOriginSelect.value = nomeFormatado;
+                } else {
+                    cardOriginSelect.value = "";
+                }
+            }
+        });
 
         window.addEventListener('DOMContentLoaded', () => {
             verificarAtualizacaoDoApp();
@@ -1046,6 +1106,7 @@
 
             if (t.type === 'pagar' && (t.method === 'conta' || t.method === 'credito') && !t.bank) {
                 transactionToConfirmId = id;
+                bulkActionType = null;
                 const modalOverlay = document.getElementById('bank-modal-overlay');
                 const listEl = document.getElementById('bank-options-list');
                 const titleEl = document.getElementById('modal-title-text');
@@ -1076,24 +1137,80 @@
             }
         }
 
+        window.confirmarFaturaOuGrupo = function(tipoAcao, nomeAlvo) {
+            bulkActionType = tipoAcao;
+            bulkTargetName = nomeAlvo;
+            transactionToConfirmId = null;
+
+            const modalOverlay = document.getElementById('bank-modal-overlay');
+            const listEl = document.getElementById('bank-options-list');
+            const titleEl = document.getElementById('modal-title-text');
+            const subEl = document.getElementById('modal-subtitle-text');
+
+            titleEl.textContent = tipoAcao === 'card' ? `💳 Pagar Fatura: ${nomeAlvo}` : `📄 Pagar Subgrupo: ${nomeAlvo}`;
+            subEl.textContent = `De qual banco saiu o dinheiro para o pagamento?`;
+
+            listEl.innerHTML = '';
+            LISTA_BANCOS_PADRAO.forEach(banco => {
+                let nomeCurto = banco.includes('-') ? banco.split('-')[1].trim() : banco;
+                let logoHtml = getBankLogo(nomeCurto);
+                listEl.innerHTML += `
+                    <button class="bank-option-btn" onclick="selecionarBancoModal('${banco}')">
+                        ${logoHtml} <span>${banco}</span>
+                    </button>
+                `;
+            });
+            listEl.innerHTML += `
+                <button class="bank-option-btn" onclick="selecionarOutroBancoModal()" style="color:var(--primary); font-weight:bold;">
+                    ➕ Outro Banco...
+                </button>
+            `;
+
+            modalOverlay.style.display = 'flex';
+        }
+
         window.fecharModalBanco = function() {
             document.getElementById('bank-modal-overlay').style.display = 'none';
             transactionToConfirmId = null;
+            bulkActionType = null;
+            bulkTargetName = null;
         }
 
         window.selecionarBancoModal = function(bancoEscolhido) {
-            if (transactionToConfirmId && dbTransactions) {
+            if (!dbTransactions) return;
+            if (transactionToConfirmId) {
                 dbTransactions.child(transactionToConfirmId).update({ done: true, bank: bancoEscolhido });
+            } else if (bulkActionType && bulkTargetName) {
+                const pendentesFiltrados = transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey) && !t.done && t.type !== 'transfer');
+                
+                let atualizacoes = {};
+                pendentesFiltrados.forEach(t => {
+                    let match = false;
+                    if (bulkActionType === 'card' && t.method === 'credito' && (t.cardOrigin || 'Cartão Geral') === bulkTargetName) {
+                        match = true;
+                    } else if (bulkActionType === 'conta' && t.method === 'conta') {
+                        let subGroupKey = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : 'Pendentes';
+                        if (subGroupKey === bulkTargetName) match = true;
+                    }
+                    if (match) {
+                        atualizacoes[`${t.id}/done`] = true;
+                        atualizacoes[`${t.id}/bank`] = bancoEscolhido;
+                    }
+                });
+                if (Object.keys(atualizacoes).length > 0) {
+                    dbTransactions.update(atualizacoes);
+                }
             }
             fecharModalBanco();
         }
 
         window.selecionarOutroBancoModal = function() {
             const outro = prompt("Digite o nome do banco:");
-            if (outro && outro.trim() !== "" && transactionToConfirmId && dbTransactions) {
-                dbTransactions.child(transactionToConfirmId).update({ done: true, bank: outro.trim() });
+            if (outro && outro.trim() !== "") {
+                selecionarBancoModal(outro.trim());
+            } else {
+                fecharModalBanco();
             }
-            fecharModalBanco();
         }
 
         window.deleteTransaction = function(id) { if(confirm("Deseja apagar este lançamento?") && dbTransactions) dbTransactions.child(id).remove(); }
@@ -1119,7 +1236,7 @@
                     document.getElementById('method-credito').checked = true;
                     toggleMethodFields('credito');
                     document.getElementById('installments').value = t.installmentsTotal || 1;
-                    cardOriginInput.value = t.cardOrigin || '';
+                    cardOriginSelect.value = t.cardOrigin || '';
                 } else if (t.method === 'conta') {
                     document.getElementById('method-conta').checked = true;
                     toggleMethodFields('conta');
@@ -1372,10 +1489,22 @@
                         const isSubCollapsed = !!estadoColapsoGrupos[subGroupId];
                         let logoHtml = getBankLogo(subKey);
 
+                        let botaoPagarFaturaHtml = '';
+                        if (currentTab === 'pending') {
+                            if (groupKey === 'Cartão de Crédito') {
+                                botaoPagarFaturaHtml = `<button class="group-action-btn" onclick="event.stopPropagation(); confirmarFaturaOuGrupo('card', '${subKey}')">✓ Pagar Fatura</button>`;
+                            } else if (groupKey === 'Contas e Boletos') {
+                                botaoPagarFaturaHtml = `<button class="group-action-btn" onclick="event.stopPropagation(); confirmarFaturaOuGrupo('conta', '${subKey}')">✓ Pagar Contas</button>`;
+                            }
+                        }
+
                         contentHtml += `
                             <div class="subgroup-header" onclick="toggleSubGroupCollapse('${subGroupId}')">
                                 <span style="display:flex; align-items:center;">${logoHtml} ${subKey}</span>
-                                <span>${isSubCollapsed ? '➕' : '➖'}</span>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    ${botaoPagarFaturaHtml}
+                                    <span>${isSubCollapsed ? '➕' : '➖'}</span>
+                                </div>
                             </div>
                         `;
                         contentHtml += `<div class="subgroup-content-wrapper transaction-list" style="display: ${isSubCollapsed ? 'none' : 'flex'};">`;
@@ -1553,7 +1682,10 @@
                 let cardOrigin = ''; let bankSelected = '';
                 
                 if (selectedType === 'receber' || (selectedType === 'pagar' && methodVal === 'debito')) bankSelected = bankSelect.value;
-                if (selectedType === 'pagar' && methodVal === 'credito') cardOrigin = cardOriginInput.value.trim();
+                if (selectedType === 'pagar' && methodVal === 'credito') {
+                    cardOrigin = cardOriginSelect.value.trim();
+                    if (!cardOrigin) return alert("Selecione um cartão de crédito.");
+                }
                 if (!description) return;
 
                 const qtdParcelas = selectedType === 'pagar' && methodVal === 'credito' ? (parseInt(document.getElementById('installments').value) || 1) : 1;
