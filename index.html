@@ -458,7 +458,7 @@
                     
                     <div class="form-group" id="bank-group">
                         <label id="bank-label">Banco de Destino</label>
-                        <select id="bank-select" required>
+                        <select id="bank-select">
                             <option value="" disabled selected>Selecione um banco</option>
                             <option value="260 - Nubank">260 - Nubank</option>
                             <option value="341 - Itaú">341 - Itaú</option>
@@ -484,17 +484,17 @@
 
                     <div class="form-group" id="desc-group">
                         <label for="description">Descrição do Lançamento</label>
-                        <input type="text" id="description" placeholder="Ex: Salario, Rendimento, Investimento..." required autocomplete="off">
+                        <input type="text" id="description" placeholder="Ex: Salario, Rendimento, Investimento..." autocomplete="off">
                     </div>
 
                     <div class="form-group">
                         <label for="amount">Valor Total (R$)</label>
-                        <input type="text" id="amount" placeholder="0,00" required inputmode="numeric">
+                        <input type="text" id="amount" placeholder="0,00" inputmode="numeric">
                     </div>
 
                     <div class="form-group">
                         <label for="due-date" id="date-label">Data de Recebimento</label>
-                        <input type="date" id="due-date" required>
+                        <input type="date" id="due-date">
                     </div>
 
                     <button type="submit" class="submit-btn" id="btn-salvar-lancamento">Salvar Lançamento</button>
@@ -595,7 +595,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.4.9"; 
+        const VERSAO_CODIGO = "1.4.10"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -727,6 +727,17 @@
 
             if (loginForm) {
                 loginForm.addEventListener('submit', handleLoginSubmit);
+            }
+
+            if (amountInput) {
+                amountInput.addEventListener('input', (e) => {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (!value) { e.target.value = ''; return; }
+                    let numValue = (parseFloat(value) / 100).toFixed(2);
+                    let parts = numValue.split('.');
+                    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                    e.target.value = parts.join(',');
+                });
             }
         });
 
@@ -965,23 +976,17 @@
             
             if (tipo === 'receber') {
                 if (descGroup) descGroup.style.display = 'block';
-                if (descInput) { descInput.required = true; descInput.placeholder = "Ex: Salario, Rendimento, Investimento..."; }
+                if (descInput) { descInput.placeholder = "Ex: Salario, Rendimento, Investimento..."; }
                 if (bankGroup) bankGroup.style.display = 'block';
                 if (bankLabel) bankLabel.textContent = 'Banco de Destino (Recebimento)';
-                if (bankSelect) bankSelect.required = true;
             } else if (tipo === 'pagar') {
                 if (descGroup) descGroup.style.display = 'block';
-                if (descInput) descInput.required = true;
                 const methodEl = document.querySelector('input[name="method"]:checked');
                 const methodVal = methodEl ? methodEl.value : 'debito';
                 toggleMethodFields(methodVal);
             } else if (tipo === 'transfer') {
                 if (bankGroup) bankGroup.style.display = 'none';
-                if (bankSelect) bankSelect.required = false;
                 if (descGroup) descGroup.style.display = 'none';
-                if (descInput) descInput.required = false;
-                if (bankOriginSelect) bankOriginSelect.required = true;
-                if (bankDestinationSelect) bankDestinationSelect.required = true;
             }
             atualizarRotuloData();
         }
@@ -1002,11 +1007,9 @@
 
             if (isCredito || isConta) {
                 if (bankGroup) bankGroup.style.display = 'none';
-                if (bankSelect) bankSelect.required = false;
             } else {
                 if (bankGroup) bankGroup.style.display = 'block';
                 if (bankLabel) bankLabel.textContent = 'Banco de Origem (Débito)';
-                if (bankSelect) bankSelect.required = true;
             }
             atualizarRotuloData();
         }
@@ -1110,17 +1113,6 @@
                 monthSelector.querySelectorAll('.month-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.monthKey === key));
             }
             renderView();
-        }
-
-        if (amountInput) {
-            amountInput.addEventListener('input', (e) => {
-                let value = e.target.value.replace(/\D/g, '');
-                if (!value) { e.target.value = ''; return; }
-                let numValue = (parseFloat(value) / 100).toFixed(2);
-                let parts = numValue.split('.');
-                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                e.target.value = parts.join(',');
-            });
         }
 
         function parseFormattedValue(value) { if (!value) return 0; return parseFloat(value.replace(/\./g, '').replace(',', '.')) || 0; }
@@ -1773,7 +1765,7 @@
                 const totalAmount = parseFormattedValue(amountInput ? amountInput.value : ''); 
                 const baseDate = dateInput ? dateInput.value : ''; 
 
-                if (totalAmount <= 0 || !baseDate) return;
+                if (totalAmount <= 0 || !baseDate) return alert("Preencha um valor e uma data válidos.");
 
                 if (selectedType === 'transfer') {
                     const bOrigem = bankOriginSelect ? bankOriginSelect.value : '';
@@ -1800,12 +1792,13 @@
                     
                     if (selectedType === 'receber' || (selectedType === 'pagar' && methodVal === 'debito')) {
                         bankSelected = bankSelect ? bankSelect.value : '';
+                        if (!bankSelected) return alert("Selecione um banco.");
                     }
                     if (selectedType === 'pagar' && methodVal === 'credito') {
                         cardOrigin = cardOriginSelect ? cardOriginSelect.value.trim() : '';
                         if (!cardOrigin) return alert("Selecione um cartão de crédito.");
                     }
-                    if (!description) return;
+                    if (!description) return alert("Preencha a descrição do lançamento.");
 
                     const instInput = document.getElementById('installments');
                     const qtdParcelas = selectedType === 'pagar' && methodVal === 'credito' ? (instInput ? (parseInt(instInput.value) || 1) : 1) : 1;
