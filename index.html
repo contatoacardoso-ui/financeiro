@@ -37,16 +37,21 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-color); color: var(--text-color); padding: 16px; padding-bottom: 60px; }
 
-        #update-toast {
+        /* Estilo do Toast Universal Melhorado */
+        #app-toast {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
             background: linear-gradient(135deg, #1d1d22 0%, #29292e 100%);
             border: 1px solid var(--primary); color: var(--text-color); padding: 12px 20px;
             border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 20000;
-            display: flex; align-items: center; gap: 10px; font-size: 0.85rem; font-weight: 500;
+            display: flex; align-items: center; gap: 12px; font-size: 0.85rem; font-weight: 500;
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0;
+            min-width: 280px;
         }
-        #update-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        #update-toast span { color: var(--primary); font-size: 1.2rem; }
+        #app-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        #toast-icon { font-size: 1.5rem; }
+        .toast-success { border-color: var(--unified-pos) !important; }
+        .toast-error { border-color: var(--unified-neg) !important; }
+        .toast-info { border-color: var(--primary) !important; }
 
         /* Estilo do Modal de Seleção de Banco */
         #bank-modal-overlay {
@@ -95,7 +100,7 @@
         .login-card input {
             text-align: center; font-size: 1rem; padding: 12px; margin-bottom: 14px;
             width: 100%; background-color: #121214; border: 1px solid var(--border);
-            border-radius: 8px; color: var(--text-color); outline: none;
+            border-radius: 8px; color: var(--text-color); outline: none; transition: border-color 0.3s;
         }
         .login-card input:focus { border-color: var(--primary); }
         .remember-container {
@@ -144,23 +149,23 @@
         .bank-card p { font-size: 1.05rem; font-weight: bold; transition: color 0.3s ease; }
         .bank-logo { width: 16px; height: 16px; border-radius: 4px; margin-right: 6px; object-fit: contain; background: #fff; padding: 1px; }
 
-        .form-accordion { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
+        .form-accordion { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px; overflow: hidden; transition: all 0.3s ease; }
         .form-accordion summary { padding: 16px; font-size: 1rem; font-weight: bold; color: var(--text-color); cursor: pointer; list-style: none; display: flex; align-items: center; }
         .form-accordion summary::-webkit-details-marker { display: none; }
-        .form-accordion summary::before { content: "+"; font-size: 1.1rem; font-weight: bold; color: var(--primary); margin-right: 8px; display: inline-block; }
+        .form-accordion summary::before { content: "+"; font-size: 1.1rem; font-weight: bold; color: var(--primary); margin-right: 8px; display: inline-block; transition: transform 0.3s; }
         .form-accordion[open] summary { border-bottom: 1px solid var(--border); background-color: rgba(255, 255, 255, 0.02); }
-        .form-accordion[open] summary::before { content: "-"; }
+        .form-accordion[open] summary::before { content: "-"; transform: rotate(180deg); }
         .form-content { padding: 16px; }
         .form-group { margin-bottom: 12px; }
         label { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 4px; }
-        input, select { width: 100%; padding: 10px; background-color: #121214; border: 1px solid var(--border); border-radius: 8px; color: var(--text-color); font-size: 0.95rem; outline: none; }
+        input, select { width: 100%; padding: 10px; background-color: #121214; border: 1px solid var(--border); border-radius: 8px; color: var(--text-color); font-size: 0.95rem; outline: none; transition: border-color 0.3s; }
         input:focus, select:focus { border-color: var(--primary); }
         
         .radio-group-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 12px; }
         .radio-group-3-method { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 12px; }
         .radio-btn { position: relative; }
         .radio-btn input { position: absolute; opacity: 0; width: 0; height: 0; }
-        .radio-label { display: block; text-align: center; padding: 10px 4px; background-color: #121214; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.78rem; }
+        .radio-label { display: block; text-align: center; padding: 10px 4px; background-color: #121214; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.78rem; transition: all 0.2s; }
         .radio-btn input:checked + .radio-label.lbl-receber { border-color: var(--unified-pos); background-color: rgba(0, 179, 126, 0.1); color: var(--unified-pos); }
         .radio-btn input:checked + .radio-label.lbl-pagar { border-color: var(--unified-neg); background-color: rgba(247, 90, 104, 0.1); color: var(--unified-neg); }
         .radio-btn input:checked + .radio-label.lbl-transf { border-color: var(--warning); background-color: rgba(255, 184, 108, 0.1); color: var(--warning); }
@@ -168,7 +173,8 @@
         .radio-btn input:checked + .radio-label.lbl-credito { border-color: var(--warning); background-color: rgba(255, 184, 108, 0.1); color: var(--warning); }
         .radio-btn input:checked + .radio-label.lbl-conta { border-color: #a78bfa; background-color: rgba(167, 139, 250, 0.1); color: #a78bfa; }
         
-        button.submit-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--primary) 0%, #3a9ec2 100%); border: none; border-radius: 10px; color: #fff; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
+        button.submit-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--primary) 0%, #3a9ec2 100%); border: none; border-radius: 10px; color: #fff; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.2s; }
+        button.submit-btn:active { opacity: 0.8; }
 
         #expense-conditional-fields { display: none; border-left: 2px solid var(--border); padding-left: 12px; margin-top: 10px; margin-bottom: 12px; }
         #transfer-fields { display: none; border-left: 2px solid var(--warning); padding-left: 12px; margin-top: 10px; margin-bottom: 12px; }
@@ -180,8 +186,12 @@
         .month-btn.active { background-color: var(--primary); color: #fff; border-color: var(--primary); }
 
         .tabs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 14px; }
-        .tab-btn { background-color: var(--card-bg); border: 1px solid var(--border); color: var(--text-secondary); padding: 10px 4px; border-radius: 8px; font-weight: bold; font-size: 0.8rem; cursor: pointer; text-align: center; }
+        .tab-btn { background-color: var(--card-bg); border: 1px solid var(--border); color: var(--text-secondary); padding: 10px 4px; border-radius: 8px; font-weight: bold; font-size: 0.8rem; cursor: pointer; text-align: center; transition: all 0.2s; }
         .tab-btn.active { border-color: var(--primary); color: var(--primary); background-color: rgba(78, 168, 222, 0.1); }
+
+        /* Animação suave entre abas */
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         .group-container { margin-bottom: 16px; border: 1px solid var(--border); border-radius: 8px; background-color: rgba(255, 255, 255, 0.01); overflow: hidden; }
         .group-header { display: flex; justify-content: space-between; align-items: center; background-color: rgba(255, 255, 255, 0.03); border-left: 3px solid var(--primary); padding: 10px 12px; font-size: 0.85rem; font-weight: bold; cursor: pointer; user-select: none; }
@@ -210,7 +220,8 @@
         .item-value { font-weight: bold; font-size: 0.9rem; }
         
         .item-actions-group { display: flex; align-items: center; gap: 5px; }
-        .action-btn { background: none; border: none; font-size: 1rem; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .action-btn { background: none; border: none; font-size: 1rem; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s;}
+        .action-btn:active { transform: scale(0.9); }
         .confirm-btn { color: var(--unified-pos); border: 1px solid rgba(0, 179, 126, 0.3); }
         .edit-btn { color: var(--primary); border: 1px solid rgba(78, 168, 222, 0.3); }
         .delete-btn { color: var(--text-secondary); font-size: 1.2rem; border: 1px solid rgba(168, 168, 179, 0.15); }
@@ -274,12 +285,12 @@
 </head>
 <body>
 
-    <!-- Aviso Toast de Nova Atualização -->
-    <div id="update-toast">
-        <span>🚀</span>
+    <!-- Sistema Universal de Toast -->
+    <div id="app-toast">
+        <span id="toast-icon">🚀</span>
         <div>
-            <strong>Aplicativo Atualizado!</strong><br>
-            <span id="toast-version-text" style="color:var(--text-secondary);">Versão mais recente carregada.</span>
+            <strong id="toast-title">Atualizado!</strong><br>
+            <span id="toast-message" style="color:var(--text-secondary);">Versão mais recente carregada.</span>
         </div>
     </div>
 
@@ -511,11 +522,11 @@
             <button class="tab-btn" id="tab-done" onclick="switchTab('done')">Realizados</button>
         </div>
 
-        <div id="transactions-wrapper">
+        <div id="transactions-wrapper" class="fade-in">
             <div class="transaction-list" id="transaction-list"></div>
         </div>
 
-        <div id="report-section">
+        <div id="report-section" class="fade-in">
             <div class="report-mode-toggle">
                 <button class="report-mode-btn active" id="rep-mode-month" onclick="setReportMode('month')">Visão Mensal</button>
                 <button class="report-mode-btn" id="rep-mode-year" onclick="setReportMode('year')">Visão Anual</button>
@@ -595,7 +606,8 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.4.14"; 
+        // Versão atualizada para forçar aviso visual da novidade
+        const VERSAO_CODIGO = "1.5.0"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -615,6 +627,47 @@
         function sanitizarChaveNode(str) {
             if (!str) return '';
             return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '_').replace(/^_+|_+$/g, '');
+        }
+
+        // --- SISTEMA DE TOAST ---
+        function showToast(message, type = 'success', title = null) {
+            const toast = document.getElementById('app-toast');
+            const toastTitle = document.getElementById('toast-title');
+            const toastMsg = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+
+            if (!toast) return;
+
+            // Remove classes anteriores
+            toast.className = '';
+            
+            if (type === 'success') {
+                toastIcon.textContent = '✅';
+                toastTitle.textContent = title || 'Sucesso';
+                toast.classList.add('toast-success');
+            } else if (type === 'error') {
+                toastIcon.textContent = '⚠️';
+                toastTitle.textContent = title || 'Atenção';
+                toast.classList.add('toast-error');
+            } else {
+                toastIcon.textContent = '🚀';
+                toastTitle.textContent = title || 'Info';
+                toast.classList.add('toast-info');
+            }
+
+            toastMsg.textContent = message;
+            toast.classList.add('show');
+
+            setTimeout(() => { toast.classList.remove('show'); }, 4500);
+        }
+
+        // --- CORREÇÃO DE DATA PARA FUSO LOCAL BRASIL ---
+        function getLocalTodayString() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
 
         let dbRoot = null;
@@ -682,8 +735,9 @@
             expenseEl = document.getElementById('total-expense');
             bankBalancesContainer = document.getElementById('bank-balances-container');
 
+            // Resolve o bug da data do fuso horário
             if (dateInput) {
-                dateInput.value = new Date().toISOString().split('T')[0];
+                dateInput.value = getLocalTodayString();
             }
 
             verificarAtualizacaoDoApp();
@@ -744,16 +798,10 @@
         function verificarAtualizacaoDoApp() {
             try {
                 const versaoSalva = localStorage.getItem('app_version_cache');
-                const toastVer = document.getElementById('toast-version-text');
-                if (toastVer) toastVer.textContent = `Versão ${VERSAO_CODIGO} carregada com sucesso.`;
                 
                 if (versaoSalva !== VERSAO_CODIGO) {
                     localStorage.setItem('app_version_cache', VERSAO_CODIGO);
-                    const toast = document.getElementById('update-toast');
-                    if (toast) {
-                        toast.classList.add('show');
-                        setTimeout(() => { toast.classList.remove('show'); }, 4500);
-                    }
+                    showToast(`Versão ${VERSAO_CODIGO} carregada com sucesso.`, 'info', 'Aplicativo Atualizado!');
                 }
             } catch(e) {}
         }
@@ -913,7 +961,7 @@
         window.abrirPainelMaster = function() {
             const chaveAtiva = localStorage.getItem('active_user_key');
             const perfilAtivo = perfisCadastrados[chaveAtiva];
-            if (!perfilAtivo || !perfilAtivo.isMaster) return alert("Acesso restrito ao Administrador Master.");
+            if (!perfilAtivo || !perfilAtivo.isMaster) return showToast("Acesso restrito ao Administrador Master.", "error", "Permissão Negada");
 
             let listaPerfisTexto = "--- PERFIS CADASTRADOS ---\n";
             let index = 1;
@@ -930,23 +978,23 @@
                     const nomeTrimmed = nomeNovo.trim();
                     const keyNova = 'user_' + sanitizarChaveNode(nomeTrimmed);
                     perfisCadastrados[keyNova] = { name: nomeTrimmed, pwd: SENHA_PADRAO_NOVOS_PERFIS, isMaster: false, node: 'lancamentos_' + sanitizarChaveNode(nomeTrimmed) };
-                    if (dbRoot) dbRoot.child('config_perfis').set(perfisCadastrados).then(() => alert(`✅ Perfil "${nomeTrimmed}" criado!\n🔑 Senha inicial: 12345`));
+                    if (dbRoot) dbRoot.child('config_perfis').set(perfisCadastrados).then(() => showToast(`Perfil "${nomeTrimmed}" criado!\nSenha inicial: 12345`));
                 }
             } else if (acao === '2') {
                 const numExcluir = prompt(`${listaPerfisTexto}\nDigite o NÚMERO do perfil para excluir:`);
                 const idx = parseInt(numExcluir) - 1;
                 if (!isNaN(idx) && idx >= 0 && idx < chaves.length) {
                     const chaveExcluir = chaves[idx];
-                    if (perfisCadastrados[chaveExcluir].isMaster) return alert("❌ O perfil Master não pode ser excluído.");
+                    if (perfisCadastrados[chaveExcluir].isMaster) return showToast("O perfil Master não pode ser excluído.", "error");
                     delete perfisCadastrados[chaveExcluir];
-                    if (dbRoot) dbRoot.child('config_perfis').set(perfisCadastrados).then(() => alert("Perfil removido com sucesso."));
+                    if (dbRoot) dbRoot.child('config_perfis').set(perfisCadastrados).then(() => showToast("Perfil removido com sucesso."));
                 }
             } else if (acao === '3') {
                 const numReset = prompt(`${listaPerfisTexto}\nDigite o NÚMERO do perfil para resetar a senha:`);
                 const idx = parseInt(numReset) - 1;
                 if (!isNaN(idx) && idx >= 0 && idx < chaves.length) {
                     perfisCadastrados[chaves[idx]].pwd = SENHA_PADRAO_NOVOS_PERFIS;
-                    if (dbRoot) dbRoot.child('config_perfis').set(perfisCadastrados).then(() => alert("Senha redefinida para 12345 com sucesso!"));
+                    if (dbRoot) dbRoot.child('config_perfis').set(perfisCadastrados).then(() => showToast("Senha redefinida para 12345 com sucesso!"));
                 }
             }
         }
@@ -1020,7 +1068,7 @@
             const perfil = perfisCadastrados[chaveAtiva];
             const senhaDigitada = prompt(`Insira a Senha do Perfil (${perfil ? perfil.name : ''}):`);
             if (perfil && senhaDigitada && senhaDigitada.trim() === String(perfil.pwd)) securityPanelContent.style.display = 'flex';
-            else if (senhaDigitada !== null) alert("Erro: Senha incorreta.");
+            else if (senhaDigitada !== null) showToast("Senha incorreta.", "error");
         }
 
         window.alterarSenhaDoSistema = function() {
@@ -1034,7 +1082,7 @@
                 if (dbRoot) {
                     dbRoot.child('config_perfis').set(perfisCadastrados).then(() => {
                         if (localStorage.getItem('remember_active') === 'true' && localStorage.getItem('active_user_key') === chaveAtiva) localStorage.setItem('saved_password', novaSenhaTrim);
-                        alert("Senha alterada com sucesso!");
+                        showToast("Senha alterada com sucesso!");
                     });
                 }
             }
@@ -1046,7 +1094,7 @@
             if (!perfil) return;
             if (confirm("⚠️ APAGAR todos os lançamentos deste perfil?")) {
                 const senha = prompt("Digite sua SENHA:");
-                if (senha && senha.trim() === String(perfil.pwd) && dbTransactions) dbTransactions.remove().then(() => alert("Banco de dados zerado."));
+                if (senha && senha.trim() === String(perfil.pwd) && dbTransactions) dbTransactions.remove().then(() => showToast("Banco de dados zerado."));
             }
         }
 
@@ -1059,11 +1107,12 @@
         }
 
         window.fazerBackup = function() {
-            if (transactions.length === 0) return alert("Banco de dados vazio.");
+            if (transactions.length === 0) return showToast("Banco de dados vazio.", "error");
             const chaveAtiva = localStorage.getItem('active_user_key');
             const perfil = perfisCadastrados[chaveAtiva];
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(transactions, null, 2));
             const a = document.createElement('a'); a.setAttribute("href", dataStr); a.setAttribute("download", `backup_${perfil ? perfil.name : 'financeiro'}.json`); a.click();
+            showToast("Download do backup iniciado!");
         }
 
         const NOME_MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -1121,7 +1170,15 @@
         function formatCurrencyInput(val) { let num = (val).toFixed(2); let parts = num.split('.'); parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.'); return parts.join(','); }
 
         window.switchTab = function(tab) {
+            if (currentTab === tab) return; // evita re-renderizar desnecessariamente
             currentTab = tab;
+            
+            // Adiciona ou reseta a classe de animação para transição fluida
+            const wrapper = document.getElementById('transactions-wrapper');
+            const reportSection = document.getElementById('report-section');
+            if(wrapper) { wrapper.classList.remove('fade-in'); void wrapper.offsetWidth; wrapper.classList.add('fade-in'); }
+            if(reportSection) { reportSection.classList.remove('fade-in'); void reportSection.offsetWidth; reportSection.classList.add('fade-in'); }
+            
             renderView();
         }
 
@@ -1131,6 +1188,10 @@
             const rYear = document.getElementById('rep-mode-year');
             if (rMonth) rMonth.classList.toggle('active', mode === 'month');
             if (rYear) rYear.classList.toggle('active', mode === 'year');
+            
+            const reportSection = document.getElementById('report-section');
+            if(reportSection) { reportSection.classList.remove('fade-in'); void reportSection.offsetWidth; reportSection.classList.add('fade-in'); }
+
             renderReport();
         }
 
@@ -1194,6 +1255,7 @@
                 if (modalOverlay) modalOverlay.style.display = 'flex';
             } else {
                 dbTransactions.child(id).update({ done: true });
+                showToast("Lançamento confirmado!");
             }
         }
 
@@ -1243,6 +1305,7 @@
             if (!dbTransactions) return;
             if (transactionToConfirmId) {
                 dbTransactions.child(transactionToConfirmId).update({ done: true, bank: bancoEscolhido });
+                showToast("Lançamento confirmado!");
             } else if (bulkActionType && bulkTargetName) {
                 const pendentesFiltrados = transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey) && !t.done && t.type !== 'transfer');
                 
@@ -1262,6 +1325,7 @@
                 });
                 if (Object.keys(atualizacoes).length > 0) {
                     dbTransactions.update(atualizacoes);
+                    showToast("Pagamentos confirmados em lote!");
                 }
             }
             fecharModalBanco();
@@ -1276,13 +1340,18 @@
             }
         }
 
-        window.deleteTransaction = function(id) { if(confirm("Deseja apagar este lançamento?") && dbTransactions) dbTransactions.child(id).remove(); }
+        window.deleteTransaction = function(id) { 
+            if(confirm("Deseja apagar este lançamento?") && dbTransactions) {
+                dbTransactions.child(id).remove(); 
+                showToast("Lançamento apagado.", "info");
+            }
+        }
 
         window.editTransaction = function(id) {
             const t = transactions.find(item => item.id === id);
             if (!t) return;
             if (t.type === 'transfer') {
-                alert("Para alterar uma transferência, exclua este registro e faça novamente.");
+                showToast("Para alterar uma transferência, exclua este registro e faça novamente.", "error");
                 return;
             }
             if (editIdInput) editIdInput.value = t.id;
@@ -1330,7 +1399,10 @@
         window.cancelarEdicao = function() {
             if (editIdInput) editIdInput.value = '';
             if (form) form.reset();
-            if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+            
+            // Garantir que reseta para a data local correta
+            if (dateInput) dateInput.value = getLocalTodayString();
+            
             toggleTypeFields();
             const accTitle = document.getElementById('form-accordion-title');
             const btnSalvar = document.getElementById('btn-salvar-lancamento');
@@ -1757,11 +1829,10 @@
 
         window.processarSalvamentoFormulario = function() {
             try {
-                console.log("Iniciando salvamento do formulário...");
                 const editId = editIdInput ? editIdInput.value : ''; 
                 const selectedTypeEl = document.querySelector('input[name="type"]:checked');
                 if (!selectedTypeEl) {
-                    alert("Selecione o tipo de transação.");
+                    showToast("Selecione o tipo de transação.", "error");
                     return;
                 }
                 const selectedType = selectedTypeEl.value; 
@@ -1769,7 +1840,7 @@
                 const baseDate = dateInput ? dateInput.value : ''; 
 
                 if (totalAmount <= 0 || !baseDate) {
-                    alert("Preencha um valor e uma data válidos.");
+                    showToast("Preencha um valor e uma data válidos.", "error");
                     return;
                 }
 
@@ -1777,11 +1848,11 @@
                     const bOrigem = bankOriginSelect ? bankOriginSelect.value : '';
                     const bDestino = bankDestinationSelect ? bankDestinationSelect.value : '';
                     if (!bOrigem || !bDestino) {
-                        alert("Selecione o banco de origem e o banco de destino.");
+                        showToast("Selecione o banco de origem e o destino.", "error");
                         return;
                     }
                     if (bOrigem === bDestino) {
-                        alert("O banco de origem e o destino devem ser diferentes.");
+                        showToast("Origem e destino devem ser diferentes.", "error");
                         return;
                     }
 
@@ -1795,13 +1866,13 @@
                             bankDestination: bDestino,
                             done: true
                         }).then(() => {
-                            console.log("Transferência salva com sucesso!");
+                            showToast("Transferência salva!");
+                            cancelarEdicao(); // Fecha o formulário
                         }).catch(err => {
-                            console.error("Erro Firebase Transferência:", err);
-                            alert("Erro ao salvar no Firebase: " + err.message);
+                            showToast("Erro ao salvar: " + err.message, "error");
                         });
                     } else {
-                        alert("Erro: Banco de dados não conectado.");
+                        showToast("Erro: Banco de dados desconectado.", "error");
                     }
                 } else {
                     const description = descInput ? descInput.value.trim() : '';
@@ -1812,26 +1883,25 @@
                     if (selectedType === 'receber' || (selectedType === 'pagar' && methodVal === 'debito')) {
                         bankSelected = bankSelect ? bankSelect.value : '';
                         if (!bankSelected) {
-                            alert("Selecione um banco.");
+                            showToast("Selecione um banco.", "error");
                             return;
                         }
                     }
                     if (selectedType === 'pagar' && methodVal === 'credito') {
                         cardOrigin = cardOriginSelect ? cardOriginSelect.value.trim() : '';
                         if (!cardOrigin) {
-                            alert("Selecione um cartão de crédito.");
+                            showToast("Selecione um cartão de crédito.", "error");
                             return;
                         }
                     }
                     if (!description) {
-                        alert("Preencha a descrição do lançamento.");
+                        showToast("Preencha a descrição do lançamento.", "error");
                         return;
                     }
 
                     const instInput = document.getElementById('installments');
                     const qtdParcelas = (selectedType === 'pagar' && methodVal === 'credito') ? (instInput ? (parseInt(instInput.value) || 1) : 1) : 1;
                     
-                    // Se for pagamento no débito (pagar com método débito), o status done deve ser true (vai direto para Realizados)
                     const isDebitoDireto = (selectedType === 'pagar' && methodVal === 'debito');
                     const statusDoneInicial = isDebitoDireto ? true : false;
 
@@ -1851,10 +1921,10 @@
                                 installmentsTotal: 1, 
                                 done: statusDone 
                             }).then(() => {
-                                console.log("Lançamento atualizado com sucesso!");
+                                showToast("Lançamento atualizado!");
+                                cancelarEdicao(); // Fecha o formulário
                             }).catch(err => {
-                                console.error("Erro Firebase Atualização:", err);
-                                alert("Erro ao atualizar no Firebase: " + err.message);
+                                showToast("Erro ao atualizar: " + err.message, "error");
                             });
                         } else {
                             const valorParcela = parseFloat((totalAmount / qtdParcelas).toFixed(2));
@@ -1883,20 +1953,19 @@
                             }
                             
                             Promise.all(promessas).then(() => {
-                                console.log("Lançamento(s) salvo(s) com sucesso no Firebase!");
+                                showToast("Lançamento salvo com sucesso!");
+                                cancelarEdicao(); // Fecha o formulário para limpar a tela
                             }).catch(err => {
-                                console.error("Erro Firebase Inclusão:", err);
-                                alert("Erro ao salvar no Firebase: " + err.message);
+                                showToast("Erro ao salvar: " + err.message, "error");
                             });
                         }
                     } else {
-                        alert("Erro: Banco de dados não conectado.");
+                        showToast("Erro: Banco desconectado.", "error");
                     }
                 }
-                cancelarEdicao();
             } catch(e) {
                 console.error("Erro crítico no processarSalvamentoFormulario:", e);
-                alert("Ocorreu um erro ao processar o formulário. Verifique o console.");
+                showToast("Erro ao processar. Verifique o formulário.", "error");
             }
         };
     </script>
