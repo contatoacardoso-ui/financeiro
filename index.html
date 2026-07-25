@@ -81,7 +81,7 @@
 
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--bg-color); display: none; flex-direction: column;
+            background-color: var(--bg-color); display: flex; flex-direction: column;
             justify-content: center; align-items: center; z-index: 10000; padding: 24px;
         }
         .login-card {
@@ -296,7 +296,7 @@
     </div>
 
     <!-- Tela de Login -->
-    <div id="login-screen" style="display: none;">
+    <div id="login-screen" style="display: flex;">
         <div class="login-card">
             <div class="login-icon">🔒</div>
             <h2>Acesso Restrito</h2>
@@ -535,7 +535,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.4.17"; 
+        const VERSAO_CODIGO = "1.4.18"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -1117,7 +1117,7 @@
                 perfisCadastrados[chaveAtiva].pwd = novaSenhaTrim;
                 if (dbRoot) {
                     dbRoot.child('config_perfis').set(perfisCadastrados).then(() => {
-                        if (localStorage.getItem('remember_active') === 'true' && localStorage.getItem('active_user_key') === chaveAtiva) localStorage.setItem('saved_password', novaSenhaTrim);
+                        if (localStorage.getItem('remember_active') === 'true' && localStorage.getItem('active_user_key'] === chaveAtiva) localStorage.setItem('saved_password', novaSenhaTrim);
                         alert("Senha alterada com sucesso!");
                     });
                 }
