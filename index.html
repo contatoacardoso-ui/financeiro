@@ -435,7 +435,7 @@
 
                         <div class="form-group" id="card-group">
                             <label for="card-origin">Nome do Cartão (Crédito)</label>
-                            <input type="text" id="card-origin" placeholder="Ex: Cartão Nubank, Cartão Itaú" autocomplete="off">
+                            <input type="text" id="card-origin" placeholder="Ex: Cartão C6 Bank, Cartão Nubank" autocomplete="off">
                         </div>
 
                         <div id="credit-fields">
@@ -585,7 +585,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.3.9"; 
+        const VERSAO_CODIGO = "1.4.0"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -629,7 +629,6 @@
         let reportMode = 'month';
         let transactionToConfirmId = null;
         
-        // Controle de seções recolhidas (Salva em memória durante a sessão)
         const estadoColapsoGrupos = {};
 
         const hojeObj = new Date();
@@ -884,7 +883,7 @@
             if (isConta) {
                 descInput.placeholder = "Ex: IPTU, IPVA, Gás, Luz, Condomínio...";
             } else if (isCredito) {
-                descInput.placeholder = "Ex: Supermercado, Farmácia, Posto...";
+                descInput.placeholder = "Ex: Renner, Supermercado, Farmácia...";
             } else {
                 descInput.placeholder = "Ex: Mercado, Padaria, Combustível...";
             }
@@ -1312,16 +1311,11 @@
                 if (t.type === 'transfer') {
                     groupKey = 'Transferências entre Contas';
                 } else if (t.type === 'receber') {
-                    if (currentTab === 'done') {
-                        groupKey = 'Entrada';
-                        subGroupKey = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : 'Diversos';
-                    } else {
-                        groupKey = 'Entrada';
-                        subGroupKey = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : 'Diversos';
-                    }
+                    groupKey = 'Entrada';
+                    subGroupKey = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : 'Diversos';
                 } else { 
                     if (t.method === 'credito') { 
-                        groupKey = 'Saída (Crédito)';
+                        groupKey = 'Cartão de Crédito';
                         subGroupKey = t.cardOrigin ? t.cardOrigin.trim() : 'Cartão Geral';
                     } else if (t.method === 'conta') { 
                         groupKey = 'Contas e Boletos';
