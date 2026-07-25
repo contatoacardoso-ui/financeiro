@@ -185,6 +185,7 @@
 
         .group-container { margin-bottom: 16px; }
         .group-header { display: flex; justify-content: space-between; align-items: center; background-color: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-left: 3px solid var(--primary); padding: 8px 12px; border-radius: 6px; margin-bottom: 8px; font-size: 0.85rem; font-weight: bold; }
+        .subgroup-header { display: flex; justify-content: space-between; align-items: center; background-color: rgba(255, 255, 255, 0.015); border: 1px solid var(--border); border-left: 3px solid var(--unified-pos); padding: 6px 10px; border-radius: 6px; margin: 6px 0 6px 12px; font-size: 0.8rem; font-weight: bold; color: var(--text-secondary); }
 
         .transaction-list { display: flex; flex-direction: column; gap: 8px; }
         .transaction-item {
@@ -578,7 +579,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.3.7"; 
+        const VERSAO_CODIGO = "1.3.8"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -1287,56 +1288,84 @@
             const grouped = {};
             filtered.forEach(t => {
                 let groupKey = '';
+                let subGroupKey = null;
+
                 if (t.type === 'transfer') {
                     groupKey = 'Transferências entre Contas';
-                } else if (t.type === 'receber') { 
-                    groupKey = t.bank ? `Entrada: ${t.bank}` : 'Entradas Diversas'; 
+                } else if (t.type === 'receber') {
+                    if (currentTab === 'done') {
+                        groupKey = 'Entrada';
+                        subGroupKey = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : 'Diversos';
+                    } else {
+                        groupKey = t.bank ? `Entrada: ${t.bank}` : 'Entradas Diversas';
+                    }
                 } else { 
                     if (t.method === 'credito') { groupKey = `Cartão: ${t.cardOrigin || 'Crédito'}`; } 
-                    else if (t.method === 'conta') { 
-                        groupKey = currentTab === 'pending' ? 'Contas e Boletos (Pendentes)' : 'Contas e Boletos'; 
-                    }
+                    else if (t.method === 'conta') { groupKey = 'Contas e Boletos'; }
                     else { groupKey = t.bank ? `Saída (Débito): ${t.bank}` : 'Saídas Diversas'; } 
                 }
-                if (!grouped[groupKey]) grouped[groupKey] = []; grouped[groupKey].push(t);
-            });
-            const groupKeysOrdenados = Object.keys(grouped).sort();
 
+                if (!grouped[groupKey]) grouped[groupKey] = { items: [], subGroups: {} };
+                
+                if (subGroupKey) {
+                    if (!grouped[groupKey].subGroups[subGroupKey]) grouped[groupKey].subGroups[subGroupKey] = [];
+                    grouped[groupKey].subGroups[subGroupKey].push(t);
+                } else {
+                    grouped[groupKey].items.push(t);
+                }
+            });
+
+            const groupKeysOrdenados = Object.keys(grouped).sort();
             const gruposExistentes = {};
             listContainer.querySelectorAll(':scope > .group-container').forEach(g => gruposExistentes[g.dataset.groupKey] = g);
 
             let nodeGrupoAnterior = null;
             groupKeysOrdenados.forEach(groupKey => {
                 let groupDiv = gruposExistentes[groupKey];
-                let listSubContainer;
                 if (!groupDiv) {
-                    groupDiv = document.createElement('div'); groupDiv.className = 'group-container'; groupDiv.dataset.groupKey = groupKey;
-                    groupDiv.innerHTML = `<div class="group-header"><span>📂 ${groupKey}</span></div>`;
-                    listSubContainer = document.createElement('div'); listSubContainer.className = 'transaction-list'; groupDiv.appendChild(listSubContainer);
-                } else { listSubContainer = groupDiv.querySelector('.transaction-list'); delete gruposExistentes[groupKey]; }
+                    groupDiv = document.createElement('div');
+                    groupDiv.className = 'group-container';
+                    groupDiv.dataset.groupKey = groupKey;
+                } else {
+                    delete gruposExistentes[groupKey];
+                }
 
-                if (nodeGrupoAnterior) { if (nodeGrupoAnterior.nextElementSibling !== groupDiv) nodeGrupoAnterior.after(groupDiv); }
-                else if (listContainer.firstElementChild !== groupDiv) listContainer.prepend(groupDiv);
+                let groupHtml = `<div class="group-header"><span>📂 ${groupKey}</span></div>`;
+                const subGroupObj = grouped[groupKey].subGroups;
+                const directItems = grouped[groupKey].items;
+
+                let contentHtml = '';
+                if (Object.keys(subGroupObj).length > 0) {
+                    const subKeysOrdenados = Object.keys(subGroupObj).sort();
+                    subKeysOrdenados.forEach(subKey => {
+                        let logoHtml = getBankLogo(subKey);
+                        contentHtml += `<div class="subgroup-header" style="display:flex; align-items:center;">${logoHtml} <span>${subKey}</span></div>`;
+                        contentHtml += `<div class="transaction-list" style="margin-left: 12px; margin-bottom: 8px;">`;
+                        subGroupObj[subKey].forEach(t => {
+                            contentHtml += `<div class="transaction-item" data-tx-id="${t.id}" data-tx-hash="${encodeURIComponent(JSON.stringify(t))}">${montarHtmlDoItem(t)}</div>`;
+                        });
+                        contentHtml += `</div>`;
+                    });
+                }
+
+                if (directItems.length > 0) {
+                    contentHtml += `<div class="transaction-list">`;
+                    directItems.forEach(t => {
+                        contentHtml += `<div class="transaction-item" data-tx-id="${t.id}" data-tx-hash="${encodeURIComponent(JSON.stringify(t))}">${montarHtmlDoItem(t)}</div>`;
+                    });
+                    contentHtml += `</div>`;
+                }
+
+                groupDiv.innerHTML = groupHtml + contentHtml;
+
+                if (nodeGrupoAnterior) {
+                    if (nodeGrupoAnterior.nextElementSibling !== groupDiv) nodeGrupoAnterior.after(groupDiv);
+                } else if (listContainer.firstElementChild !== groupDiv) {
+                    listContainer.prepend(groupDiv);
+                }
                 nodeGrupoAnterior = groupDiv;
-
-                const itensExistentes = {};
-                listSubContainer.querySelectorAll(':scope > .transaction-item').forEach(el => itensExistentes[el.dataset.txId] = el);
-
-                let nodeItemAnterior = null;
-                grouped[groupKey].forEach(t => {
-                    let item = itensExistentes[t.id]; const hashAtual = JSON.stringify(t);
-                    if (!item) {
-                        item = document.createElement('div'); item.className = 'transaction-item tx-entering'; item.dataset.txId = t.id; item.innerHTML = montarHtmlDoItem(t); item.dataset.txHash = hashAtual; requestAnimationFrame(() => item.classList.remove('tx-entering'));
-                    } else {
-                        if (item.dataset.txHash !== hashAtual) { item.innerHTML = montarHtmlDoItem(t); item.dataset.txHash = hashAtual; }
-                        delete itensExistentes[t.id];
-                    }
-                    if (nodeItemAnterior) { if (nodeItemAnterior.nextElementSibling !== item) nodeItemAnterior.after(item); } 
-                    else if (listSubContainer.firstElementChild !== item) listSubContainer.prepend(item);
-                    nodeItemAnterior = item;
-                });
-                Object.values(itensExistentes).forEach(el => { el.classList.add('tx-leaving'); setTimeout(() => el.remove(), 300); });
             });
+
             Object.values(gruposExistentes).forEach(g => { g.style.transition = 'opacity 0.3s ease'; g.style.opacity = '0'; setTimeout(() => g.remove(), 300); });
         }
 
