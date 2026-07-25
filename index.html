@@ -594,7 +594,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.4.5"; 
+        const VERSAO_CODIGO = "1.4.6"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -1084,7 +1084,7 @@
 
         function renderView() {
             document.getElementById('tab-report').classList.toggle('active', currentTab === 'report');
-            document.getElementById('tab-pending').classList.toggle('active', tab === 'pending');
+            document.getElementById('tab-pending').classList.toggle('active', currentTab === 'pending');
             document.getElementById('tab-done').classList.toggle('active', tab === 'done');
 
             const wrapper = document.getElementById('transactions-wrapper');
@@ -1431,17 +1431,23 @@
                     groupKey = 'Transferências entre Contas';
                 } else if (t.type === 'receber') {
                     groupKey = 'Entrada';
-                    subGroupKey = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : null;
+                    if (t.bank && t.bank.trim() !== '') {
+                        subGroupKey = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
+                    }
                 } else { 
                     if (t.method === 'credito') { 
                         groupKey = 'Cartão de Crédito';
                         subGroupKey = t.cardOrigin ? t.cardOrigin.trim() : 'Cartão Geral';
                     } else if (t.method === 'conta') { 
                         groupKey = 'Contas e Boletos';
-                        subGroupKey = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : null;
+                        if (t.bank && t.bank.trim() !== '') {
+                            subGroupKey = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
+                        }
                     } else { 
                         groupKey = 'Saída';
-                        subGroupKey = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : null;
+                        if (t.bank && t.bank.trim() !== '') {
+                            subGroupKey = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
+                        }
                     } 
                 }
 
@@ -1637,7 +1643,7 @@
 
             const dadosPizzaSaidas = consolidarDadosParaPizza(agrupaSaidasDesc, 4);
             if (chartExpensesPieInstance) chartExpensesPieInstance.destroy();
-            chartExpensesPieInstance = new Chart(document.getElementById('chart-expenses-pie').getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(dadosPizzaSaidas).length ? Object.keys(dadosPizzaSaidas) : ['Nenhuma'], datasets: [{ data: Object.values(dadosPizzaSaidas).length ? Object.values(dadosPizzaSaidas) : [1], backgroundColor: paletaCoresPizza, borderWidth: 2, borderColor: '#1d1d22', hoverOffset: 4 }] }, options: { ...commonChartOptions, cutout: '60%' } });
+            chartExpensesPieInstance = new Chart(document.getElementById('chart-expenses-pie').getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(dadosPizzaSaidas).length ? Object.keys(dadosPizzaSaidas) : [1], backgroundColor: paletaCoresPizza, borderWidth: 2, borderColor: '#1d1d22', hoverOffset: 4 }] }, options: { ...commonChartOptions, cutout: '60%' } });
 
             const detailedIncList = document.getElementById('detailed-incomes-list'); detailedIncList.innerHTML = entradasDetalhadas.length ? '' : '<div class="empty-state">Nenhuma entrada.</div>';
             entradasDetalhadas.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
