@@ -594,7 +594,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.4.6"; 
+        const VERSAO_CODIGO = "1.4.7"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -977,7 +977,7 @@
                 const novaSenhaTrim = novaSenha.trim();
                 perfisCadastrados[chaveAtiva].pwd = novaSenhaTrim;
                 dbRoot.child('config_perfis').set(perfisCadastrados).then(() => {
-                    if (localStorage.getItem('remember_active') === 'true' && localStorage.getItem('active_user_key') === chaveAtiva) localStorage.setItem('saved_password', novaSenhaTrim);
+                    if (localStorage.getItem('remember_active') === 'true' && localStorage.getItem('active_user_key'] === chaveAtiva) localStorage.setItem('saved_password', novaSenhaTrim);
                     alert("Senha alterada com sucesso!");
                 });
             }
@@ -1084,7 +1084,7 @@
 
         function renderView() {
             document.getElementById('tab-report').classList.toggle('active', currentTab === 'report');
-            document.getElementById('tab-pending').classList.toggle('active', currentTab === 'pending');
+            document.getElementById('tab-pending').classList.toggle('active', tab === 'pending');
             document.getElementById('tab-done').classList.toggle('active', tab === 'done');
 
             const wrapper = document.getElementById('transactions-wrapper');
@@ -1413,14 +1413,17 @@
                 if (currentTab === 'done') return t.done || t.type === 'transfer';
                 return !t.done && t.type !== 'transfer';
             });
-            const emptyState = listContainer.querySelector('.empty-state');
+            
+            // Limpa antigos grupos visuais
+            listContainer.querySelectorAll('.group-container').forEach(g => g.remove());
 
             if (filtered.length === 0) {
-                listContainer.querySelectorAll('.group-container').forEach(g => g.remove());
-                if (!emptyState) listContainer.innerHTML = `<div class="empty-state">Nenhum lançamento encontrado para este mês.</div>`;
+                listContainer.innerHTML = `<div class="empty-state">Nenhum lançamento encontrado para este mês.</div>`;
                 return;
             }
-            if (emptyState) emptyState.remove();
+            
+            const existingEmpty = listContainer.querySelector('.empty-state');
+            if (existingEmpty) existingEmpty.remove();
 
             const grouped = {};
             filtered.forEach(t => {
@@ -1462,22 +1465,12 @@
             });
 
             const groupKeysOrdenados = Object.keys(grouped).sort();
-            const gruposExistentes = {};
-            listContainer.querySelectorAll(':scope > .group-container').forEach(g => gruposExistentes[g.dataset.groupKey] = g);
-
-            let nodeGrupoAnterior = null;
             groupKeysOrdenados.forEach(groupKey => {
                 const groupId = 'group_' + sanitizarChaveNode(groupKey);
                 const isGroupCollapsed = !!estadoColapsoGrupos[groupId];
-                let groupDiv = gruposExistentes[groupKey];
-
-                if (!groupDiv) {
-                    groupDiv = document.createElement('div');
-                    groupDiv.className = 'group-container';
-                    groupDiv.dataset.groupKey = groupKey;
-                } else {
-                    delete gruposExistentes[groupKey];
-                }
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'group-container';
+                groupDiv.dataset.groupKey = groupKey;
 
                 let groupHtml = `
                     <div class="group-header" onclick="toggleGroupCollapse('${groupId}')">
@@ -1517,7 +1510,7 @@
                         `;
                         contentHtml += `<div class="subgroup-content-wrapper transaction-list" style="display: ${isSubCollapsed ? 'none' : 'flex'};">`;
                         subGroupObj[subKey].forEach(t => {
-                            contentHtml += `<div class="transaction-item" data-tx-id="${t.id}" data-tx-hash="${encodeURIComponent(JSON.stringify(t))}">${montarHtmlDoItem(t)}</div>`;
+                            contentHtml += `<div class="transaction-item">${montarHtmlDoItem(t)}</div>`;
                         });
                         contentHtml += `</div>`;
                     });
@@ -1526,23 +1519,15 @@
                 if (directItems.length > 0) {
                     contentHtml += `<div class="transaction-list">`;
                     directItems.forEach(t => {
-                        contentHtml += `<div class="transaction-item" data-tx-id="${t.id}" data-tx-hash="${encodeURIComponent(JSON.stringify(t))}">${montarHtmlDoItem(t)}</div>`;
+                        contentHtml += `<div class="transaction-item">${montarHtmlDoItem(t)}</div>`;
                     });
                     contentHtml += `</div>`;
                 }
                 contentHtml += `</div>`;
 
                 groupDiv.innerHTML = groupHtml + contentHtml;
-
-                if (nodeGrupoAnterior) {
-                    if (nodeGrupoAnterior.nextElementSibling !== groupDiv) nodeGrupoAnterior.after(groupDiv);
-                } else if (listContainer.firstElementChild !== groupDiv) {
-                    listContainer.prepend(groupDiv);
-                }
-                nodeGrupoAnterior = groupDiv;
+                listContainer.appendChild(groupDiv);
             });
-
-            Object.values(gruposExistentes).forEach(g => { g.style.transition = 'opacity 0.3s ease'; g.style.opacity = '0'; setTimeout(() => g.remove(), 300); });
         }
 
         function consolidarDadosParaPizza(dadosObjeto, limiteMaxFatias = 4) {
@@ -1643,7 +1628,7 @@
 
             const dadosPizzaSaidas = consolidarDadosParaPizza(agrupaSaidasDesc, 4);
             if (chartExpensesPieInstance) chartExpensesPieInstance.destroy();
-            chartExpensesPieInstance = new Chart(document.getElementById('chart-expenses-pie').getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(dadosPizzaSaidas).length ? Object.keys(dadosPizzaSaidas) : [1], backgroundColor: paletaCoresPizza, borderWidth: 2, borderColor: '#1d1d22', hoverOffset: 4 }] }, options: { ...commonChartOptions, cutout: '60%' } });
+            chartExpensesPieInstance = new Chart(document.getElementById('chart-expenses-pie').getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(dadosPizzaSaidas).length ? Object.keys(dadosPizzaSaidas) : ['Nenhuma'], datasets: [{ data: Object.values(dadosPizzaSaidas).length ? Object.values(dadosPizzaSaidas) : [1], backgroundColor: paletaCoresPizza, borderWidth: 2, borderColor: '#1d1d22', hoverOffset: 4 }] }, options: { ...commonChartOptions, cutout: '60%' } });
 
             const detailedIncList = document.getElementById('detailed-incomes-list'); detailedIncList.innerHTML = entradasDetalhadas.length ? '' : '<div class="empty-state">Nenhuma entrada.</div>';
             entradasDetalhadas.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
