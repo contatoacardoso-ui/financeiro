@@ -81,7 +81,7 @@
 
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--bg-color); display: none; flex-direction: column;
+            background-color: var(--bg-color); display: flex; flex-direction: column;
             justify-content: center; align-items: center; z-index: 10000; padding: 24px;
         }
         .login-card {
@@ -594,7 +594,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.4.7"; 
+        const VERSAO_CODIGO = "1.4.8"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -604,24 +604,11 @@
         };
 
         const LISTA_BANCOS_PADRAO = [
-            "260 - Nubank",
-            "341 - Itaú",
-            "336 - C6 Bank",
-            "001 - Banco do Brasil",
-            "033 - Santander",
-            "237 - Bradesco",
-            "104 - Caixa Econômica Federal",
-            "077 - Banco Inter",
-            "041 - Banrisul",
-            "389 - Mercado Pago",
-            "380 - PicPay",
-            "290 - PagSeguro",
-            "212 - Banco Original",
-            "655 - Neon (Votorantim)",
-            "623 - Banco Pan",
-            "208 - BTG Pactual",
-            "748 - Sicredi",
-            "756 - Sicoob"
+            "260 - Nubank", "341 - Itaú", "336 - C6 Bank", "001 - Banco do Brasil",
+            "033 - Santander", "237 - Bradesco", "104 - Caixa Econômica Federal",
+            "077 - Banco Inter", "041 - Banrisul", "389 - Mercado Pago", "380 - PicPay",
+            "290 - PagSeguro", "212 - Banco Original", "655 - Neon (Votorantim)",
+            "623 - Banco Pan", "208 - BTG Pactual", "748 - Sicredi", "756 - Sicoob"
         ];
 
         function sanitizarChaveNode(str) {
@@ -629,8 +616,8 @@
             return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '_').replace(/^_+|_+$/g, '');
         }
 
-        let dbRoot;
-        let dbTransactions;
+        let dbRoot = null;
+        let dbTransactions = null;
         let perfisCadastrados = DEFAULT_PROFILES;
         let transactions = [];
         
@@ -650,58 +637,116 @@
         let chartIncomesPieInstance = null;
         let chartExpensesPieInstance = null;
 
-        const loginScreen = document.getElementById('login-screen');
-        const loginForm = document.getElementById('login-form');
-        const loginUsernameInput = document.getElementById('login-username');
-        const loginPassword = document.getElementById('login-password');
-        const rememberMeCheckbox = document.getElementById('remember-me');
-        const loginError = document.getElementById('login-error');
-        const appContainer = document.getElementById('app-container');
-        const profileBadge = document.getElementById('profile-name-badge');
-        const btnMasterPanel = document.getElementById('btn-master-panel');
-        const securityPanelContent = document.getElementById('security-panel-content');
+        let loginScreen, loginForm, loginUsernameInput, loginPasswordInput, rememberMeCheckbox, loginError, appContainer, profileBadge, btnMasterPanel, securityPanelContent;
+        let formAccordion, form, editIdInput, descInput, descGroup, amountInput, dateInput, dateLabel, cardOriginSelect;
+        let bankGroup, bankLabel, bankSelect, cardGroup, transferFields, bankOriginSelect, bankDestinationSelect;
+        let listContainer, monthSelector, realBalanceEl, balanceEl, incomeEl, expenseEl, bankBalancesContainer;
 
-        const formAccordion = document.getElementById('form-accordion');
-        const form = document.getElementById('finance-form');
-        const editIdInput = document.getElementById('edit-id');
-        const descInput = document.getElementById('description');
-        const descGroup = document.getElementById('desc-group');
-        const amountInput = document.getElementById('amount');
-        const dateInput = document.getElementById('due-date');
-        const dateLabel = document.getElementById('date-label');
-        const cardOriginSelect = document.getElementById('card-origin');
-        
-        const bankGroup = document.getElementById('bank-group');
-        const bankLabel = document.getElementById('bank-label');
-        const bankSelect = document.getElementById('bank-select');
-        const cardGroup = document.getElementById('card-group');
-        const transferFields = document.getElementById('transfer-fields');
-        const bankOriginSelect = document.getElementById('bank-origin');
-        const bankDestinationSelect = document.getElementById('bank-destination');
+        window.addEventListener('DOMContentLoaded', () => {
+            // Inicializa referências DOM com segurança
+            loginScreen = document.getElementById('login-screen');
+            loginForm = document.getElementById('login-form');
+            loginUsernameInput = document.getElementById('login-username');
+            loginPasswordInput = document.getElementById('login-password');
+            rememberMeCheckbox = document.getElementById('remember-me');
+            loginError = document.getElementById('login-error');
+            appContainer = document.getElementById('app-container');
+            profileBadge = document.getElementById('profile-name-badge');
+            btnMasterPanel = document.getElementById('btn-master-panel');
+            securityPanelContent = document.getElementById('security-panel-content');
 
-        const listContainer = document.getElementById('transaction-list');
-        const monthSelector = document.getElementById('month-selector');
-        
-        const realBalanceEl = document.getElementById('real-balance');
-        const balanceEl = document.getElementById('total-balance');
-        const incomeEl = document.getElementById('total-income');
-        const expenseEl = document.getElementById('total-expense');
-        const bankBalancesContainer = document.getElementById('bank-balances-container');
+            formAccordion = document.getElementById('form-accordion');
+            form = document.getElementById('finance-form');
+            editIdInput = document.getElementById('edit-id');
+            descInput = document.getElementById('description');
+            descGroup = document.getElementById('desc-group');
+            amountInput = document.getElementById('amount');
+            dateInput = document.getElementById('due-date');
+            dateLabel = document.getElementById('date-label');
+            cardOriginSelect = document.getElementById('card-origin');
+            
+            bankGroup = document.getElementById('bank-group');
+            bankLabel = document.getElementById('bank-label');
+            bankSelect = document.getElementById('bank-select');
+            cardGroup = document.getElementById('card-group');
+            transferFields = document.getElementById('transfer-fields');
+            bankOriginSelect = document.getElementById('bank-origin');
+            bankDestinationSelect = document.getElementById('bank-destination');
 
-        dateInput.value = new Date().toISOString().split('T')[0];
+            listContainer = document.getElementById('transaction-list');
+            monthSelector = document.getElementById('month-selector');
+            
+            realBalanceEl = document.getElementById('real-balance');
+            balanceEl = document.getElementById('total-balance');
+            incomeEl = document.getElementById('total-income');
+            expenseEl = document.getElementById('total-expense');
+            bankBalancesContainer = document.getElementById('bank-balances-container');
+
+            if (dateInput) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+
+            verificarAtualizacaoDoApp();
+
+            // Inicialização segura do Firebase
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                firebase.database().goOnline();
+                dbRoot = firebase.database().ref();
+            } catch (err) {
+                console.error("Erro ao iniciar Firebase:", err);
+            }
+
+            // Recuperação segura de credenciais salvas
+            try {
+                const usuarioSalvo = localStorage.getItem('saved_username');
+                const senhaSalva = localStorage.getItem('saved_password');
+                if (usuarioSalvo && loginUsernameInput) loginUsernameInput.value = usuarioSalvo;
+                if (senhaSalva && loginPasswordInput) loginPasswordInput.value = senhaSalva;
+                if (rememberMeCheckbox) {
+                    rememberMeCheckbox.checked = localStorage.getItem('remember_active') !== 'false';
+                }
+            } catch(e) {}
+
+            if (dbRoot) {
+                dbRoot.child('config_perfis').on('value', (snapshot) => {
+                    const dadosNuvem = snapshot.val();
+                    if (!dadosNuvem) {
+                        dbRoot.child('config_perfis').set(DEFAULT_PROFILES);
+                        perfisCadastrados = DEFAULT_PROFILES;
+                    } else {
+                        perfisCadastrados = dadosNuvem;
+                    }
+                    verificarSessaoSalva();
+                }, (error) => {
+                    verificarSessaoSalva();
+                });
+            } else {
+                verificarSessaoSalva();
+            }
+
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleLoginSubmit);
+            }
+        });
 
         function verificarAtualizacaoDoApp() {
-            const versaoSalva = localStorage.getItem('app_version_cache');
-            document.getElementById('toast-version-text').textContent = `Versão ${VERSAO_CODIGO} carregada com sucesso.`;
-            
-            if (versaoSalva !== VERSAO_CODIGO) {
-                localStorage.setItem('app_version_cache', VERSAO_CODIGO);
-                const toast = document.getElementById('update-toast');
-                toast.classList.add('show');
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 4500);
-            }
+            try {
+                const versaoSalva = localStorage.getItem('app_version_cache');
+                const toastVer = document.getElementById('toast-version-text');
+                if (toastVer) toastVer.textContent = `Versão ${VERSAO_CODIGO} carregada com sucesso.`;
+                
+                if (versaoSalva !== VERSAO_CODIGO) {
+                    localStorage.setItem('app_version_cache', VERSAO_CODIGO);
+                    const toast = document.getElementById('update-toast');
+                    if (toast) {
+                        toast.classList.add('show');
+                        setTimeout(() => { toast.classList.remove('show'); }, 4500);
+                    }
+                }
+            } catch(e) {}
         }
 
         let atualizacaoAgendada = false;
@@ -710,14 +755,19 @@
             atualizacaoAgendada = true;
             requestAnimationFrame(() => {
                 atualizacaoAgendada = false;
-                atualizarOpcoesCartoesForm();
-                gerarFiltroDeMeses();
-                updateDashboard();
-                renderView();
+                try {
+                    atualizarOpcoesCartoesForm();
+                    gerarFiltroDeMeses();
+                    updateDashboard();
+                    renderView();
+                } catch(err) {
+                    console.error("Erro na renderização:", err);
+                }
             });
         }
 
         function atualizarOpcoesCartoesForm() {
+            if (!cardOriginSelect) return;
             const cartoesSet = new Set(["Cartão C6 Bank", "Cartão Nubank", "Cartão Itaú"]);
             transactions.forEach(t => {
                 if (t.cardOrigin && t.cardOrigin.trim() !== '') {
@@ -749,59 +799,44 @@
             cardOriginSelect.appendChild(outroOpt);
         }
 
-        cardOriginSelect.addEventListener('change', (e) => {
-            if (e.target.value === "OUTRO_CARTAO_CUSTOM") {
-                const novoCartao = prompt("Digite o nome do novo cartão (ex: Cartão Santander):");
-                if (novoCartao && novoCartao.trim() !== "") {
-                    const nomeFormatado = novoCartao.trim();
-                    const opt = document.createElement('option');
-                    opt.value = nomeFormatado;
-                    opt.textContent = nomeFormatado;
-                    cardOriginSelect.insertBefore(opt, cardOriginSelect.lastElementChild);
-                    cardOriginSelect.value = nomeFormatado;
-                } else {
-                    cardOriginSelect.value = "";
+        if (cardOriginSelect) {
+            cardOriginSelect.addEventListener('change', (e) => {
+                if (e.target.value === "OUTRO_CARTAO_CUSTOM") {
+                    const novoCartao = prompt("Digite o nome do novo cartão (ex: Cartão Santander):");
+                    if (novoCartao && novoCartao.trim() !== "") {
+                        const nomeFormatado = novoCartao.trim();
+                        const opt = document.createElement('option');
+                        opt.value = nomeFormatado;
+                        opt.textContent = nomeFormatado;
+                        cardOriginSelect.insertBefore(opt, cardOriginSelect.lastElementChild);
+                        cardOriginSelect.value = nomeFormatado;
+                    } else {
+                        cardOriginSelect.value = "";
+                    }
                 }
-            }
-        });
-
-        window.addEventListener('DOMContentLoaded', () => {
-            verificarAtualizacaoDoApp();
-
-            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-            try { firebase.database().goOnline(); } catch(e){}
-
-            dbRoot = firebase.database().ref();
-
-            const usuarioSalvo = localStorage.getItem('saved_username');
-            const senhaSalva = localStorage.getItem('saved_password');
-            if (usuarioSalvo) loginUsernameInput.value = usuarioSalvo;
-            if (senhaSalva) loginPassword.value = senhaSalva;
-            rememberMeCheckbox.checked = localStorage.getItem('remember_active') !== 'false';
-
-            dbRoot.child('config_perfis').on('value', (snapshot) => {
-                const dadosNuvem = snapshot.val();
-                if (!dadosNuvem) {
-                    dbRoot.child('config_perfis').set(DEFAULT_PROFILES);
-                    perfisCadastrados = DEFAULT_PROFILES;
-                } else {
-                    perfisCadastrados = dadosNuvem;
-                }
-                verificarSessaoSalva();
-            }, (error) => { verificarSessaoSalva(); });
-        });
-
-        function verificarSessaoSalva() {
-            const jaLogado = localStorage.getItem('user_authenticated') === 'true';
-            const chaveAtiva = localStorage.getItem('active_user_key');
-            if (jaLogado && chaveAtiva && perfisCadastrados[chaveAtiva]) entrarNoAplicativo(perfisCadastrados[chaveAtiva], chaveAtiva);
-            else { loginScreen.style.display = 'flex'; appContainer.style.display = 'none'; }
+            });
         }
 
-        loginForm.addEventListener('submit', (e) => {
+        function verificarSessaoSalva() {
+            try {
+                const jaLogado = localStorage.getItem('user_authenticated') === 'true';
+                const chaveAtiva = localStorage.getItem('active_user_key');
+                if (jaLogado && chaveAtiva && perfisCadastrados && perfisCadastrados[chaveAtiva]) {
+                    entrarNoAplicativo(perfisCadastrados[chaveAtiva], chaveAtiva);
+                } else {
+                    if (loginScreen) loginScreen.style.display = 'flex';
+                    if (appContainer) appContainer.style.display = 'none';
+                }
+            } catch(e) {
+                if (loginScreen) loginScreen.style.display = 'flex';
+                if (appContainer) appContainer.style.display = 'none';
+            }
+        }
+
+        function handleLoginSubmit(e) {
             e.preventDefault();
-            const usernameInput = loginUsernameInput.value.trim();
-            const passwordInput = loginPassword.value.trim();
+            const usernameInput = loginUsernameInput ? loginUsernameInput.value.trim() : '';
+            const passwordInput = loginPasswordInput ? loginPasswordInput.value.trim() : '';
             const nomeNorm = sanitizarChaveNode(usernameInput);
 
             let perfilEncontradoKey = null, perfilEncontradoObj = null;
@@ -820,35 +855,49 @@
             }
 
             if (perfilEncontradoObj) {
-                localStorage.setItem('user_authenticated', 'true');
-                localStorage.setItem('active_user_key', perfilEncontradoKey);
-                if (rememberMeCheckbox.checked) {
-                    localStorage.setItem('remember_active', 'true'); localStorage.setItem('saved_username', usernameInput); localStorage.setItem('saved_password', passwordInput);
-                } else {
-                    localStorage.setItem('remember_active', 'false'); localStorage.removeItem('saved_username'); localStorage.removeItem('saved_password');
-                }
-                loginError.style.display = 'none';
+                try {
+                    localStorage.setItem('user_authenticated', 'true');
+                    localStorage.setItem('active_user_key', perfilEncontradoKey);
+                    if (rememberMeCheckbox && rememberMeCheckbox.checked) {
+                        localStorage.setItem('remember_active', 'true');
+                        localStorage.setItem('saved_username', usernameInput);
+                        localStorage.setItem('saved_password', passwordInput);
+                    } else {
+                        localStorage.setItem('remember_active', 'false');
+                        localStorage.removeItem('saved_username');
+                        localStorage.removeItem('saved_password');
+                    }
+                } catch(e) {}
+
+                if (loginError) loginError.style.display = 'none';
                 entrarNoAplicativo(perfilEncontradoObj, perfilEncontradoKey);
-            } else { loginError.style.display = 'block'; loginPassword.value = ''; }
-        });
+            } else {
+                if (loginError) loginError.style.display = 'block';
+                if (loginPasswordInput) loginPasswordInput.value = '';
+            }
+        }
 
         function entrarNoAplicativo(perfil, chaveKey) {
-            loginScreen.style.display = 'none';
-            appContainer.style.display = 'block';
-            profileBadge.textContent = `👤 Perfil: ${perfil.name}${perfil.isMaster ? ' (Master)' : ''}`;
-            btnMasterPanel.style.display = perfil.isMaster ? 'flex' : 'none';
+            if (loginScreen) loginScreen.style.display = 'none';
+            if (appContainer) appContainer.style.display = 'block';
+            if (profileBadge) profileBadge.textContent = `👤 Perfil: ${perfil.name}${perfil.isMaster ? ' (Master)' : ''}`;
+            if (btnMasterPanel) btnMasterPanel.style.display = perfil.isMaster ? 'flex' : 'none';
 
             const nodeTarget = perfil.isMaster ? NO_MASTER_ORIGINAL : (perfil.node || ('lancamentos_' + sanitizarChaveNode(perfil.name)));
 
             if (dbTransactions) dbTransactions.off();
-            dbTransactions = dbRoot.child(nodeTarget);
-            dbTransactions.on('value', (snapshot) => {
-                const data = snapshot.val();
-                let novasTransacoes = [];
-                if (data) Object.keys(data).forEach(key => novasTransacoes.push({ id: key, ...data[key] }));
-                transactions = novasTransacoes;
-                agendarAtualizacaoDaTela();
-            }, (error) => { agendarAtualizacaoDaTela(); });
+            if (dbRoot) {
+                dbTransactions = dbRoot.child(nodeTarget);
+                dbTransactions.on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    let novasTransacoes = [];
+                    if (data) Object.keys(data).forEach(key => novasTransacoes.push({ id: key, ...data[key] }));
+                    transactions = novasTransacoes;
+                    agendarAtualizacaoDaTela();
+                }, (error) => {
+                    agendarAtualizacaoDaTela();
+                });
+            }
         }
 
         window.abrirPainelMaster = function() {
@@ -871,7 +920,7 @@
                     const nomeTrimmed = nomeNovo.trim();
                     const keyNova = 'user_' + sanitizarChaveNode(nomeTrimmed);
                     perfisCadastrados[keyNova] = { name: nomeTrimmed, pwd: SENHA_PADRAO_NOVOS_PERFIS, isMaster: false, node: 'lancamentos_' + sanitizarChaveNode(nomeTrimmed) };
-                    dbRoot.child('config_perfis').set(perfisCadastrados).then(() => alert(`✅ Perfil "${nomeTrimmed}" criado!\n🔑 Senha inicial: 12345`));
+                    if (dbRoot) dbRoot.child('config_perfis').set(perfisCadastrados).then(() => alert(`✅ Perfil "${nomeTrimmed}" criado!\n🔑 Senha inicial: 12345`));
                 }
             } else if (acao === '2') {
                 const numExcluir = prompt(`${listaPerfisTexto}\nDigite o NÚMERO do perfil para excluir:`);
@@ -880,55 +929,60 @@
                     const chaveExcluir = chaves[idx];
                     if (perfisCadastrados[chaveExcluir].isMaster) return alert("❌ O perfil Master não pode ser excluído.");
                     delete perfisCadastrados[chaveExcluir];
-                    dbRoot.child('config_perfis').set(perfisCadastrados).then(() => alert("Perfil removido com sucesso."));
+                    if (dbRoot) dbRoot.child('config_perfis').set(perfisCadastrados).then(() => alert("Perfil removido com sucesso."));
                 }
             } else if (acao === '3') {
                 const numReset = prompt(`${listaPerfisTexto}\nDigite o NÚMERO do perfil para resetar a senha:`);
                 const idx = parseInt(numReset) - 1;
                 if (!isNaN(idx) && idx >= 0 && idx < chaves.length) {
                     perfisCadastrados[chaves[idx]].pwd = SENHA_PADRAO_NOVOS_PERFIS;
-                    dbRoot.child('config_perfis').set(perfisCadastrados).then(() => alert("Senha redefinida para 12345 com sucesso!"));
+                    if (dbRoot) dbRoot.child('config_perfis').set(perfisCadastrados).then(() => alert("Senha redefinida para 12345 com sucesso!"));
                 }
             }
         }
 
         window.atualizarRotuloData = function() {
-            const tipo = document.querySelector('input[name="type"]:checked').value;
+            const tipoEl = document.querySelector('input[name="type"]:checked');
+            if (!tipoEl) return;
+            const tipo = tipoEl.value;
             if (tipo === 'receber') { dateLabel.textContent = "Data de Recebimento"; return; }
             if (tipo === 'transfer') { dateLabel.textContent = "Data da Transferência"; return; }
 
-            const methodVal = document.querySelector('input[name="method"]:checked').value;
+            const methodEl = document.querySelector('input[name="method"]:checked');
+            const methodVal = methodEl ? methodEl.value : 'debito';
             if (methodVal === 'credito') dateLabel.textContent = "Data de Vencimento da Fatura";
             else dateLabel.textContent = "Data de Pagamento";
         }
 
         window.toggleTypeFields = function() {
-            const tipo = document.querySelector('input[name="type"]:checked').value;
+            const tipoEl = document.querySelector('input[name="type"]:checked');
+            if (!tipoEl) return;
+            const tipo = tipoEl.value;
             const expFields = document.getElementById('expense-conditional-fields');
             const transFields = document.getElementById('transfer-fields');
             
-            expFields.style.display = (tipo === 'pagar') ? 'block' : 'none';
-            transFields.style.display = (tipo === 'transfer') ? 'block' : 'none';
+            if (expFields) expFields.style.display = (tipo === 'pagar') ? 'block' : 'none';
+            if (transFields) transFields.style.display = (tipo === 'transfer') ? 'block' : 'none';
             
             if (tipo === 'receber') {
-                descGroup.style.display = 'block';
-                descInput.required = true;
-                descInput.placeholder = "Ex: Salario, Rendimento, Investimento...";
-                bankGroup.style.display = 'block';
-                bankLabel.textContent = 'Banco de Destino (Recebimento)';
-                bankSelect.required = true;
+                if (descGroup) descGroup.style.display = 'block';
+                if (descInput) { descInput.required = true; descInput.placeholder = "Ex: Salario, Rendimento, Investimento..."; }
+                if (bankGroup) bankGroup.style.display = 'block';
+                if (bankLabel) bankLabel.textContent = 'Banco de Destino (Recebimento)';
+                if (bankSelect) bankSelect.required = true;
             } else if (tipo === 'pagar') {
-                descGroup.style.display = 'block';
-                descInput.required = true;
-                const methodVal = document.querySelector('input[name="method"]:checked').value;
+                if (descGroup) descGroup.style.display = 'block';
+                if (descInput) descInput.required = true;
+                const methodEl = document.querySelector('input[name="method"]:checked');
+                const methodVal = methodEl ? methodEl.value : 'debito';
                 toggleMethodFields(methodVal);
             } else if (tipo === 'transfer') {
-                bankGroup.style.display = 'none';
-                bankSelect.required = false;
-                descGroup.style.display = 'none';
-                descInput.required = false;
-                bankOriginSelect.required = true;
-                bankDestinationSelect.required = true;
+                if (bankGroup) bankGroup.style.display = 'none';
+                if (bankSelect) bankSelect.required = false;
+                if (descGroup) descGroup.style.display = 'none';
+                if (descInput) descInput.required = false;
+                if (bankOriginSelect) bankOriginSelect.required = true;
+                if (bankDestinationSelect) bankDestinationSelect.required = true;
             }
             atualizarRotuloData();
         }
@@ -937,24 +991,23 @@
             const isCredito = (method === 'credito');
             const isConta = (method === 'conta');
             
-            document.getElementById('credit-fields').style.display = isCredito ? 'block' : 'none';
-            cardGroup.style.display = isCredito ? 'block' : 'none';
+            const credFields = document.getElementById('credit-fields');
+            if (credFields) credFields.style.display = isCredito ? 'block' : 'none';
+            if (cardGroup) cardGroup.style.display = isCredito ? 'block' : 'none';
             
-            if (isConta) {
-                descInput.placeholder = "Ex: IPTU, IPVA, Gás, Luz, Condomínio...";
-            } else if (isCredito) {
-                descInput.placeholder = "Ex: Renner, Supermercado, Farmácia...";
-            } else {
-                descInput.placeholder = "Ex: Mercado, Padaria, Combustível...";
+            if (descInput) {
+                if (isConta) descInput.placeholder = "Ex: IPTU, IPVA, Gás, Luz, Condomínio...";
+                else if (isCredito) descInput.placeholder = "Ex: Renner, Supermercado, Farmácia...";
+                else descInput.placeholder = "Ex: Mercado, Padaria, Combustível...";
             }
 
             if (isCredito || isConta) {
-                bankGroup.style.display = 'none';
-                bankSelect.required = false;
+                if (bankGroup) bankGroup.style.display = 'none';
+                if (bankSelect) bankSelect.required = false;
             } else {
-                bankGroup.style.display = 'block';
-                bankLabel.textContent = 'Banco de Origem (Débito)';
-                bankSelect.required = true;
+                if (bankGroup) bankGroup.style.display = 'block';
+                if (bankLabel) bankLabel.textContent = 'Banco de Origem (Débito)';
+                if (bankSelect) bankSelect.required = true;
             }
             atualizarRotuloData();
         }
@@ -976,10 +1029,12 @@
             if (novaSenha && novaSenha.trim().length >= 4) {
                 const novaSenhaTrim = novaSenha.trim();
                 perfisCadastrados[chaveAtiva].pwd = novaSenhaTrim;
-                dbRoot.child('config_perfis').set(perfisCadastrados).then(() => {
-                    if (localStorage.getItem('remember_active') === 'true' && localStorage.getItem('active_user_key'] === chaveAtiva) localStorage.setItem('saved_password', novaSenhaTrim);
-                    alert("Senha alterada com sucesso!");
-                });
+                if (dbRoot) {
+                    dbRoot.child('config_perfis').set(perfisCadastrados).then(() => {
+                        if (localStorage.getItem('remember_active') === 'true' && localStorage.getItem('active_user_key') === chaveAtiva) localStorage.setItem('saved_password', novaSenhaTrim);
+                        alert("Senha alterada com sucesso!");
+                    });
+                }
             }
         }
 
@@ -994,8 +1049,10 @@
         }
 
         window.fazerLogout = function() {
-            localStorage.removeItem('user_authenticated');
-            localStorage.removeItem('active_user_key');
+            try {
+                localStorage.removeItem('user_authenticated');
+                localStorage.removeItem('active_user_key');
+            } catch(e){}
             window.location.reload();
         }
 
@@ -1011,6 +1068,7 @@
         let ultimaAssinaturaDeMeses = '';
 
         function gerarFiltroDeMeses() {
+            if (!monthSelector) return;
             const mesesSet = new Set();
             mesesSet.add(mesAtualGlobalKey);
 
@@ -1049,18 +1107,22 @@
 
         function selectMonth(key) {
             selectedMonthKey = key;
-            monthSelector.querySelectorAll('.month-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.monthKey === key));
+            if (monthSelector) {
+                monthSelector.querySelectorAll('.month-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.monthKey === key));
+            }
             renderView();
         }
 
-        amountInput.addEventListener('input', (e) => {
-            let value = e.target.value.replace(/\D/g, '');
-            if (!value) { e.target.value = ''; return; }
-            let numValue = (parseFloat(value) / 100).toFixed(2);
-            let parts = numValue.split('.');
-            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-            e.target.value = parts.join(',');
-        });
+        if (amountInput) {
+            amountInput.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/\D/g, '');
+                if (!value) { e.target.value = ''; return; }
+                let numValue = (parseFloat(value) / 100).toFixed(2);
+                let parts = numValue.split('.');
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                e.target.value = parts.join(',');
+            });
+        }
 
         function parseFormattedValue(value) { if (!value) return 0; return parseFloat(value.replace(/\./g, '').replace(',', '.')) || 0; }
         function formatCurrency(value) { return Math.abs(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
@@ -1069,34 +1131,37 @@
 
         window.switchTab = function(tab) {
             currentTab = tab;
-            document.getElementById('tab-report').classList.toggle('active', tab === 'report');
-            document.getElementById('tab-pending').classList.toggle('active', tab === 'pending');
-            document.getElementById('tab-done').classList.toggle('active', tab === 'done');
             renderView();
         }
 
         window.setReportMode = function(mode) {
             reportMode = mode;
-            document.getElementById('rep-mode-month').classList.toggle('active', mode === 'month');
-            document.getElementById('rep-mode-year').classList.toggle('active', mode === 'year');
+            const rMonth = document.getElementById('rep-mode-month');
+            const rYear = document.getElementById('rep-mode-year');
+            if (rMonth) rMonth.classList.toggle('active', mode === 'month');
+            if (rYear) rYear.classList.toggle('active', mode === 'year');
             renderReport();
         }
 
         function renderView() {
-            document.getElementById('tab-report').classList.toggle('active', currentTab === 'report');
-            document.getElementById('tab-pending').classList.toggle('active', tab === 'pending');
-            document.getElementById('tab-done').classList.toggle('active', tab === 'done');
+            const tabRep = document.getElementById('tab-report');
+            const tabPend = document.getElementById('tab-pending');
+            const tabDon = document.getElementById('tab-done');
+
+            if (tabRep) tabRep.classList.toggle('active', currentTab === 'report');
+            if (tabPend) tabPend.classList.toggle('active', currentTab === 'pending');
+            if (tabDon) tabDon.classList.toggle('active', currentTab === 'done');
 
             const wrapper = document.getElementById('transactions-wrapper');
             const reportSection = document.getElementById('report-section');
 
             if (currentTab === 'report') {
-                wrapper.style.display = 'none';
-                reportSection.style.display = 'flex';
+                if (wrapper) wrapper.style.display = 'none';
+                if (reportSection) reportSection.style.display = 'flex';
                 renderReport();
             } else {
-                wrapper.style.display = 'block';
-                reportSection.style.display = 'none';
+                if (wrapper) wrapper.style.display = 'block';
+                if (reportSection) reportSection.style.display = 'none';
                 renderList();
             }
         }
@@ -1114,26 +1179,28 @@
                 const titleEl = document.getElementById('modal-title-text');
                 const subEl = document.getElementById('modal-subtitle-text');
 
-                titleEl.textContent = t.method === 'credito' ? "💳 Pagar Fatura do Cartão" : "📄 Pagar Conta";
-                subEl.textContent = `De qual banco saiu o dinheiro para pagar "${t.description}"?`;
+                if (titleEl) titleEl.textContent = t.method === 'credito' ? "💳 Pagar Fatura do Cartão" : "📄 Pagar Conta";
+                if (subEl) subEl.textContent = `De qual banco saiu o dinheiro para pagar "${t.description}"?`;
 
-                listEl.innerHTML = '';
-                LISTA_BANCOS_PADRAO.forEach(banco => {
-                    let nomeCurto = banco.includes('-') ? banco.split('-')[1].trim() : banco;
-                    let logoHtml = getBankLogo(nomeCurto);
+                if (listEl) {
+                    listEl.innerHTML = '';
+                    LISTA_BANCOS_PADRAO.forEach(banco => {
+                        let nomeCurto = banco.includes('-') ? banco.split('-')[1].trim() : banco;
+                        let logoHtml = getBankLogo(nomeCurto);
+                        listEl.innerHTML += `
+                            <button class="bank-option-btn" onclick="selecionarBancoModal('${banco}')">
+                                ${logoHtml} <span>${banco}</span>
+                            </button>
+                        `;
+                    });
                     listEl.innerHTML += `
-                        <button class="bank-option-btn" onclick="selecionarBancoModal('${banco}')">
-                            ${logoHtml} <span>${banco}</span>
+                        <button class="bank-option-btn" onclick="selecionarOutroBancoModal()" style="color:var(--primary); font-weight:bold;">
+                            ➕ Outro Banco...
                         </button>
                     `;
-                });
-                listEl.innerHTML += `
-                    <button class="bank-option-btn" onclick="selecionarOutroBancoModal()" style="color:var(--primary); font-weight:bold;">
-                        ➕ Outro Banco...
-                    </button>
-                `;
+                }
 
-                modalOverlay.style.display = 'flex';
+                if (modalOverlay) modalOverlay.style.display = 'flex';
             } else {
                 dbTransactions.child(id).update({ done: true });
             }
@@ -1149,30 +1216,33 @@
             const titleEl = document.getElementById('modal-title-text');
             const subEl = document.getElementById('modal-subtitle-text');
 
-            titleEl.textContent = tipoAcao === 'card' ? `💳 Pagar Fatura: ${nomeAlvo}` : `📄 Pagar Subgrupo: ${nomeAlvo}`;
-            subEl.textContent = `De qual banco saiu o dinheiro para o pagamento?`;
+            if (titleEl) titleEl.textContent = tipoAcao === 'card' ? `💳 Pagar Fatura: ${nomeAlvo}` : `📄 Pagar Subgrupo: ${nomeAlvo}`;
+            if (subEl) subEl.textContent = `De qual banco saiu o dinheiro para o pagamento?`;
 
-            listEl.innerHTML = '';
-            LISTA_BANCOS_PADRAO.forEach(banco => {
-                let nomeCurto = banco.includes('-') ? banco.split('-')[1].trim() : banco;
-                let logoHtml = getBankLogo(nomeCurto);
+            if (listEl) {
+                listEl.innerHTML = '';
+                LISTA_BANCOS_PADRAO.forEach(banco => {
+                    let nomeCurto = banco.includes('-') ? banco.split('-')[1].trim() : banco;
+                    let logoHtml = getBankLogo(nomeCurto);
+                    listEl.innerHTML += `
+                        <button class="bank-option-btn" onclick="selecionarBancoModal('${banco}')">
+                            ${logoHtml} <span>${banco}</span>
+                        </button>
+                    `;
+                });
                 listEl.innerHTML += `
-                    <button class="bank-option-btn" onclick="selecionarBancoModal('${banco}')">
-                        ${logoHtml} <span>${banco}</span>
+                    <button class="bank-option-btn" onclick="selecionarOutroBancoModal()" style="color:var(--primary); font-weight:bold;">
+                        ➕ Outro Banco...
                     </button>
                 `;
-            });
-            listEl.innerHTML += `
-                <button class="bank-option-btn" onclick="selecionarOutroBancoModal()" style="color:var(--primary); font-weight:bold;">
-                    ➕ Outro Banco...
-                </button>
-            `;
+            }
 
-            modalOverlay.style.display = 'flex';
+            if (modalOverlay) modalOverlay.style.display = 'flex';
         }
 
         window.fecharModalBanco = function() {
-            document.getElementById('bank-modal-overlay').style.display = 'none';
+            const modal = document.getElementById('bank-modal-overlay');
+            if (modal) modal.style.display = 'none';
             transactionToConfirmId = null;
             bulkActionType = null;
             bulkTargetName = null;
@@ -1224,51 +1294,65 @@
                 alert("Para alterar uma transferência, exclua este registro e faça novamente.");
                 return;
             }
-            editIdInput.value = t.id;
-            descInput.value = t.description.replace(/ \(\d+\/\d+\)$/, '');
-            amountInput.value = formatCurrencyInput(t.amount * (t.installmentsTotal || 1));
-            dateInput.value = t.date;
+            if (editIdInput) editIdInput.value = t.id;
+            if (descInput) descInput.value = t.description.replace(/ \(\d+\/\d+\)$/, '');
+            if (amountInput) amountInput.value = formatCurrencyInput(t.amount * (t.installmentsTotal || 1));
+            if (dateInput) dateInput.value = t.date;
             
             if (t.type === 'receber') {
-                document.getElementById('type-receber').checked = true;
-                bankSelect.value = t.bank || '';
+                const rEl = document.getElementById('type-receber');
+                if (rEl) rEl.checked = true;
+                if (bankSelect) bankSelect.value = t.bank || '';
             } else {
-                document.getElementById('type-pagar').checked = true;
+                const pEl = document.getElementById('type-pagar');
+                if (pEl) pEl.checked = true;
                 if (t.method === 'credito') {
-                    document.getElementById('method-credito').checked = true;
+                    const mCred = document.getElementById('method-credito');
+                    if (mCred) mCred.checked = true;
                     toggleMethodFields('credito');
-                    document.getElementById('installments').value = t.installmentsTotal || 1;
-                    cardOriginSelect.value = t.cardOrigin || '';
+                    const instEl = document.getElementById('installments');
+                    if (instEl) instEl.value = t.installmentsTotal || 1;
+                    if (cardOriginSelect) cardOriginSelect.value = t.cardOrigin || '';
                 } else if (t.method === 'conta') {
-                    document.getElementById('method-conta').checked = true;
+                    const mConta = document.getElementById('method-conta');
+                    if (mConta) mConta.checked = true;
                     toggleMethodFields('conta');
                 } else {
-                    document.getElementById('method-debito').checked = true;
+                    const mDeb = document.getElementById('method-debito');
+                    if (mDeb) mDeb.checked = true;
                     toggleMethodFields('debito');
-                    bankSelect.value = t.bank || '';
+                    if (bankSelect) bankSelect.value = t.bank || '';
                 }
             }
             toggleTypeFields();
-            document.getElementById('form-accordion-title').textContent = "Editar Lançamento";
-            document.getElementById('btn-salvar-lancamento').textContent = "Atualizar Lançamento";
-            document.getElementById('btn-cancelar-edicao').style.display = 'block';
-            formAccordion.setAttribute('open', 'open');
+            const accTitle = document.getElementById('form-accordion-title');
+            const btnSalvar = document.getElementById('btn-salvar-lancamento');
+            const btnCancel = document.getElementById('btn-cancelar-edicao');
+
+            if (accTitle) accTitle.textContent = "Editar Lançamento";
+            if (btnSalvar) btnSalvar.textContent = "Atualizar Lançamento";
+            if (btnCancel) btnCancel.style.display = 'block';
+            if (formAccordion) formAccordion.setAttribute('open', 'open');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         window.cancelarEdicao = function() {
-            editIdInput.value = '';
-            form.reset();
-            dateInput.value = new Date().toISOString().split('T')[0];
+            if (editIdInput) editIdInput.value = '';
+            if (form) form.reset();
+            if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
             toggleTypeFields();
-            document.getElementById('form-accordion-title').textContent = "Novo Lançamento";
-            document.getElementById('btn-salvar-lancamento').textContent = "Salvar Lançamento";
-            document.getElementById('btn-cancelar-edicao').style.display = 'none';
-            formAccordion.removeAttribute('open');
+            const accTitle = document.getElementById('form-accordion-title');
+            const btnSalvar = document.getElementById('btn-salvar-lancamento');
+            const btnCancel = document.getElementById('btn-cancelar-edicao');
+
+            if (accTitle) accTitle.textContent = "Novo Lançamento";
+            if (btnSalvar) btnSalvar.textContent = "Salvar Lançamento";
+            if (btnCancel) btnCancel.style.display = 'none';
+            if (formAccordion) formAccordion.removeAttribute('open');
         }
 
         window.salvarComoPDF = function() { window.print(); }
-        function atualizarTextoSeMudou(el, novoTexto) { if (el.textContent !== novoTexto) el.textContent = novoTexto; }
+        function atualizarTextoSeMudou(el, novoTexto) { if (el && el.textContent !== novoTexto) el.textContent = novoTexto; }
 
         function getBankLogo(bankName) {
             const domainMap = {
@@ -1314,22 +1398,20 @@
             atualizarTextoSeMudou(incomeEl, formatCurrency(pendingIncome));
             atualizarTextoSeMudou(expenseEl, formatCurrency(pendingExpense));
             
-            realBalanceEl.className = 'balance-value ' + (saldoRealAtual >= 0 ? 'unified-pos' : 'unified-neg');
-            balanceEl.className = 'balance-value ' + (saldoPrevistoGlobal >= 0 ? 'unified-pos' : 'unified-neg');
-            incomeEl.className = (pendingIncome >= 0 ? 'unified-pos' : 'unified-neg');
-            expenseEl.className = (pendingExpense >= 0 ? 'unified-neg' : 'unified-pos');
+            if (realBalanceEl) realBalanceEl.className = 'balance-value ' + (saldoRealAtual >= 0 ? 'unified-pos' : 'unified-neg');
+            if (balanceEl) balanceEl.className = 'balance-value ' + (saldoPrevistoGlobal >= 0 ? 'unified-pos' : 'unified-neg');
+            if (incomeEl) incomeEl.className = (pendingIncome >= 0 ? 'unified-pos' : 'unified-neg');
+            if (expenseEl) expenseEl.className = (pendingExpense >= 0 ? 'unified-neg' : 'unified-pos');
             
             let bankHtml = '';
             const bancosOrdenados = Object.entries(bankRealBalances).sort((a, b) => b[1] - a[1]);
             
-            if (bancosOrdenados.length > 0) {
+            if (bancosOrdenados.length > 0 && bankBalancesContainer) {
                 bankBalancesContainer.style.display = 'flex';
                 bancosOrdenados.forEach(([nomeBancoCompleto, saldoReal]) => {
                     let nomeCurto = nomeBancoCompleto.includes('-') ? nomeBancoCompleto.split('-')[1].trim() : nomeBancoCompleto;
                     let logoHtml = getBankLogo(nomeCurto); 
-                    
                     if(nomeCurto.length > 15) nomeCurto = nomeCurto.substring(0, 13) + '...';
-                    
                     let corClasse = saldoReal >= 0 ? 'bank-pos' : 'bank-neg';
                     bankHtml += `
                         <div class="bank-card">
@@ -1339,7 +1421,7 @@
                     `;
                 });
                 bankBalancesContainer.innerHTML = bankHtml;
-            } else {
+            } else if (bankBalancesContainer) {
                 bankBalancesContainer.style.display = 'none';
                 bankBalancesContainer.innerHTML = '';
             }
@@ -1409,12 +1491,12 @@
         }
 
         function renderList() {
+            if (!listContainer) return;
             const filtered = transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey)).filter(t => {
                 if (currentTab === 'done') return t.done || t.type === 'transfer';
                 return !t.done && t.type !== 'transfer';
             });
             
-            // Limpa antigos grupos visuais
             listContainer.querySelectorAll('.group-container').forEach(g => g.remove());
 
             if (filtered.length === 0) {
@@ -1568,18 +1650,29 @@
 
             const diff = totalEntradas - totalSaidas;
 
+            const kpiMargem = document.getElementById('kpi-margin');
+            const kpiFlow = document.getElementById('kpi-flow');
+            const analysisText = document.getElementById('analysis-summary-text');
+            const compTitle = document.getElementById('chart-comparison-title');
+
             if (reportMode === 'month') {
                 const margem = totalEntradas > 0 ? ((diff / totalEntradas) * 100).toFixed(1) : 0;
-                document.getElementById('label-kpi-1').textContent = "Margem Líquida"; document.getElementById('label-kpi-2').textContent = "Fluxo Líquido";
-                document.getElementById('kpi-margin').textContent = `${margem}%`; document.getElementById('kpi-margin').className = margem >= 0 ? 'income-text' : 'expense-text';
-                document.getElementById('kpi-flow').textContent = formatCurrency(diff); document.getElementById('kpi-flow').className = diff >= 0 ? 'income-text' : 'expense-text';
-                document.getElementById('analysis-summary-text').innerHTML = `Total de Entradas: <strong class="income-text">${formatCurrency(totalEntradas)}</strong> | Total de Saídas: <strong class="expense-text">${formatCurrency(totalSaidas)}</strong><br><br>${diff >= 0 ? `✅ Excelente! Suas <strong>entradas superam as saídas</strong> em ${formatCurrency(diff)}.` : `⚠️ Alerta Executivo: Suas <strong>saídas superam as entradas</strong> em ${formatCurrency(Math.abs(diff))}.`}`;
-                document.getElementById('chart-comparison-title').textContent = "📊 Demonstrativo Mensal (Entradas vs Saídas)";
+                const l1 = document.getElementById('label-kpi-1');
+                const l2 = document.getElementById('label-kpi-2');
+                if (l1) l1.textContent = "Margem Líquida";
+                if (l2) l2.textContent = "Fluxo Líquido";
+                if (kpiMargem) { kpiMargem.textContent = `${margem}%`; kpiMargem.className = margem >= 0 ? 'income-text' : 'expense-text'; }
+                if (kpiFlow) { kpiFlow.textContent = formatCurrency(diff); kpiFlow.className = diff >= 0 ? 'income-text' : 'expense-text'; }
+                if (analysisText) analysisText.innerHTML = `Total de Entradas: <strong class="income-text">${formatCurrency(totalEntradas)}</strong> | Total de Saídas: <strong class="expense-text">${formatCurrency(totalSaidas)}</strong><br><br>${diff >= 0 ? `✅ Excelente! Suas <strong>entradas superam as saídas</strong> em ${formatCurrency(diff)}.` : `⚠️ Alerta Executivo: Suas <strong>saídas superam as entradas</strong> em ${formatCurrency(Math.abs(diff))}.`}`;
+                if (compTitle) compTitle.textContent = "📊 Demonstrativo Mensal (Entradas vs Saídas)";
             } else {
                 const margemAnual = totalEntradas > 0 ? ((diff / totalEntradas) * 100).toFixed(1) : 0;
-                document.getElementById('label-kpi-1').textContent = "Margem Anual"; document.getElementById('label-kpi-2').textContent = "Fluxo Líquido Anual";
-                document.getElementById('kpi-margin').textContent = `${margemAnual}%`; document.getElementById('kpi-margin').className = margemAnual >= 0 ? 'income-text' : 'expense-text';
-                document.getElementById('kpi-flow').textContent = formatCurrency(diff); document.getElementById('kpi-flow').className = diff >= 0 ? 'income-text' : 'expense-text';
+                const l1 = document.getElementById('label-kpi-1');
+                const l2 = document.getElementById('label-kpi-2');
+                if (l1) l1.textContent = "Margem Anual";
+                if (l2) l2.textContent = "Fluxo Líquido Anual";
+                if (kpiMargem) { kpiMargem.textContent = `${margemAnual}%`; kpiMargem.className = margemAnual >= 0 ? 'income-text' : 'expense-text'; }
+                if (kpiFlow) { kpiFlow.textContent = formatCurrency(diff); kpiFlow.className = diff >= 0 ? 'income-text' : 'expense-text'; }
 
                 let maiorDespesaNome = "Nenhuma"; let maiorDespesaValor = 0;
                 const ordenadasDespesas = Object.entries(agrupaSaidasDesc).sort((a, b) => b[1] - a[1]);
@@ -1589,116 +1682,156 @@
                 if (diff < 0) analiseAnualHtml += `⚠️ <strong>Alerta Anual:</strong> Seus gastos superam as receitas! O maior impacto é gerado por <strong>"${maiorDespesaNome}"</strong> (${formatCurrency(maiorDespesaValor)}).`;
                 else analiseAnualHtml += `✅ <strong>Desempenho Anual Saudável:</strong> Entradas superam saídas no período.<br>💡 <strong>Oportunidade de Redução:</strong> A categoria que mais consome recursos é <strong>"${maiorDespesaNome}"</strong> (${formatCurrency(maiorDespesaValor)}).`;
 
-                document.getElementById('analysis-summary-text').innerHTML = analiseAnualHtml;
-                document.getElementById('chart-comparison-title').textContent = "📊 Evolução Mensal Anual (Entradas vs Saídas)";
+                if (analysisText) analysisText.innerHTML = analiseAnualHtml;
+                if (compTitle) compTitle.textContent = "📊 Evolução Mensal Anual (Entradas vs Saídas)";
             }
 
-            const topExpRanking = document.getElementById('top-expenses-ranking'); topExpRanking.innerHTML = '';
-            Object.entries(agrupaSaidasDesc).sort((a, b) => b[1] - a[1]).slice(0, 3).forEach(([desc, val], idx) => { topExpRanking.innerHTML += `<div class="ranking-item"><span>#${idx+1} ${desc}</span><strong class="expense-text">${formatCurrency(val)}</strong></div>`; });
-            if(topExpRanking.innerHTML === '') topExpRanking.innerHTML = '<div class="empty-state">Sem dados de despesas.</div>';
+            const topExpRanking = document.getElementById('top-expenses-ranking');
+            if (topExpRanking) {
+                topExpRanking.innerHTML = '';
+                Object.entries(agrupaSaidasDesc).sort((a, b) => b[1] - a[1]).slice(0, 3).forEach(([desc, val], idx) => {
+                    topExpRanking.innerHTML += `<div class="ranking-item"><span>#${idx+1} ${desc}</span><strong class="expense-text">${formatCurrency(val)}</strong></div>`;
+                });
+                if(topExpRanking.innerHTML === '') topExpRanking.innerHTML = '<div class="empty-state">Sem dados de despesas.</div>';
+            }
 
-            const topIncRanking = document.getElementById('top-incomes-ranking'); topIncRanking.innerHTML = '';
-            Object.entries(agrupaEntradasOrigem).sort((a, b) => b[1] - a[1]).slice(0, 3).forEach(([orig, val], idx) => { topIncRanking.innerHTML += `<div class="ranking-item"><span>#${idx+1} ${orig}</span><strong class="income-text">${formatCurrency(val)}</strong></div>`; });
-            if(topIncRanking.innerHTML === '') topIncRanking.innerHTML = '<div class="empty-state">Sem dados de entradas.</div>';
+            const topIncRanking = document.getElementById('top-incomes-ranking');
+            if (topIncRanking) {
+                topIncRanking.innerHTML = '';
+                Object.entries(agrupaEntradasOrigem).sort((a, b) => b[1] - a[1]).slice(0, 3).forEach(([orig, val], idx) => {
+                    topIncRanking.innerHTML += `<div class="ranking-item"><span>#${idx+1} ${orig}</span><strong class="income-text">${formatCurrency(val)}</strong></div>`;
+                });
+                if(topIncRanking.innerHTML === '') topIncRanking.innerHTML = '<div class="empty-state">Sem dados de entradas.</div>';
+            }
 
             const paletaCoresPizza = ['#4ea8de', '#00b37e', '#ffb86c', '#f75a68', '#9d4edd', '#48bfe3'];
-            if (chartComparisonInstance) chartComparisonInstance.destroy();
             const commonChartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 14, font: { size: 12, weight: '600' }, color: '#e1e1e6', padding: 14 } } } };
 
-            if (reportMode === 'month') {
-                chartComparisonInstance = new Chart(document.getElementById('chart-comparison').getContext('2d'), { type: 'bar', data: { labels: ['Entradas', 'Saídas'], datasets: [{ data: [totalEntradas, totalSaidas], backgroundColor: ['#00b37e', '#f75a68'], borderRadius: 6 }] }, options: { ...commonChartOptions, plugins: { legend: { display: false } } } });
-            } else {
-                const mesesAgrupados = {};
-                transactions.forEach(t => {
-                    if (t.date && t.type !== 'transfer') {
-                        const mKey = t.date.substring(0, 7);
-                        if (!mesesAgrupados[mKey]) mesesAgrupados[mKey] = { rec: 0, pag: 0 };
-                        if (t.type === 'receber') mesesAgrupados[mKey].rec += t.amount; else mesesAgrupados[mKey].pag += t.amount;
-                    }
-                });
-                const chavesMeses = Object.keys(mesesAgrupados).sort();
-                const labelsAnuais = chavesMeses.map(m => { const [ano, mes] = m.split('-'); return `${NOME_MESES[parseInt(mes) - 1]}/${ano}`; });
-                const dadosRecAnual = chavesMeses.map(m => mesesAgrupados[m].rec); const dadosPagAnual = chavesMeses.map(m => mesesAgrupados[m].pag);
-                chartComparisonInstance = new Chart(document.getElementById('chart-comparison').getContext('2d'), { type: 'bar', data: { labels: labelsAnuais.length ? labelsAnuais : ['Nenhum mês'], datasets: [ { label: 'Entradas', data: dadosRecAnual.length ? dadosRecAnual : [0], backgroundColor: '#00b37e', borderRadius: 4 }, { label: 'Saídas', data: dadosPagAnual.length ? dadosPagAnual : [0], backgroundColor: '#f75a68', borderRadius: 4 } ] }, options: commonChartOptions });
+            const canvasComp = document.getElementById('chart-comparison');
+            if (canvasComp) {
+                if (chartComparisonInstance) chartComparisonInstance.destroy();
+                if (reportMode === 'month') {
+                    chartComparisonInstance = new Chart(canvasComp.getContext('2d'), { type: 'bar', data: { labels: ['Entradas', 'Saídas'], datasets: [{ data: [totalEntradas, totalSaidas], backgroundColor: ['#00b37e', '#f75a68'], borderRadius: 6 }] }, options: { ...commonChartOptions, plugins: { legend: { display: false } } } });
+                } else {
+                    const mesesAgrupados = {};
+                    transactions.forEach(t => {
+                        if (t.date && t.type !== 'transfer') {
+                            const mKey = t.date.substring(0, 7);
+                            if (!mesesAgrupados[mKey]) mesesAgrupados[mKey] = { rec: 0, pag: 0 };
+                            if (t.type === 'receber') mesesAgrupados[mKey].rec += t.amount; else mesesAgrupados[mKey].pag += t.amount;
+                        }
+                    });
+                    const chavesMeses = Object.keys(mesesAgrupados).sort();
+                    const labelsAnuais = chavesMeses.map(m => { const [ano, mes] = m.split('-'); return `${NOME_MESES[parseInt(mes) - 1]}/${ano}`; });
+                    const dadosRecAnual = chavesMeses.map(m => mesesAgrupados[m].rec); 
+                    const dadosPagAnual = chavesMeses.map(m => mesesAgrupados[m].pag);
+                    chartComparisonInstance = new Chart(canvasComp.getContext('2d'), { type: 'bar', data: { labels: labelsAnuais.length ? labelsAnuais : ['Nenhum mês'], datasets: [ { label: 'Entradas', data: dadosRecAnual.length ? dadosRecAnual : [0], backgroundColor: '#00b37e', borderRadius: 4 }, { label: 'Saídas', data: dadosPagAnual.length ? dadosPagAnual : [0], backgroundColor: '#f75a68', borderRadius: 4 } ] }, options: commonChartOptions });
+                }
             }
 
-            const dadosPizzaEntradas = consolidarDadosParaPizza(agrupaEntradasOrigem, 4);
-            if (chartIncomesPieInstance) chartIncomesPieInstance.destroy();
-            chartIncomesPieInstance = new Chart(document.getElementById('chart-incomes-pie').getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(dadosPizzaEntradas).length ? Object.keys(dadosPizzaEntradas) : ['Nenhuma'], datasets: [{ data: Object.values(dadosPizzaEntradas).length ? Object.values(dadosPizzaEntradas) : [1], backgroundColor: paletaCoresPizza, borderWidth: 2, borderColor: '#1d1d22', hoverOffset: 4 }] }, options: { ...commonChartOptions, cutout: '60%' } });
+            const canvasInc = document.getElementById('chart-incomes-pie');
+            if (canvasInc) {
+                const dadosPizzaEntradas = consolidarDadosParaPizza(agrupaEntradasOrigem, 4);
+                if (chartIncomesPieInstance) chartIncomesPieInstance.destroy();
+                chartIncomesPieInstance = new Chart(canvasInc.getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(dadosPizzaEntradas).length ? Object.keys(dadosPizzaEntradas) : ['Nenhuma'], datasets: [{ data: Object.values(dadosPizzaEntradas).length ? Object.values(dadosPizzaEntradas) : [1], backgroundColor: paletaCoresPizza, borderWidth: 2, borderColor: '#1d1d22', hoverOffset: 4 }] }, options: { ...commonChartOptions, cutout: '60%' } });
+            }
 
-            const dadosPizzaSaidas = consolidarDadosParaPizza(agrupaSaidasDesc, 4);
-            if (chartExpensesPieInstance) chartExpensesPieInstance.destroy();
-            chartExpensesPieInstance = new Chart(document.getElementById('chart-expenses-pie').getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(dadosPizzaSaidas).length ? Object.keys(dadosPizzaSaidas) : ['Nenhuma'], datasets: [{ data: Object.values(dadosPizzaSaidas).length ? Object.values(dadosPizzaSaidas) : [1], backgroundColor: paletaCoresPizza, borderWidth: 2, borderColor: '#1d1d22', hoverOffset: 4 }] }, options: { ...commonChartOptions, cutout: '60%' } });
+            const canvasExp = document.getElementById('chart-expenses-pie');
+            if (canvasExp) {
+                const dadosPizzaSaidas = consolidarDadosParaPizza(agrupaSaidasDesc, 4);
+                if (chartExpensesPieInstance) chartExpensesPieInstance.destroy();
+                chartExpensesPieInstance = new Chart(canvasExp.getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(dadosPizzaSaidas).length ? Object.keys(dadosPizzaSaidas) : ['Nenhuma'], datasets: [{ data: Object.values(dadosPizzaSaidas).length ? Object.values(dadosPizzaSaidas) : [1], backgroundColor: paletaCoresPizza, borderWidth: 2, borderColor: '#1d1d22', hoverOffset: 4 }] }, options: { ...commonChartOptions, cutout: '60%' } });
+            }
 
-            const detailedIncList = document.getElementById('detailed-incomes-list'); detailedIncList.innerHTML = entradasDetalhadas.length ? '' : '<div class="empty-state">Nenhuma entrada.</div>';
-            entradasDetalhadas.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
-                let subTitle = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : ''; let iconHtml = subTitle ? getBankLogo(subTitle) : '';
-                detailedIncList.innerHTML += `<div class="detailed-item"><div class="detailed-info"><h4>${t.description}</h4><span style="display:inline-flex; align-items:center;">${formatDate(t.date)}${subTitle ? ' &nbsp;•&nbsp; ' + iconHtml + ' ' + subTitle : ''}</span></div><strong class="income-text">${formatCurrency(t.amount)}</strong></div>`;
-            });
+            const detailedIncList = document.getElementById('detailed-incomes-list');
+            if (detailedIncList) {
+                detailedIncList.innerHTML = entradasDetalhadas.length ? '' : '<div class="empty-state">Nenhuma entrada.</div>';
+                entradasDetalhadas.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
+                    let subTitle = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : ''; 
+                    let iconHtml = subTitle ? getBankLogo(subTitle) : '';
+                    detailedIncList.innerHTML += `<div class="detailed-item"><div class="detailed-info"><h4>${t.description}</h4><span style="display:inline-flex; align-items:center;">${formatDate(t.date)}${subTitle ? ' &nbsp;•&nbsp; ' + iconHtml + ' ' + subTitle : ''}</span></div><strong class="income-text">${formatCurrency(t.amount)}</strong></div>`;
+                });
+            }
 
-            const detailedExpList = document.getElementById('detailed-expenses-list'); detailedExpList.innerHTML = saidasDetalhadas.length ? '' : '<div class="empty-state">Nenhuma saída.</div>';
-            saidasDetalhadas.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
-                let subTitle = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : ''; let iconHtml = subTitle ? getBankLogo(subTitle) : '';
-                detailedExpList.innerHTML += `<div class="detailed-item"><div class="detailed-info"><h4>${t.description}</h4><span style="display:inline-flex; align-items:center;">${formatDate(t.date)}${subTitle ? ' &nbsp;•&nbsp; ' + iconHtml + ' ' + subTitle : ''}</span></div><strong class="expense-text">${formatCurrency(t.amount)}</strong></div>`;
-            });
+            const detailedExpList = document.getElementById('detailed-expenses-list');
+            if (detailedExpList) {
+                detailedExpList.innerHTML = saidasDetalhadas.length ? '' : '<div class="empty-state">Nenhuma saída.</div>';
+                saidasDetalhadas.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
+                    let subTitle = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : ''; 
+                    let iconHtml = subTitle ? getBankLogo(subTitle) : '';
+                    detailedExpList.innerHTML += `<div class="detailed-item"><div class="detailed-info"><h4>${t.description}</h4><span style="display:inline-flex; align-items:center;">${formatDate(t.date)}${subTitle ? ' &nbsp;•&nbsp; ' + iconHtml + ' ' + subTitle : ''}</span></div><strong class="expense-text">${formatCurrency(t.amount)}</strong></div>`;
+                });
+            }
         }
 
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const editId = editIdInput.value; 
-            const selectedType = document.querySelector('input[name="type"]:checked').value; 
-            const totalAmount = parseFormattedValue(amountInput.value); 
-            const baseDate = dateInput.value; 
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const editId = editIdInput ? editIdInput.value : ''; 
+                const selectedTypeEl = document.querySelector('input[name="type"]:checked');
+                if (!selectedTypeEl) return;
+                const selectedType = selectedTypeEl.value; 
+                const totalAmount = parseFormattedValue(amountInput ? amountInput.value : ''); 
+                const baseDate = dateInput ? dateInput.value : ''; 
 
-            if (totalAmount <= 0 || !baseDate) return;
+                if (totalAmount <= 0 || !baseDate) return;
 
-            if (selectedType === 'transfer') {
-                const bOrigem = bankOriginSelect.value;
-                const bDestino = bankDestinationSelect.value;
-                if (!bOrigem || !bDestino) return alert("Selecione o banco de origem e o banco de destino.");
-                if (bOrigem === bDestino) return alert("O banco de origem e o destino devem ser diferentes.");
+                if (selectedType === 'transfer') {
+                    const bOrigem = bankOriginSelect ? bankOriginSelect.value : '';
+                    const bDestino = bankDestinationSelect ? bankDestinationSelect.value : '';
+                    if (!bOrigem || !bDestino) return alert("Selecione o banco de origem e o banco de destino.");
+                    if (bOrigem === bDestino) return alert("O banco de origem e o destino devem ser diferentes.");
 
-                if (dbTransactions) {
-                    dbTransactions.push({
-                        type: 'transfer',
-                        description: 'Transferência entre Contas',
-                        amount: totalAmount,
-                        date: baseDate,
-                        bankOrigin: bOrigem,
-                        bankDestination: bDestino,
-                        done: true
-                    });
-                }
-            } else {
-                const description = descInput.value.trim();
-                const methodVal = selectedType === 'pagar' ? document.querySelector('input[name="method"]:checked').value : 'debito';
-                let cardOrigin = ''; let bankSelected = '';
-                
-                if (selectedType === 'receber' || (selectedType === 'pagar' && methodVal === 'debito')) bankSelected = bankSelect.value;
-                if (selectedType === 'pagar' && methodVal === 'credito') {
-                    cardOrigin = cardOriginSelect.value.trim();
-                    if (!cardOrigin) return alert("Selecione um cartão de crédito.");
-                }
-                if (!description) return;
+                    if (dbTransactions) {
+                        dbTransactions.push({
+                            type: 'transfer',
+                            description: 'Transferência entre Contas',
+                            amount: totalAmount,
+                            date: baseDate,
+                            bankOrigin: bOrigem,
+                            bankDestination: bDestino,
+                            done: true
+                        });
+                    }
+                } else {
+                    const description = descInput ? descInput.value.trim() : '';
+                    const methodEl = document.querySelector('input[name="method"]:checked');
+                    const methodVal = selectedType === 'pagar' && methodEl ? methodEl.value : 'debito';
+                    let cardOrigin = ''; let bankSelected = '';
+                    
+                    if (selectedType === 'receber' || (selectedType === 'pagar' && methodVal === 'debito')) {
+                        bankSelected = bankSelect ? bankSelect.value : '';
+                    }
+                    if (selectedType === 'pagar' && methodVal === 'credito') {
+                        cardOrigin = cardOriginSelect ? cardOriginSelect.value.trim() : '';
+                        if (!cardOrigin) return alert("Selecione um cartão de crédito.");
+                    }
+                    if (!description) return;
 
-                const qtdParcelas = selectedType === 'pagar' && methodVal === 'credito' ? (parseInt(document.getElementById('installments').value) || 1) : 1;
+                    const instInput = document.getElementById('installments');
+                    const qtdParcelas = selectedType === 'pagar' && methodVal === 'credito' ? (instInput ? (parseInt(instInput.value) || 1) : 1) : 1;
 
-                if (dbTransactions) {
-                    if (editId) {
-                        const transAntiga = transactions.find(item => item.id === editId); const statusDone = transAntiga ? !!transAntiga.done : false;
-                        dbTransactions.child(editId).update({ type: selectedType, description, amount: totalAmount, date: baseDate, cardOrigin: cardOrigin || '', bank: bankSelected || '', method: methodVal, installmentsNum: 1, installmentsTotal: 1, done: statusDone });
-                    } else {
-                        const valorParcela = parseFloat((totalAmount / qtdParcelas).toFixed(2));
-                        let [ano, mes, dia] = baseDate.split('-').map(Number);
-                        for (let i = 0; i < qtdParcelas; i++) {
-                            let novaData = new Date(ano, mes - 1 + i, dia); let anoStr = novaData.getFullYear(); let mesStr = String(novaData.getMonth() + 1).padStart(2, '0'); let diaStr = String(novaData.getDate()).padStart(2, '0');
-                            dbTransactions.push({ type: selectedType, description: qtdParcelas > 1 ? `${description} (${i + 1}/${qtdParcelas})` : description, amount: valorParcela, date: `${anoStr}-${mesStr}-${diaStr}`, cardOrigin: cardOrigin || '', bank: bankSelected || '', method: methodVal, installmentsNum: i + 1, installmentsTotal: qtdParcelas, done: (selectedType === 'pagar' && methodVal === 'debito') ? true : false });
+                    if (dbTransactions) {
+                        if (editId) {
+                            const transAntiga = transactions.find(item => item.id === editId); 
+                            const statusDone = transAntiga ? !!transAntiga.done : false;
+                            dbTransactions.child(editId).update({ type: selectedType, description, amount: totalAmount, date: baseDate, cardOrigin: cardOrigin || '', bank: bankSelected || '', method: methodVal, installmentsNum: 1, installmentsTotal: 1, done: statusDone });
+                        } else {
+                            const valorParcela = parseFloat((totalAmount / qtdParcelas).toFixed(2));
+                            let [ano, mes, dia] = baseDate.split('-').map(Number);
+                            for (let i = 0; i < qtdParcelas; i++) {
+                                let novaData = new Date(ano, mes - 1 + i, dia); 
+                                let anoStr = novaData.getFullYear(); 
+                                let mesStr = String(novaData.getMonth() + 1).padStart(2, '0'); 
+                                let diaStr = String(novaData.getDate()).padStart(2, '0');
+                                dbTransactions.push({ type: selectedType, description: qtdParcelas > 1 ? `${description} (${i + 1}/${qtdParcelas})` : description, amount: valorParcela, date: `${anoStr}-${mesStr}-${diaStr}`, cardOrigin: cardOrigin || '', bank: bankSelected || '', method: methodVal, installmentsNum: i + 1, installmentsTotal: qtdParcelas, done: (selectedType === 'pagar' && methodVal === 'debito') ? true : false });
+                            }
                         }
                     }
                 }
-            }
-            cancelarEdicao();
-        });
+                cancelarEdicao();
+            });
+        }
     </script>
 </body>
 </html>
