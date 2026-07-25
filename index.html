@@ -535,7 +535,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.4.16"; 
+        const VERSAO_CODIGO = "1.4.17"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -806,8 +806,9 @@
 
         [bankSelect, bankOriginSelect, bankDestinationSelect].forEach(sel => {
             if (sel) {
-                sel.addEventListener('change', (e) => {
+                sel.onchange = (e) => {
                     if (e.target.value === "OUTRO_BANCO_CUSTOM") {
+                        e.target.value = "";
                         const novoBanco = prompt("Digite o nome da conta ou banco (ex: Bradesco (Poupança), Itaú Corrente):");
                         if (novoBanco && novoBanco.trim() !== "") {
                             const nomeFormatado = novoBanco.trim();
@@ -817,17 +818,16 @@
                             }
                             atualizarOpcoesBancosForm();
                             e.target.value = nomeFormatado;
-                        } else {
-                            e.target.value = "";
                         }
                     }
-                });
+                };
             }
         });
 
         if (cardOriginSelect) {
-            cardOriginSelect.addEventListener('change', (e) => {
+            cardOriginSelect.onchange = (e) => {
                 if (e.target.value === "OUTRO_CARTAO_CUSTOM") {
+                    e.target.value = "";
                     const novoCartao = prompt("Digite o nome do cartão (ex: Nubank (Master), Cartão Extra):");
                     if (novoCartao && novoCartao.trim() !== "") {
                         const nomeFormatado = novoCartao.trim();
@@ -837,11 +837,9 @@
                         }
                         atualizarOpcoesCartoesForm();
                         cardOriginSelect.value = nomeFormatado;
-                    } else {
-                        cardOriginSelect.value = "";
                     }
                 }
-            });
+            };
         }
 
         function salvarCustomizacoesNuvem() {
@@ -868,7 +866,6 @@
                         const novoNomeTrim = novoNome.trim();
                         if (!bancosCustomizados.includes(novoNomeTrim)) bancosCustomizados.push(novoNomeTrim);
                         
-                        // Atualizar transações existentes que usavam esse banco
                         let updates = {};
                         transactions.forEach(t => {
                             if (t.bank === bancoAntigo) updates[`${t.id}/bank`] = novoNomeTrim;
@@ -975,7 +972,6 @@
 
             if (dbTransactions) dbTransactions.off();
             if (dbRoot) {
-                // Carregar customizações de bancos e cartões
                 dbRoot.child('config_contas_cartoes').on('value', (snap) => {
                     const val = snap.val();
                     if (val) {
