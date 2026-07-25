@@ -535,7 +535,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.4.18"; 
+        const VERSAO_CODIGO = "1.4.19"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -658,7 +658,7 @@
             } catch(e) {}
 
             if (dbRoot) {
-                dbRoot.child('config_perfis').on('value', (snapshot) => {
+                dbRoot.child('config_perfis').once('value').then((snapshot) => {
                     const dadosNuvem = snapshot.val();
                     if (!dadosNuvem) {
                         dbRoot.child('config_perfis').set(DEFAULT_PROFILES);
@@ -667,7 +667,7 @@
                         perfisCadastrados = dadosNuvem;
                     }
                     verificarSessaoSalva();
-                }, (error) => {
+                }).catch((error) => {
                     verificarSessaoSalva();
                 });
             } else {
@@ -1117,7 +1117,7 @@
                 perfisCadastrados[chaveAtiva].pwd = novaSenhaTrim;
                 if (dbRoot) {
                     dbRoot.child('config_perfis').set(perfisCadastrados).then(() => {
-                        if (localStorage.getItem('remember_active') === 'true' && localStorage.getItem('active_user_key'] === chaveAtiva) localStorage.setItem('saved_password', novaSenhaTrim);
+                        if (localStorage.getItem('remember_active') === 'true' && localStorage.getItem('active_user_key') === chaveAtiva) localStorage.setItem('saved_password', novaSenhaTrim);
                         alert("Senha alterada com sucesso!");
                     });
                 }
