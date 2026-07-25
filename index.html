@@ -594,7 +594,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.4.2"; 
+        const VERSAO_CODIGO = "1.4.3"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -637,8 +637,8 @@
         let currentTab = 'report';
         let reportMode = 'month';
         let transactionToConfirmId = null;
-        let bulkActionType = null; // 'card' ou 'conta'
-        let bulkTargetName = null; // Nome do cartão ou da conta
+        let bulkActionType = null; 
+        let bulkTargetName = null; 
 
         const estadoColapsoGrupos = {};
 
@@ -1082,8 +1082,8 @@
 
         function renderView() {
             document.getElementById('tab-report').classList.toggle('active', currentTab === 'report');
-            document.getElementById('tab-pending').classList.toggle('active', currentTab === 'pending');
-            document.getElementById('tab-done').classList.toggle('active', currentTab === 'done');
+            document.getElementById('tab-pending').classList.toggle('active', tab === 'pending');
+            document.getElementById('tab-done').classList.toggle('active', tab === 'done');
 
             const wrapper = document.getElementById('transactions-wrapper');
             const reportSection = document.getElementById('report-section');
@@ -1189,7 +1189,7 @@
                     if (bulkActionType === 'card' && t.method === 'credito' && (t.cardOrigin || 'Cartão Geral') === bulkTargetName) {
                         match = true;
                     } else if (bulkActionType === 'conta' && t.method === 'conta') {
-                        let subGroupKey = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : 'Pendentes';
+                        let subGroupKey = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : null;
                         if (subGroupKey === bulkTargetName) match = true;
                     }
                     if (match) {
@@ -1380,12 +1380,12 @@
                     if (t.bank) {
                         let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
                         iconHtml = getBankLogo(nomeCurto);
-                        badgeText = `${iconHtml} Conta • ${nomeCurto}`;
+                        badgeText = `${iconHtml} ${nomeCurto}`;
                     } else {
                         badgeText = '📄 Conta a Pagar';
                     }
                 } else { 
-                    if (t.bank) { let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} Saída ${nomeCurto}`; } else { badgeText = '💵 Débito'; } 
+                    if (t.bank) { let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} ${nomeCurto}`; } else { badgeText = '💵 Débito'; } 
                 }
             }
 
@@ -1429,17 +1429,17 @@
                     groupKey = 'Transferências entre Contas';
                 } else if (t.type === 'receber') {
                     groupKey = 'Entrada';
-                    subGroupKey = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : 'Diversos';
+                    subGroupKey = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : null;
                 } else { 
                     if (t.method === 'credito') { 
                         groupKey = 'Cartão de Crédito';
                         subGroupKey = t.cardOrigin ? t.cardOrigin.trim() : 'Cartão Geral';
                     } else if (t.method === 'conta') { 
                         groupKey = 'Contas e Boletos';
-                        subGroupKey = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : (currentTab === 'done' ? 'Contas Pagas' : 'Pendentes');
+                        subGroupKey = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : null;
                     } else { 
                         groupKey = 'Saída';
-                        subGroupKey = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : 'Diversos';
+                        subGroupKey = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : null;
                     } 
                 }
 
