@@ -594,7 +594,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.4.3"; 
+        const VERSAO_CODIGO = "1.4.4"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -1023,7 +1023,10 @@
 
             const mesesOrdenados = Array.from(mesesSet).sort();
 
-            if (!selectedMonthKey || !mesesSet.has(selectedMonthKey)) selectedMonthKey = mesAtualGlobalKey;
+            if (!selectedMonthKey || !mesesSet.has(selectedMonthKey)) {
+                // Se o mês atual não tiver transações mas houver transações em outros meses, garante que selecione um mês válido com dados
+                selectedMonthKey = mesesOrdenados[mesesOrdenados.length - 1] || mesAtualGlobalKey;
+            }
 
             const assinaturaAtual = mesesOrdenados.join(',');
 
@@ -1415,7 +1418,7 @@
 
             if (filtered.length === 0) {
                 listContainer.querySelectorAll('.group-container').forEach(g => g.remove());
-                if (!emptyState) listContainer.innerHTML = `<div class="empty-state">Nenhum lançamento encontrado.</div>`;
+                if (!emptyState) listContainer.innerHTML = `<div class="empty-state">Nenhum lançamento encontrado para este mês.</div>`;
                 return;
             }
             if (emptyState) emptyState.remove();
