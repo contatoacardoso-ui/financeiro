@@ -81,7 +81,7 @@
 
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--bg-color); display: flex; flex-direction: column;
+            background-color: var(--bg-color); display: none; flex-direction: column;
             justify-content: center; align-items: center; z-index: 10000; padding: 24px;
         }
         .login-card {
@@ -296,7 +296,7 @@
     </div>
 
     <!-- Tela de Login -->
-    <div id="login-screen" style="display: flex;">
+    <div id="login-screen" style="display: none;">
         <div class="login-card">
             <div class="login-icon">🔒</div>
             <h2>Acesso Restrito</h2>
@@ -369,13 +369,51 @@
                         <div class="form-group">
                             <label for="bank-origin">Banco de Origem (Sai o valor)</label>
                             <select id="bank-origin">
-                                <!-- Preenchido dinamicamente -->
+                                <option value="" disabled selected>Selecione o banco de origem</option>
+                                <option value="260 - Nubank">260 - Nubank</option>
+                                <option value="341 - Itaú">341 - Itaú</option>
+                                <option value="336 - C6 Bank">336 - C6 Bank</option>
+                                <option value="001 - Banco do Brasil">001 - Banco do Brasil</option>
+                                <option value="033 - Santander">033 - Santander</option>
+                                <option value="237 - Bradesco">237 - Bradesco</option>
+                                <option value="104 - Caixa Econômica Federal">104 - Caixa Econômica Federal</option>
+                                <option value="077 - Banco Inter">077 - Banco Inter</option>
+                                <option value="041 - Banrisul">041 - Banrisul</option>
+                                <option value="389 - Mercado Pago">389 - Mercado Pago</option>
+                                <option value="380 - PicPay">380 - PicPay</option>
+                                <option value="290 - PagSeguro">290 - PagSeguro</option>
+                                <option value="212 - Banco Original">212 - Banco Original</option>
+                                <option value="655 - Neon (Votorantim)">655 - Neon (Votorantim)</option>
+                                <option value="623 - Banco Pan">623 - Banco Pan</option>
+                                <option value="208 - BTG Pactual">208 - BTG Pactual</option>
+                                <option value="748 - Sicredi">748 - Sicredi</option>
+                                <option value="756 - Sicoob">756 - Sicoob</option>
+                                <option value="Outro Banco...">Outro Banco...</option>
                             </select>
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
                             <label for="bank-destination">Banco de Destino (Entra o valor)</label>
                             <select id="bank-destination">
-                                <!-- Preenchido dinamicamente -->
+                                <option value="" disabled selected>Selecione o banco de destino</option>
+                                <option value="260 - Nubank">260 - Nubank</option>
+                                <option value="341 - Itaú">341 - Itaú</option>
+                                <option value="336 - C6 Bank">336 - C6 Bank</option>
+                                <option value="001 - Banco do Brasil">001 - Banco do Brasil</option>
+                                <option value="033 - Santander">033 - Santander</option>
+                                <option value="237 - Bradesco">237 - Bradesco</option>
+                                <option value="104 - Caixa Econômica Federal">104 - Caixa Econômica Federal</option>
+                                <option value="077 - Banco Inter">077 - Banco Inter</option>
+                                <option value="041 - Banrisul">041 - Banrisul</option>
+                                <option value="389 - Mercado Pago">389 - Mercado Pago</option>
+                                <option value="380 - PicPay">380 - PicPay</option>
+                                <option value="290 - PagSeguro">290 - PagSeguro</option>
+                                <option value="212 - Banco Original">212 - Banco Original</option>
+                                <option value="655 - Neon (Votorantim)">655 - Neon (Votorantim)</option>
+                                <option value="623 - Banco Pan">623 - Banco Pan</option>
+                                <option value="208 - BTG Pactual">208 - BTG Pactual</option>
+                                <option value="748 - Sicredi">748 - Sicredi</option>
+                                <option value="756 - Sicoob">756 - Sicoob</option>
+                                <option value="Outro Banco...">Outro Banco...</option>
                             </select>
                         </div>
                     </div>
@@ -402,7 +440,11 @@
                         <div class="form-group" id="card-group">
                             <label for="card-origin">Nome do Cartão (Crédito)</label>
                             <select id="card-origin">
-                                <!-- Preenchido dinamicamente -->
+                                <option value="" disabled selected>Selecione ou adicione um cartão</option>
+                                <option value="Cartão C6 Bank">Cartão C6 Bank</option>
+                                <option value="Cartão Nubank">Cartão Nubank</option>
+                                <option value="Cartão Itaú">Cartão Itaú</option>
+                                <option value="Outro Cartão...">➕ Outro Cartão...</option>
                             </select>
                         </div>
 
@@ -417,7 +459,26 @@
                     <div class="form-group" id="bank-group">
                         <label id="bank-label">Banco de Destino</label>
                         <select id="bank-select">
-                            <!-- Preenchido dinamicamente -->
+                            <option value="" disabled selected>Selecione um banco</option>
+                            <option value="260 - Nubank">260 - Nubank</option>
+                            <option value="341 - Itaú">341 - Itaú</option>
+                            <option value="336 - C6 Bank">336 - C6 Bank</option>
+                            <option value="001 - Banco do Brasil">001 - Banco do Brasil</option>
+                            <option value="033 - Santander">033 - Santander</option>
+                            <option value="237 - Bradesco">237 - Bradesco</option>
+                            <option value="104 - Caixa Econômica Federal">104 - Caixa Econômica Federal</option>
+                            <option value="077 - Banco Inter">077 - Banco Inter</option>
+                            <option value="041 - Banrisul">041 - Banrisul</option>
+                            <option value="389 - Mercado Pago">389 - Mercado Pago</option>
+                            <option value="380 - PicPay">380 - PicPay</option>
+                            <option value="290 - PagSeguro">290 - PagSeguro</option>
+                            <option value="212 - Banco Original">212 - Banco Original</option>
+                            <option value="655 - Neon (Votorantim)">655 - Neon (Votorantim)</option>
+                            <option value="623 - Banco Pan">623 - Banco Pan</option>
+                            <option value="208 - BTG Pactual">208 - BTG Pactual</option>
+                            <option value="748 - Sicredi">748 - Sicredi</option>
+                            <option value="756 - Sicoob">756 - Sicoob</option>
+                            <option value="Outro Banco...">Outro Banco...</option>
                         </select>
                     </div>
 
@@ -516,7 +577,6 @@
                     <button class="master-btn" id="btn-master-panel" onclick="abrirPainelMaster()" style="display: none;"><span>👑</span> Gerenciar Perfis (Painel Master)</button>
                     <button onclick="fazerBackup()"><span>📥</span> Exportar Dados (Backup)</button>
                     <button onclick="alterarSenhaDoSistema()"><span>🔑</span> Alterar Minha Senha</button>
-                    <button onclick="abrirGerenciadorBancosCartoes()"><span>🏦</span> Gerenciar Bancos e Cartões</button>
                     <button class="danger-btn" onclick="limparBancoDeDados()"><span>🗑️</span> Zerar Banco de Dados deste Perfil</button>
                 </div>
             </div>
@@ -535,7 +595,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.4.19"; 
+        const VERSAO_CODIGO = "1.4.14"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -544,18 +604,12 @@
             'user_suelen_winnie': { name: 'Suelen Winnie', pwd: '12345', isMaster: false, node: 'lancamentos_suelen_winnie' }
         };
 
-        const BANCOS_BRASIL_PADRAO = [
-            "Nubank", "Itaú", "C6 Bank", "Banco do Brasil", "Santander", "Bradesco", 
-            "Caixa Econômica Federal", "Banco Inter", "Banrisul", "Mercado Pago", 
-            "PicPay", "PagSeguro", "Banco Original", "Neon", "Banco Pan", 
-            "BTG Pactual", "Sicredi", "Sicoob", "XP Investimentos", "ModalMais", 
-            "Safra", "Banco do Nordeste", "Banese", "BRB", "Agibank", "Ame Digital"
-        ];
-
-        const CARTOES_BRASIL_PADRAO = [
-            "Cartão Nubank", "Cartão Itaú", "Cartão C6 Bank", "Cartão Santander", 
-            "Cartão Bradesco", "Cartão Banco do Brasil", "Cartão Inter", "Cartão XP", 
-            "Cartão Mercado Pago", "Cartão PicPay", "Cartão Pan", "Cartão BTG Pactual"
+        const LISTA_BANCOS_PADRAO = [
+            "260 - Nubank", "341 - Itaú", "336 - C6 Bank", "001 - Banco do Brasil",
+            "033 - Santander", "237 - Bradesco", "104 - Caixa Econômica Federal",
+            "077 - Banco Inter", "041 - Banrisul", "389 - Mercado Pago", "380 - PicPay",
+            "290 - PagSeguro", "212 - Banco Original", "655 - Neon (Votorantim)",
+            "623 - Banco Pan", "208 - BTG Pactual", "748 - Sicredi", "756 - Sicoob"
         ];
 
         function sanitizarChaveNode(str) {
@@ -567,9 +621,6 @@
         let dbTransactions = null;
         let perfisCadastrados = DEFAULT_PROFILES;
         let transactions = [];
-        
-        let bancosCustomizados = [];
-        let cartoesCustomizados = [];
         
         let currentTab = 'report';
         let reportMode = 'month';
@@ -658,7 +709,7 @@
             } catch(e) {}
 
             if (dbRoot) {
-                dbRoot.child('config_perfis').once('value').then((snapshot) => {
+                dbRoot.child('config_perfis').on('value', (snapshot) => {
                     const dadosNuvem = snapshot.val();
                     if (!dadosNuvem) {
                         dbRoot.child('config_perfis').set(DEFAULT_PROFILES);
@@ -667,7 +718,7 @@
                         perfisCadastrados = dadosNuvem;
                     }
                     verificarSessaoSalva();
-                }).catch((error) => {
+                }, (error) => {
                     verificarSessaoSalva();
                 });
             } else {
@@ -714,7 +765,6 @@
             requestAnimationFrame(() => {
                 atualizacaoAgendada = false;
                 try {
-                    atualizarOpcoesBancosForm();
                     atualizarOpcoesCartoesForm();
                     gerarFiltroDeMeses();
                     updateDashboard();
@@ -725,61 +775,15 @@
             });
         }
 
-        function obterListaBancosCompleta() {
-            const bancosSet = new Set(BANCOS_BRASIL_PADRAO);
-            bancosCustomizados.forEach(b => bancosSet.add(b));
-            transactions.forEach(t => {
-                if (t.bank && t.bank.trim() !== '') bancosSet.add(t.bank.trim());
-                if (t.bankOrigin && t.bankOrigin.trim() !== '') bancosSet.add(t.bankOrigin.trim());
-                if (t.bankDestination && t.bankDestination.trim() !== '') bancosSet.add(t.bankDestination.trim());
-            });
-            return Array.from(bancosSet).sort();
-        }
-
-        function obterListaCartoesCompleta() {
-            const cartoesSet = new Set(CARTOES_BRASIL_PADRAO);
-            cartoesCustomizados.forEach(c => cartoesSet.add(c));
+        function atualizarOpcoesCartoesForm() {
+            if (!cardOriginSelect) return;
+            const cartoesSet = new Set(["Cartão C6 Bank", "Cartão Nubank", "Cartão Itaú"]);
             transactions.forEach(t => {
                 if (t.cardOrigin && t.cardOrigin.trim() !== '') {
                     cartoesSet.add(t.cardOrigin.trim());
                 }
             });
-            return Array.from(cartoesSet).sort();
-        }
 
-        function atualizarOpcoesBancosForm() {
-            const listaBancosOrdenada = obterListaBancosCompleta();
-
-            [bankSelect, bankOriginSelect, bankDestinationSelect].forEach(selectEl => {
-                if (!selectEl) return;
-                const valorAtual = selectEl.value;
-                selectEl.innerHTML = '';
-
-                const defaultOpt = document.createElement('option');
-                defaultOpt.value = "";
-                defaultOpt.disabled = true;
-                defaultOpt.selected = !valorAtual;
-                defaultOpt.textContent = selectEl === bankSelect ? "Selecione uma conta ou banco" : "Selecione o banco";
-                selectEl.appendChild(defaultOpt);
-
-                listaBancosOrdenada.forEach(banco => {
-                    const opt = document.createElement('option');
-                    opt.value = banco;
-                    opt.textContent = banco;
-                    if (banco === valorAtual) opt.selected = true;
-                    selectEl.appendChild(opt);
-                });
-
-                const outroOpt = document.createElement('option');
-                outroOpt.value = "OUTRO_BANCO_CUSTOM";
-                outroOpt.textContent = "➕ Adicionar Conta / Banco Novo...";
-                selectEl.appendChild(outroOpt);
-            });
-        }
-
-        function atualizarOpcoesCartoesForm() {
-            if (!cardOriginSelect) return;
-            const listaCartoesOrdenada = obterListaCartoesCompleta();
             const valorAtual = cardOriginSelect.value;
             cardOriginSelect.innerHTML = '';
             
@@ -790,7 +794,7 @@
             defaultOpt.textContent = "Selecione o cartão";
             cardOriginSelect.appendChild(defaultOpt);
 
-            listaCartoesOrdenada.forEach(cartao => {
+            Array.from(cartoesSet).sort().forEach(cartao => {
                 const opt = document.createElement('option');
                 opt.value = cartao;
                 opt.textContent = cartao;
@@ -800,106 +804,27 @@
 
             const outroOpt = document.createElement('option');
             outroOpt.value = "OUTRO_CARTAO_CUSTOM";
-            outroOpt.textContent = "➕ Adicionar Novo Cartão...";
+            outroOpt.textContent = "➕ Outro Cartão...";
             cardOriginSelect.appendChild(outroOpt);
         }
 
-        [bankSelect, bankOriginSelect, bankDestinationSelect].forEach(sel => {
-            if (sel) {
-                sel.onchange = (e) => {
-                    if (e.target.value === "OUTRO_BANCO_CUSTOM") {
-                        e.target.value = "";
-                        const novoBanco = prompt("Digite o nome da conta ou banco (ex: Bradesco (Poupança), Itaú Corrente):");
-                        if (novoBanco && novoBanco.trim() !== "") {
-                            const nomeFormatado = novoBanco.trim();
-                            if (!bancosCustomizados.includes(nomeFormatado)) {
-                                bancosCustomizados.push(nomeFormatado);
-                                salvarCustomizacoesNuvem();
-                            }
-                            atualizarOpcoesBancosForm();
-                            e.target.value = nomeFormatado;
-                        }
-                    }
-                };
-            }
-        });
-
         if (cardOriginSelect) {
-            cardOriginSelect.onchange = (e) => {
+            cardOriginSelect.addEventListener('change', (e) => {
                 if (e.target.value === "OUTRO_CARTAO_CUSTOM") {
-                    e.target.value = "";
-                    const novoCartao = prompt("Digite o nome do cartão (ex: Nubank (Master), Cartão Extra):");
+                    const novoCartao = prompt("Digite o nome do novo cartão (ex: Cartão Santander):");
                     if (novoCartao && novoCartao.trim() !== "") {
                         const nomeFormatado = novoCartao.trim();
-                        if (!cartoesCustomizados.includes(nomeFormatado)) {
-                            cartoesCustomizados.push(nomeFormatado);
-                            salvarCustomizacoesNuvem();
-                        }
-                        atualizarOpcoesCartoesForm();
+                        const opt = document.createElement('option');
+                        opt.value = nomeFormatado;
+                        opt.textContent = nomeFormatado;
+                        cardOriginSelect.insertBefore(opt, cardOriginSelect.lastElementChild);
                         cardOriginSelect.value = nomeFormatado;
+                    } else {
+                        cardOriginSelect.value = "";
                     }
                 }
-            };
+            });
         }
-
-        function salvarCustomizacoesNuvem() {
-            if (dbTransactions) {
-                dbTransactions.parent().child('config_contas_cartoes').set({
-                    bancos: bancosCustomizados,
-                    cartoes: cartoesCustomizados
-                });
-            }
-        }
-
-        window.abrirGerenciadorBancosCartoes = function() {
-            const acao = prompt("Gerenciar Bancos e Cartões:\n1 - Editar nome de um Banco existente\n2 - Adicionar Novo Banco/Conta\n3 - Adicionar Novo Cartão de Crédito\n0 - Cancelar");
-            if (acao === '1') {
-                const listaBancos = obterListaBancosCompleta();
-                let txt = "Selecione o número do banco para editar:\n";
-                listaBancos.forEach((b, i) => txt += `${i + 1} - ${b}\n`);
-                const num = prompt(txt);
-                const idx = parseInt(num) - 1;
-                if (!isNaN(idx) && idx >= 0 && idx < listaBancos.length) {
-                    const bancoAntigo = listaBancos[idx];
-                    const novoNome = prompt(`Digite o novo nome para "${bancoAntigo}":`, bancoAntigo);
-                    if (novoNome && novoNome.trim() !== "" && novoNome.trim() !== bancoAntigo) {
-                        const novoNomeTrim = novoNome.trim();
-                        if (!bancosCustomizados.includes(novoNomeTrim)) bancosCustomizados.push(novoNomeTrim);
-                        
-                        let updates = {};
-                        transactions.forEach(t => {
-                            if (t.bank === bancoAntigo) updates[`${t.id}/bank`] = novoNomeTrim;
-                            if (t.bankOrigin === bancoAntigo) updates[`${t.id}/bankOrigin`] = novoNomeTrim;
-                            if (t.bankDestination === bancoAntigo) updates[`${t.id}/bankDestination`] = novoNomeTrim;
-                        });
-                        if (Object.keys(updates).length > 0 && dbTransactions) {
-                            dbTransactions.update(updates);
-                        }
-                        salvarCustomizacoesNuvem();
-                        alert("Banco renomeado com sucesso!");
-                        agendarAtualizacaoDaTela();
-                    }
-                }
-            } else if (acao === '2') {
-                const novo = prompt("Digite o nome da nova conta/banco:");
-                if (novo && novo.trim() !== "") {
-                    const n = novo.trim();
-                    if (!bancosCustomizados.includes(n)) bancosCustomizados.push(n);
-                    salvarCustomizacoesNuvem();
-                    atualizarOpcoesBancosForm();
-                    alert("Banco adicionado com sucesso!");
-                }
-            } else if (acao === '3') {
-                const novoC = prompt("Digite o nome do novo cartão de crédito:");
-                if (novoC && novoC.trim() !== "") {
-                    const nc = novoC.trim();
-                    if (!cartoesCustomizados.includes(nc)) cartoesCustomizados.push(nc);
-                    salvarCustomizacoesNuvem();
-                    atualizarOpcoesCartoesForm();
-                    alert("Cartão adicionado com sucesso!");
-                }
-            }
-        };
 
         function verificarSessaoSalva() {
             try {
@@ -972,15 +897,6 @@
 
             if (dbTransactions) dbTransactions.off();
             if (dbRoot) {
-                dbRoot.child('config_contas_cartoes').on('value', (snap) => {
-                    const val = snap.val();
-                    if (val) {
-                        bancosCustomizados = val.bancos || [];
-                        cartoesCustomizados = val.cartoes || [];
-                        agendarAtualizacaoDaTela();
-                    }
-                });
-
                 dbTransactions = dbRoot.child(nodeTarget);
                 dbTransactions.on('value', (snapshot) => {
                     const data = snapshot.val();
@@ -1259,8 +1175,9 @@
 
                 if (listEl) {
                     listEl.innerHTML = '';
-                    obterListaBancosCompleta().forEach(banco => {
-                        let logoHtml = getBankLogo(banco);
+                    LISTA_BANCOS_PADRAO.forEach(banco => {
+                        let nomeCurto = banco.includes('-') ? banco.split('-')[1].trim() : banco;
+                        let logoHtml = getBankLogo(nomeCurto);
                         listEl.innerHTML += `
                             <button class="bank-option-btn" onclick="selecionarBancoModal('${banco}')">
                                 ${logoHtml} <span>${banco}</span>
@@ -1269,7 +1186,7 @@
                     });
                     listEl.innerHTML += `
                         <button class="bank-option-btn" onclick="selecionarOutroBancoModal()" style="color:var(--primary); font-weight:bold;">
-                            ➕ Adicionar Banco...
+                            ➕ Outro Banco...
                         </button>
                     `;
                 }
@@ -1295,8 +1212,9 @@
 
             if (listEl) {
                 listEl.innerHTML = '';
-                obterListaBancosCompleta().forEach(banco => {
-                    let logoHtml = getBankLogo(banco);
+                LISTA_BANCOS_PADRAO.forEach(banco => {
+                    let nomeCurto = banco.includes('-') ? banco.split('-')[1].trim() : banco;
+                    let logoHtml = getBankLogo(nomeCurto);
                     listEl.innerHTML += `
                         <button class="bank-option-btn" onclick="selecionarBancoModal('${banco}')">
                             ${logoHtml} <span>${banco}</span>
@@ -1305,7 +1223,7 @@
                 });
                 listEl.innerHTML += `
                     <button class="bank-option-btn" onclick="selecionarOutroBancoModal()" style="color:var(--primary); font-weight:bold;">
-                        ➕ Adicionar Banco...
+                        ➕ Outro Banco...
                     </button>
                 `;
             }
@@ -1334,7 +1252,7 @@
                     if (bulkActionType === 'card' && t.method === 'credito' && (t.cardOrigin || 'Cartão Geral') === bulkTargetName) {
                         match = true;
                     } else if (bulkActionType === 'conta' && t.method === 'conta') {
-                        let subGroupKey = t.bank ? t.bank.trim() : null;
+                        let subGroupKey = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : null;
                         if (subGroupKey === bulkTargetName) match = true;
                     }
                     if (match) {
@@ -1350,14 +1268,9 @@
         }
 
         window.selecionarOutroBancoModal = function() {
-            const outro = prompt("Digite o nome da conta ou banco:");
+            const outro = prompt("Digite o nome do banco:");
             if (outro && outro.trim() !== "") {
-                const nomeTrim = outro.trim();
-                if (!bancosCustomizados.includes(nomeTrim)) {
-                    bancosCustomizados.push(nomeTrim);
-                    salvarCustomizacoesNuvem();
-                }
-                selecionarBancoModal(nomeTrim);
+                selecionarBancoModal(outro.trim());
             } else {
                 fecharModalBanco();
             }
@@ -1434,7 +1347,7 @@
 
         function getBankLogo(bankName) {
             const domainMap = {
-                'Banco do Brasil': 'bb.com.br', 'Santander': 'santander.com.br', 'Caixa': 'caixa.gov.br', 'Caixa Econômica Federal': 'caixa.gov.br', 'Bradesco': 'bradesco.com.br', 'Itaú': 'itau.com.br', 'Nubank': 'nubank.com.br', 'Inter': 'bancointer.com.br', 'Banco Inter': 'bancointer.com.br', 'C6 Bank': 'c6bank.com.br', 'Original': 'original.com.br', 'Banco Original': 'original.com.br', 'Neon': 'neon.com.br', 'Pan': 'bancopan.com.br', 'Banco Pan': 'bancopan.com.br', 'BTG': 'btgpactual.com', 'BTG Pactual': 'btgpactual.com', 'Sicredi': 'sicredi.com.br', 'Sicoob': 'sicoob.com.br', 'Mercado Pago': 'mercadopago.com.br', 'PicPay': 'picpay.com', 'PagSeguro': 'pagseguro.uol.com.br', 'Banrisul': 'banrisul.com.br', 'XP': 'xpi.com.br'
+                'Banco do Brasil': 'bb.com.br', 'Santander': 'santander.com.br', 'Caixa': 'caixa.gov.br', 'Caixa Econômica Federal': 'caixa.gov.br', 'Bradesco': 'bradesco.com.br', 'Itaú': 'itau.com.br', 'Nubank': 'nubank.com.br', 'Inter': 'bancointer.com.br', 'Banco Inter': 'bancointer.com.br', 'C6 Bank': 'c6bank.com.br', 'Original': 'original.com.br', 'Banco Original': 'original.com.br', 'Neon': 'neon.com.br', 'Pan': 'bancopan.com.br', 'Banco Pan': 'bancopan.com.br', 'BTG': 'btgpactual.com', 'BTG Pactual': 'btgpactual.com', 'Sicredi': 'sicredi.com.br', 'Sicoob': 'sicoob.com.br', 'Mercado Pago': 'mercadopago.com.br', 'PicPay': 'picpay.com', 'PagSeguro': 'pagseguro.uol.com.br', 'Banrisul': 'banrisul.com.br'
             };
             let domain = null;
             for (let key in domainMap) { if (bankName.includes(key)) { domain = domainMap[key]; break; } }
@@ -1487,7 +1400,7 @@
             if (bancosOrdenados.length > 0 && bankBalancesContainer) {
                 bankBalancesContainer.style.display = 'flex';
                 bancosOrdenados.forEach(([nomeBancoCompleto, saldoReal]) => {
-                    let nomeCurto = nomeBancoCompleto;
+                    let nomeCurto = nomeBancoCompleto.includes('-') ? nomeBancoCompleto.split('-')[1].trim() : nomeBancoCompleto;
                     let logoHtml = getBankLogo(nomeCurto); 
                     if(nomeCurto.length > 15) nomeCurto = nomeCurto.substring(0, 13) + '...';
                     let corClasse = saldoReal >= 0 ? 'bank-pos' : 'bank-neg';
@@ -1521,31 +1434,33 @@
             
             let badgeText = ''; let iconHtml = '';
             if (isTransf) {
-                let origCurto = t.bankOrigin;
-                let destCurto = t.bankDestination;
+                let origCurto = t.bankOrigin.includes('-') ? t.bankOrigin.split('-')[1].trim() : t.bankOrigin;
+                let destCurto = t.bankDestination.includes('-') ? t.bankDestination.split('-')[1].trim() : t.bankDestination;
                 badgeText = `🔄 ${origCurto} ➔ ${destCurto}`;
             } else if (isRec) {
-                if (t.bank) { iconHtml = getBankLogo(t.bank); badgeText = `${iconHtml} ${t.bank}`; } 
+                if (t.bank) { let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} ${nomeCurto}`; } 
                 else { badgeText = '💵 Entrada'; }
             } else {
                 if (t.method === 'credito') { 
                     let cartaoInfo = t.cardOrigin ? `💳 ${t.cardOrigin}` : '💳 Crédito';
                     let parcelamento = t.installmentsTotal > 1 ? ` (${t.installmentsNum}/${t.installmentsTotal})` : '';
                     if (t.bank) {
-                        iconHtml = getBankLogo(t.bank);
-                        badgeText = `${cartaoInfo}${parcelamento} • Pago via ${iconHtml} ${t.bank}`;
+                        let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
+                        iconHtml = getBankLogo(nomeCurto);
+                        badgeText = `${cartaoInfo}${parcelamento} • Pago via ${iconHtml} ${nomeCurto}`;
                     } else {
                         badgeText = `${cartaoInfo}${parcelamento} • Fatura Pendente`;
                     }
                 } else if (t.method === 'conta') {
                     if (t.bank) {
-                        iconHtml = getBankLogo(t.bank);
-                        badgeText = `${iconHtml} ${t.bank}`;
+                        let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
+                        iconHtml = getBankLogo(nomeCurto);
+                        badgeText = `${iconHtml} ${nomeCurto}`;
                     } else {
                         badgeText = '📄 Conta a Pagar';
                     }
                 } else { 
-                    if (t.bank) { iconHtml = getBankLogo(t.bank); badgeText = `${iconHtml} ${t.bank}`; } else { badgeText = '💵 Débito'; } 
+                    if (t.bank) { let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} ${nomeCurto}`; } else { badgeText = '💵 Débito'; } 
                 }
             }
 
@@ -1593,7 +1508,7 @@
                 } else if (t.type === 'receber') {
                     groupKey = 'Entrada';
                     if (t.bank && t.bank.trim() !== '') {
-                        subGroupKey = t.bank.trim();
+                        subGroupKey = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
                     }
                 } else { 
                     if (t.method === 'credito') { 
@@ -1602,12 +1517,12 @@
                     } else if (t.method === 'conta') { 
                         groupKey = 'Contas e Boletos';
                         if (t.bank && t.bank.trim() !== '') {
-                            subGroupKey = t.bank.trim();
+                            subGroupKey = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
                         }
                     } else { 
                         groupKey = 'Débito';
                         if (t.bank && t.bank.trim() !== '') {
-                            subGroupKey = t.bank.trim();
+                            subGroupKey = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank;
                         }
                     } 
                 }
@@ -1699,7 +1614,11 @@
 
         function obterCategoriaRelatorio(t) {
             if (t.type === 'pagar' && t.method === 'credito' && t.cardOrigin && t.cardOrigin.trim() !== '') {
-                return t.cardOrigin.trim();
+                const origemLimpa = t.cardOrigin.trim(); const origemLower = origemLimpa.toLowerCase();
+                if (origemLower.includes('c6')) return 'Cartão C6 Bank'; if (origemLower.includes('nubank')) return 'Cartão Nubank';
+                if (origemLower.includes('itau') || origemLower.includes('itaú')) return 'Cartão Itaú';
+                if (origemLower.includes('mastercard')) return 'Cartão Mastercard'; if (origemLower.includes('visa')) return 'Cartão Visa';
+                return `Cartão ${origemLimpa}`;
             }
             return t.description;
         }
@@ -1712,7 +1631,7 @@
             transFiltradas.forEach(t => {
                 if (t.type === 'receber') {
                     totalEntradas += t.amount; entradasDetalhadas.push(t);
-                    const labelEntrada = t.bank ? `${t.description} (${t.bank.trim()})` : t.description;
+                    const labelEntrada = t.bank ? `${t.description} (${t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank})` : t.description;
                     agrupaEntradasOrigem[labelEntrada] = (agrupaEntradasOrigem[labelEntrada] || 0) + t.amount;
                 } else if (t.type === 'pagar') {
                     totalSaidas += t.amount; saidasDetalhadas.push(t);
@@ -1812,14 +1731,14 @@
             if (canvasExp) {
                 const dadosPizzaSaidas = consolidarDadosParaPizza(agrupaSaidasDesc, 4);
                 if (chartExpensesPieInstance) chartExpensesPieInstance.destroy();
-                chartExpensesPieInstance = new Chart(canvasExp.getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(dadosPizzaSaidas).length ? Object.keys(dadosPizzaSaidas) : [1], backgroundColor: paletaCoresPizza, borderWidth: 2, borderColor: '#1d1d22', hoverOffset: 4 }] }, options: { ...commonChartOptions, cutout: '60%' } });
+                chartExpensesPieInstance = new Chart(canvasExp.getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(dadosPizzaSaidas).length ? Object.keys(dadosPizzaSaidas) : ['Nenhuma'], datasets: [{ data: Object.values(dadosPizzaSaidas).length ? Object.values(dadosPizzaSaidas) : [1], backgroundColor: paletaCoresPizza, borderWidth: 2, borderColor: '#1d1d22', hoverOffset: 4 }] }, options: { ...commonChartOptions, cutout: '60%' } });
             }
 
             const detailedIncList = document.getElementById('detailed-incomes-list');
             if (detailedIncList) {
                 detailedIncList.innerHTML = entradasDetalhadas.length ? '' : '<div class="empty-state">Nenhuma entrada.</div>';
                 entradasDetalhadas.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
-                    let subTitle = t.bank ? t.bank.trim() : ''; 
+                    let subTitle = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : ''; 
                     let iconHtml = subTitle ? getBankLogo(subTitle) : '';
                     detailedIncList.innerHTML += `<div class="detailed-item"><div class="detailed-info"><h4>${t.description}</h4><span style="display:inline-flex; align-items:center;">${formatDate(t.date)}${subTitle ? ' &nbsp;•&nbsp; ' + iconHtml + ' ' + subTitle : ''}</span></div><strong class="income-text">${formatCurrency(t.amount)}</strong></div>`;
                 });
@@ -1829,7 +1748,7 @@
             if (detailedExpList) {
                 detailedExpList.innerHTML = saidasDetalhadas.length ? '' : '<div class="empty-state">Nenhuma saída.</div>';
                 saidasDetalhadas.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
-                    let subTitle = t.bank ? t.bank.trim() : ''; 
+                    let subTitle = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : ''; 
                     let iconHtml = subTitle ? getBankLogo(subTitle) : '';
                     detailedExpList.innerHTML += `<div class="detailed-item"><div class="detailed-info"><h4>${t.description}</h4><span style="display:inline-flex; align-items:center;">${formatDate(t.date)}${subTitle ? ' &nbsp;•&nbsp; ' + iconHtml + ' ' + subTitle : ''}</span></div><strong class="expense-text">${formatCurrency(t.amount)}</strong></div>`;
                 });
@@ -1893,7 +1812,7 @@
                     if (selectedType === 'receber' || (selectedType === 'pagar' && methodVal === 'debito')) {
                         bankSelected = bankSelect ? bankSelect.value : '';
                         if (!bankSelected) {
-                            alert("Selecione uma conta ou banco.");
+                            alert("Selecione um banco.");
                             return;
                         }
                     }
@@ -1912,6 +1831,7 @@
                     const instInput = document.getElementById('installments');
                     const qtdParcelas = (selectedType === 'pagar' && methodVal === 'credito') ? (instInput ? (parseInt(instInput.value) || 1) : 1) : 1;
                     
+                    // Se for pagamento no débito (pagar com método débito), o status done deve ser true (vai direto para Realizados)
                     const isDebitoDireto = (selectedType === 'pagar' && methodVal === 'debito');
                     const statusDoneInicial = isDebitoDireto ? true : false;
 
@@ -1974,7 +1894,7 @@
                     }
                 }
                 cancelarEdicao();
-            }catch(e) {
+            } catch(e) {
                 console.error("Erro crítico no processarSalvamentoFormulario:", e);
                 alert("Ocorreu um erro ao processar o formulário. Verifique o console.");
             }
