@@ -587,7 +587,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.8.0"; 
+        const VERSAO_CODIGO = "1.8.1"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -713,10 +713,11 @@
             });
         }
 
-        // --- SISTEMA INTELIGENTE DE ÍCONES DA WEB ---
+        // --- SISTEMA INTELIGENTE DE ÍCONES DA WEB COM DICIONÁRIO AMPLIADO E FALLBACK SEGURO ---
         function getBankLogo(bankName) {
             if(!bankName) return '🏦 ';
             const nameToMatch = bankName.toLowerCase();
+            
             const domainMap = {
                 'banco do brasil': 'bb.com.br', 'ourocard': 'bb.com.br', 'bb': 'bb.com.br',
                 'santander': 'santander.com.br', 'caixa': 'caixa.gov.br', 'bradesco': 'bradesco.com.br', 
@@ -725,11 +726,29 @@
                 'neon': 'neon.com.br', 'pan': 'bancopan.com.br', 'btg': 'btgpactual.com', 
                 'sicredi': 'sicredi.com.br', 'sicoob': 'sicoob.com.br', 'mercado pago': 'mercadopago.com.br', 
                 'picpay': 'picpay.com', 'pagseguro': 'pagseguro.uol.com.br', 'banrisul': 'banrisul.com.br',
-                'xp': 'xpi.com.br', 'rico': 'rico.com.vc', 'safra': 'safra.com.br', 'porto seguro': 'portoseguro.com.br'
+                'xp': 'xpi.com.br', 'rico': 'rico.com.vc', 'safra': 'safra.com.br', 'porto seguro': 'portoseguro.com.br',
+                
+                // Cartões de Loja e Digitais extras
+                'magalu': 'magazineluiza.com.br', 'magazine luiza': 'magazineluiza.com.br',
+                'carrefour': 'carrefour.com.br', 'atacadao': 'atacadao.com.br', 'atacadão': 'atacadao.com.br',
+                'renner': 'lojasrenner.com.br', 'riachuelo': 'riachuelo.com.br', 'midway': 'midwayfinanceira.com.br',
+                'havan': 'havan.com.br', 'cetelem': 'cetelem.com.br', 'digio': 'digio.com.br',
+                'will bank': 'willbank.com.br', 'will': 'willbank.com.br', 'credicard': 'credicard.com.br',
+                'bv': 'bv.com.br', 'americanas': 'americanas.com.br', 'dmcard': 'dmcard.com.br'
             };
+            
             let domain = null;
-            for (let key in domainMap) { if (nameToMatch.includes(key)) { domain = domainMap[key]; break; } }
-            if (domain) return `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" class="bank-logo" alt="logo">`;
+            for (let key in domainMap) { 
+                if (nameToMatch.includes(key)) { 
+                    domain = domainMap[key]; 
+                    break; 
+                } 
+            }
+            
+            if (domain) {
+                return `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" class="bank-logo" alt="logo" onerror="this.outerHTML='🏦 '">`;
+            }
+            
             return '🏦 '; 
         }
 
@@ -873,7 +892,7 @@
         }
 
         window.adicionarCartao = function() {
-            const nome = prompt("Digite o nome do novo Cartão de Crédito (ex: Cartão Nubank Marido):");
+            const nome = prompt("Digite o nome do novo Cartão de Crédito (ex: Cartão Magalu Esposa):");
             if (nome && nome.trim() !== "") { if(dbCartoes) dbCartoes.push({ nome: nome.trim() }).then(() => showToast("Cartão adicionado!")); }
         }
         window.editarCartao = function(id, nomeAtual) {
