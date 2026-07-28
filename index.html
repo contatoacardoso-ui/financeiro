@@ -587,7 +587,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.8.1"; 
+        const VERSAO_CODIGO = "1.8.2"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -610,6 +610,15 @@
         function sanitizarChaveNode(str) {
             if (!str) return '';
             return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '_').replace(/^_+|_+$/g, '');
+        }
+
+        // Padroniza o nome do banco para evitar contas duplicadas ou antigas com números no saldo real
+        function padronizarNomeBanco(nome) {
+            if (!nome) return '';
+            let limpo = nome.trim();
+            // Remove prefixos numéricos antigos ex: "1 - Banco do Brasil" vira "Banco do Brasil"
+            limpo = limpo.replace(/^\d+\s*[-–]\s*/, '');
+            return limpo;
         }
 
         function showToast(message, type = 'success', title = null) {
@@ -713,10 +722,10 @@
             });
         }
 
-        // --- SISTEMA INTELIGENTE DE ÍCONES DA WEB COM DICIONÁRIO AMPLIADO E FALLBACK SEGURO ---
+        // --- SISTEMA INTELIGENTE DE ÍCONES DA WEB ---
         function getBankLogo(bankName) {
             if(!bankName) return '🏦 ';
-            const nameToMatch = bankName.toLowerCase();
+            const nameToMatch = padronizarNomeBanco(bankName).toLowerCase();
             
             const domainMap = {
                 'banco do brasil': 'bb.com.br', 'ourocard': 'bb.com.br', 'bb': 'bb.com.br',
@@ -727,8 +736,6 @@
                 'sicredi': 'sicredi.com.br', 'sicoob': 'sicoob.com.br', 'mercado pago': 'mercadopago.com.br', 
                 'picpay': 'picpay.com', 'pagseguro': 'pagseguro.uol.com.br', 'banrisul': 'banrisul.com.br',
                 'xp': 'xpi.com.br', 'rico': 'rico.com.vc', 'safra': 'safra.com.br', 'porto seguro': 'portoseguro.com.br',
-                
-                // Cartões de Loja e Digitais extras
                 'magalu': 'magazineluiza.com.br', 'magazine luiza': 'magazineluiza.com.br',
                 'carrefour': 'carrefour.com.br', 'atacadao': 'atacadao.com.br', 'atacadão': 'atacadao.com.br',
                 'renner': 'lojasrenner.com.br', 'riachuelo': 'riachuelo.com.br', 'midway': 'midwayfinanceira.com.br',
@@ -1217,8 +1224,9 @@
 
         window.selecionarBancoModal = function(bancoEscolhido) {
             if (!dbTransactions) return;
+            const bancoPadronizado = padronizarNomeBanco(bancoEscolhido);
             if (transactionToConfirmId) {
-                dbTransactions.child(transactionToConfirmId).update({ done: true, bank: bancoEscolhido }); showToast("Lançamento confirmado!");
+                dbTransactions.child(transactionToConfirmId).update({ done: true, bank: bancoPadronizado }); showToast("Lançamento confirmado!");
             } else if (bulkActionType && bulkTargetName) {
                 const pendentesFiltrados = transactions.filter(t => t.date && t.date.startsWith(selectedMonthKey) && !t.done && t.type !== 'transfer');
                 let atualizacoes = {};
@@ -1226,10 +1234,10 @@
                     let match = false;
                     if (bulkActionType === 'card' && t.method === 'credito' && (t.cardOrigin || 'Cartão Geral') === bulkTargetName) { match = true; } 
                     else if (bulkActionType === 'conta' && t.method === 'conta') {
-                        let subGroupKey = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : null;
+                        let subGroupKey = t.bank ? padronizarNomeBanco(t.bank) : null;
                         if (subGroupKey === bulkTargetName) match = true;
                     }
-                    if (match) { atualizacoes[`${t.id}/done`] = true; atualizacoes[`${t.id}/bank`] = bancoEscolhido; }
+                    if (match) { atualizacoes[`${t.id}/done`] = true; atualizacoes[`${t.id}/bank`] = bancoPadronizado; }
                 });
                 if (Object.keys(atualizacoes).length > 0) { dbTransactions.update(atualizacoes); showToast("Pagamentos confirmados em lote!"); }
             }
@@ -1256,7 +1264,7 @@
             
             if (t.type === 'receber') {
                 const rEl = document.getElementById('type-receber'); if (rEl) rEl.checked = true;
-                setCustomSelectValue('bank-select', t.bank || '', 'Selecione uma conta bancária');
+                setCustomSelectValue('bank-select', padronizarNomeBanco(t.bank || ''), 'Selecione uma conta bancária');
             } else {
                 const pEl = document.getElementById('type-pagar'); if (pEl) pEl.checked = true;
                 if (t.method === 'credito') {
@@ -1270,7 +1278,7 @@
                 } else {
                     const mDeb = document.getElementById('method-debito'); if (mDeb) mDeb.checked = true;
                     toggleMethodFields('debito'); 
-                    setCustomSelectValue('bank-select', t.bank || '', 'Selecione a conta de origem');
+                    setCustomSelectValue('bank-select', padronizarNomeBanco(t.bank || ''), 'Selecione a conta de origem');
                 }
             }
             toggleTypeFields();
@@ -1307,17 +1315,27 @@
             let pendingIncome = 0, pendingExpense = 0, realIncome = 0, realExpense = 0; const bankRealBalances = {};
             transactions.forEach(t => {
                 if (t.type === 'transfer') {
-                    if (t.bankOrigin) { if (!bankRealBalances[t.bankOrigin]) bankRealBalances[t.bankOrigin] = 0; bankRealBalances[t.bankOrigin] -= t.amount; }
-                    if (t.bankDestination) { if (!bankRealBalances[t.bankDestination]) bankRealBalances[t.bankDestination] = 0; bankRealBalances[t.bankDestination] += t.amount; }
+                    if (t.bankOrigin) { 
+                        let bOrig = padronizarNomeBanco(t.bankOrigin);
+                        if (!bankRealBalances[bOrig]) bankRealBalances[bOrig] = 0; 
+                        bankRealBalances[bOrig] -= t.amount; 
+                    }
+                    if (t.bankDestination) { 
+                        let bDest = padronizarNomeBanco(t.bankDestination);
+                        if (!bankRealBalances[bDest]) bankRealBalances[bDest] = 0; 
+                        bankRealBalances[bDest] += t.amount; 
+                    }
                 } else if (t.done) {
                     if (t.type === 'receber') realIncome += t.amount; else realExpense += t.amount;
                     if (t.bank && (t.type === 'receber' || (t.type === 'pagar' && (t.method === 'debito' || t.method === 'conta' || t.method === 'credito')))) {
-                        if (!bankRealBalances[t.bank]) bankRealBalances[t.bank] = 0;
-                        if (t.type === 'receber') bankRealBalances[t.bank] += t.amount; else bankRealBalances[t.bank] -= t.amount;
+                        let nomeBancoLimpo = padronizarNomeBanco(t.bank);
+                        if (!bankRealBalances[nomeBancoLimpo]) bankRealBalances[nomeBancoLimpo] = 0;
+                        if (t.type === 'receber') bankRealBalances[nomeBancoLimpo] += t.amount; else bankRealBalances[nomeBancoLimpo] -= t.amount;
                     }
                 } else { if (t.type === 'receber') pendingIncome += t.amount; else pendingExpense += t.amount; }
             });
 
+            // Filtra o carrossel para remover bancos que tenham saldo exatamente zero e nenhuma movimentação ativa
             const saldoRealAtual = realIncome - realExpense; const saldoPrevistoGlobal = saldoRealAtual + pendingIncome - pendingExpense;
             atualizarTextoSeMudou(realBalanceEl, formatCurrency(saldoRealAtual)); atualizarTextoSeMudou(balanceEl, formatCurrency(saldoPrevistoGlobal));
             atualizarTextoSeMudou(incomeEl, formatCurrency(pendingIncome)); atualizarTextoSeMudou(expenseEl, formatCurrency(pendingExpense));
@@ -1327,11 +1345,11 @@
             if (incomeEl) incomeEl.className = (pendingIncome >= 0 ? 'unified-pos' : 'unified-neg');
             if (expenseEl) expenseEl.className = (pendingExpense >= 0 ? 'unified-neg' : 'unified-pos');
             
-            let bankHtml = ''; const bancosOrdenados = Object.entries(bankRealBalances).sort((a, b) => b[1] - a[1]);
+            let bankHtml = ''; const bancosOrdenados = Object.entries(bankRealBalances).filter(([nome, saldo]) => Math.abs(saldo) > 0.001).sort((a, b) => b[1] - a[1]);
             if (bancosOrdenados.length > 0 && bankBalancesContainer) {
                 bankBalancesContainer.style.display = 'flex';
                 bancosOrdenados.forEach(([nomeBancoCompleto, saldoReal]) => {
-                    let nomeCurto = nomeBancoCompleto.includes('-') ? nomeBancoCompleto.split('-')[1].trim() : nomeBancoCompleto;
+                    let nomeCurto = nomeBancoCompleto;
                     let logoHtml = getBankLogo(nomeCurto); 
                     if(nomeCurto.length > 15) nomeCurto = nomeCurto.substring(0, 13) + '...';
                     let corClasse = saldoReal >= 0 ? 'bank-pos' : 'bank-neg';
@@ -1349,11 +1367,11 @@
             let badgeText = ''; let iconHtml = '';
             
             if (isTransf) {
-                let origCurto = t.bankOrigin.includes('-') ? t.bankOrigin.split('-')[1].trim() : t.bankOrigin;
-                let destCurto = t.bankDestination.includes('-') ? t.bankDestination.split('-')[1].trim() : t.bankDestination;
+                let origCurto = padronizarNomeBanco(t.bankOrigin);
+                let destCurto = padronizarNomeBanco(t.bankDestination);
                 badgeText = `🔄 ${origCurto} ➔ ${destCurto}`;
             } else if (isRec) {
-                if (t.bank) { let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} ${nomeCurto}`; } 
+                if (t.bank) { let nomeCurto = padronizarNomeBanco(t.bank); iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} ${nomeCurto}`; } 
                 else { badgeText = '💵 Entrada'; }
             } else {
                 if (t.method === 'credito') { 
@@ -1361,14 +1379,14 @@
                     let cartaoInfo = t.cardOrigin ? `${iconHtml} ${t.cardOrigin}` : '💳 Crédito';
                     let parcelamento = t.installmentsTotal > 1 ? ` (${t.installmentsNum}/${t.installmentsTotal})` : '';
                     if (t.bank) {
-                        let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; let iconBank = getBankLogo(nomeCurto);
+                        let nomeCurto = padronizarNomeBanco(t.bank); let iconBank = getBankLogo(nomeCurto);
                         badgeText = `${cartaoInfo}${parcelamento} • Pago via ${iconBank} ${nomeCurto}`;
                     } else { badgeText = `${cartaoInfo}${parcelamento} • Fatura Pendente`; }
                 } else if (t.method === 'conta') {
-                    if (t.bank) { let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} ${nomeCurto}`; } 
+                    if (t.bank) { let nomeCurto = padronizarNomeBanco(t.bank); iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} ${nomeCurto}`; } 
                     else { badgeText = '📄 Conta a Pagar'; }
                 } else { 
-                    if (t.bank) { let nomeCurto = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} ${nomeCurto}`; } 
+                    if (t.bank) { let nomeCurto = padronizarNomeBanco(t.bank); iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} ${nomeCurto}`; } 
                     else { badgeText = '💵 Débito'; } 
                 }
             }
@@ -1404,11 +1422,11 @@
             filtered.forEach(t => {
                 let groupKey = ''; let subGroupKey = null;
                 if (t.type === 'transfer') { groupKey = 'Transferências entre Contas'; } 
-                else if (t.type === 'receber') { groupKey = 'Entrada'; if (t.bank && t.bank.trim() !== '') subGroupKey = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; } 
+                else if (t.type === 'receber') { groupKey = 'Entrada'; if (t.bank && t.bank.trim() !== '') subGroupKey = padronizarNomeBanco(t.bank); } 
                 else { 
                     if (t.method === 'credito') { groupKey = 'Cartão de Crédito'; subGroupKey = t.cardOrigin ? t.cardOrigin.trim() : 'Cartão Geral'; } 
-                    else if (t.method === 'conta') { groupKey = 'Contas e Boletos'; if (t.bank && t.bank.trim() !== '') subGroupKey = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; } 
-                    else { groupKey = 'Débito'; if (t.bank && t.bank.trim() !== '') subGroupKey = t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank; } 
+                    else if (t.method === 'conta') { groupKey = 'Contas e Boletos'; if (t.bank && t.bank.trim() !== '') subGroupKey = padronizarNomeBanco(t.bank); } 
+                    else { groupKey = 'Débito'; if (t.bank && t.bank.trim() !== '') subGroupKey = padronizarNomeBanco(t.bank); } 
                 }
 
                 if (!grouped[groupKey]) grouped[groupKey] = { items: [], subGroups: {} };
@@ -1437,14 +1455,21 @@
 
                         contentHtml += `<div class="subgroup-header" onclick="toggleSubGroupCollapse('${subGroupId}')"><span style="display:flex; align-items:center;">${logoHtml} <span style="margin-left:6px;">${subKey}</span></span><div style="display:flex; align-items:center; gap:8px;">${botaoPagarFaturaHtml}<span>${isSubCollapsed ? '➕' : '➖'}</span></div></div>`;
                         contentHtml += `<div class="subgroup-content-wrapper transaction-list" style="display: ${isSubCollapsed ? 'none' : 'flex'};">`;
-                        subGroupObj[subKey].forEach(t => { contentHtml += `<div class="transaction-item">${montarHtmlDoItem(t)}</div>`; });
+                        
+                        // ORDENAÇÃO: Do mais recente para o mais antigo (topo para a base)
+                        subGroupObj[subKey].sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => { 
+                            contentHtml += `<div class="transaction-item">${montarHtmlDoItem(t)}</div>`; 
+                        });
                         contentHtml += `</div>`;
                     });
                 }
 
                 if (directItems.length > 0) {
                     contentHtml += `<div class="transaction-list">`;
-                    directItems.forEach(t => { contentHtml += `<div class="transaction-item">${montarHtmlDoItem(t)}</div>`; });
+                    // ORDENAÇÃO: Do mais recente para o mais antigo (topo para a base)
+                    directItems.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => { 
+                        contentHtml += `<div class="transaction-item">${montarHtmlDoItem(t)}</div>`; 
+                    });
                     contentHtml += `</div>`;
                 }
                 contentHtml += `</div>`;
@@ -1473,7 +1498,7 @@
             transFiltradas.forEach(t => {
                 if (t.type === 'receber') {
                     totalEntradas += t.amount; entradasDetalhadas.push(t);
-                    const labelEntrada = t.bank ? `${t.description} (${t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank})` : t.description;
+                    const labelEntrada = t.bank ? `${t.description} (${padronizarNomeBanco(t.bank)})` : t.description;
                     agrupaEntradasOrigem[labelEntrada] = (agrupaEntradasOrigem[labelEntrada] || 0) + t.amount;
                 } else if (t.type === 'pagar') {
                     totalSaidas += t.amount; saidasDetalhadas.push(t);
@@ -1568,7 +1593,7 @@
             if (detailedIncList) {
                 detailedIncList.innerHTML = entradasDetalhadas.length ? '' : '<div class="empty-state">Nenhuma entrada.</div>';
                 entradasDetalhadas.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
-                    let subTitle = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : ''; let iconHtml = subTitle ? getBankLogo(subTitle) : '';
+                    let subTitle = t.bank ? padronizarNomeBanco(t.bank) : ''; let iconHtml = subTitle ? getBankLogo(subTitle) : '';
                     detailedIncList.innerHTML += `<div class="detailed-item"><div class="detailed-info"><h4>${t.description}</h4><span style="display:inline-flex; align-items:center;">${formatDate(t.date)}${subTitle ? ' &nbsp;•&nbsp; ' + iconHtml + ' ' + subTitle : ''}</span></div><strong class="income-text">${formatCurrency(t.amount)}</strong></div>`;
                 });
             }
@@ -1577,7 +1602,7 @@
             if (detailedExpList) {
                 detailedExpList.innerHTML = saidasDetalhadas.length ? '' : '<div class="empty-state">Nenhuma saída.</div>';
                 saidasDetalhadas.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
-                    let subTitle = t.bank ? (t.bank.includes('-') ? t.bank.split('-')[1].trim() : t.bank) : ''; let iconHtml = subTitle ? getBankLogo(subTitle) : '';
+                    let subTitle = t.bank ? padronizarNomeBanco(t.bank) : ''; let iconHtml = subTitle ? getBankLogo(subTitle) : '';
                     detailedExpList.innerHTML += `<div class="detailed-item"><div class="detailed-info"><h4>${t.description}</h4><span style="display:inline-flex; align-items:center;">${formatDate(t.date)}${subTitle ? ' &nbsp;•&nbsp; ' + iconHtml + ' ' + subTitle : ''}</span></div><strong class="expense-text">${formatCurrency(t.amount)}</strong></div>`;
                 });
             }
@@ -1595,8 +1620,8 @@
                 if (totalAmount <= 0 || !baseDate) return showToast("Preencha um valor e uma data válidos.", "error");
 
                 if (selectedType === 'transfer') {
-                    const bOrigem = document.getElementById('bank-origin') ? document.getElementById('bank-origin').value : '';
-                    const bDestino = document.getElementById('bank-destination') ? document.getElementById('bank-destination').value : '';
+                    const bOrigem = padronizarNomeBanco(document.getElementById('bank-origin') ? document.getElementById('bank-origin').value : '');
+                    const bDestino = padronizarNomeBanco(document.getElementById('bank-destination') ? document.getElementById('bank-destination').value : '');
                     if (!bOrigem || !bDestino) return showToast("Selecione a conta de origem e destino.", "error");
                     if (bOrigem === bDestino) return showToast("Origem e destino devem ser diferentes.", "error");
 
@@ -1611,7 +1636,7 @@
                     let cardOrigin = ''; let bankSelected = '';
                     
                     if (selectedType === 'receber' || (selectedType === 'pagar' && methodVal === 'debito')) {
-                        bankSelected = document.getElementById('bank-select') ? document.getElementById('bank-select').value : '';
+                        bankSelected = padronizarNomeBanco(document.getElementById('bank-select') ? document.getElementById('bank-select').value : '');
                         if (!bankSelected) return showToast("Selecione uma conta.", "error");
                     }
                     if (selectedType === 'pagar' && methodVal === 'credito') {
