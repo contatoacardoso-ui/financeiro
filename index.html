@@ -190,17 +190,17 @@
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        .group-container { margin-bottom: 16px; border: 1px solid var(--border); border-radius: 8px; background-color: rgba(255, 255, 255, 0.01); overflow: hidden; }
-        .group-header { display: flex; justify-content: space-between; align-items: center; background-color: rgba(255, 255, 255, 0.03); border-left: 3px solid var(--primary); padding: 10px 12px; font-size: 0.85rem; font-weight: bold; cursor: pointer; user-select: none; }
+        .group-container { margin-bottom: 12px; border: 1px solid var(--border); border-radius: 8px; background-color: rgba(255, 255, 255, 0.01); overflow: hidden; }
+        .group-header { display: flex; justify-content: space-between; align-items: center; background-color: rgba(255, 255, 255, 0.03); border-left: 3px solid var(--primary); padding: 6px 10px; font-size: 0.8rem; font-weight: bold; cursor: pointer; user-select: none; }
         .group-header:hover { background-color: rgba(255, 255, 255, 0.06); }
         
-        .subgroup-header { display: flex; justify-content: space-between; align-items: center; background-color: rgba(255, 255, 255, 0.015); border: 1px solid var(--border); border-left: 3px solid var(--unified-pos); padding: 8px 10px; border-radius: 6px; margin: 6px 12px; font-size: 0.85rem; font-weight: bold; color: var(--text-secondary); cursor: pointer; user-select: none; }
+        .subgroup-header { display: flex; justify-content: space-between; align-items: center; background-color: rgba(255, 255, 255, 0.015); border: 1px solid var(--border); border-left: 3px solid var(--unified-pos); padding: 5px 8px; border-radius: 6px; margin: 4px 8px; font-size: 0.8rem; font-weight: bold; color: var(--text-secondary); cursor: pointer; user-select: none; }
         .subgroup-header:hover { background-color: rgba(255, 255, 255, 0.04); }
 
-        .group-content-wrapper { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; }
-        .subgroup-content-wrapper { display: flex; flex-direction: column; gap: 8px; padding: 4px 0 8px 16px; }
+        .group-content-wrapper { display: flex; flex-direction: column; gap: 8px; padding: 8px 10px; }
+        .subgroup-content-wrapper { display: flex; flex-direction: column; gap: 8px; padding: 4px 0 6px 12px; }
 
-        .group-action-btn { background: rgba(0, 179, 126, 0.15); border: 1px solid var(--unified-pos); color: var(--unified-pos); font-size: 0.75rem; padding: 6px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+        .group-action-btn { background: rgba(0, 179, 126, 0.15); border: 1px solid var(--unified-pos); color: var(--unified-pos); font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
         .group-action-btn:hover { background: rgba(0, 179, 126, 0.25); }
 
         .transaction-list { display: flex; flex-direction: column; gap: 8px; }
@@ -587,7 +587,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.8.3"; 
+        const VERSAO_CODIGO = "1.8.4"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -1442,13 +1442,12 @@
                         const subGroupId = groupId + '_sub_' + sanitizarChaveNode(subKey); const isSubCollapsed = !!estadoColapsoGrupos[subGroupId];
                         let logoHtml = getBankLogo(subKey); let botaoPagarFaturaHtml = '';
 
-                        // Cálculo do total e quantidade para subgrupos de Cartão de Crédito na aba Pendentes
                         let infoFaturaHtml = '';
                         const itensSubgrupo = subGroupObj[subKey];
                         if (currentTab === 'pending' && groupKey === 'Cartão de Crédito') {
                             const qtdItens = itensSubgrupo.length;
                             const valorTotalFatura = itensSubgrupo.reduce((acc, curr) => acc + (curr.amount || 0), 0);
-                            infoFaturaHtml = `<span style="font-size:0.75rem; color:var(--warning); font-weight:normal; margin-left:8px;">(${qtdItens} item${qtdItens > 1 ? 's' : ''} • ${formatCurrency(valorTotalFatura)})</span>`;
+                            infoFaturaHtml = `<span style="font-size:0.7rem; color:var(--warning); font-weight:normal; margin-left:6px;">(${qtdItens} item${qtdItens > 1 ? 's' : ''} • ${formatCurrency(valorTotalFatura)})</span>`;
                         }
 
                         if (currentTab === 'pending') {
@@ -1456,7 +1455,7 @@
                             else if (groupKey === 'Contas e Boletos') botaoPagarFaturaHtml = `<button class="group-action-btn" onclick="event.stopPropagation(); confirmarFaturaOuGrupo('conta', '${subKey}')">✓ Pagar Contas</button>`;
                         }
 
-                        contentHtml += `<div class="subgroup-header" onclick="toggleSubGroupCollapse('${subGroupId}')"><span style="display:flex; align-items:center; flex-wrap:wrap;">${logoHtml} <span style="margin-left:6px;">${subKey}</span>${infoFaturaHtml}</span><div style="display:flex; align-items:center; gap:8px;">${botaoPagarFaturaHtml}<span>${isSubCollapsed ? '➕' : '➖'}</span></div></div>`;
+                        contentHtml += `<div class="subgroup-header" onclick="toggleSubGroupCollapse('${subGroupId}')"><span style="display:flex; align-items:center; flex-wrap:wrap;">${logoHtml} <span style="margin-left:6px;">${subKey}</span>${infoFaturaHtml}</span><div style="display:flex; align-items:center; gap:6px;">${botaoPagarFaturaHtml}<span>${isSubCollapsed ? '➕' : '➖'}</span></div></div>`;
                         contentHtml += `<div class="subgroup-content-wrapper transaction-list" style="display: ${isSubCollapsed ? 'none' : 'flex'};">`;
                         
                         itensSubgrupo.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => { 
