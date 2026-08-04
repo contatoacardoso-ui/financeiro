@@ -587,7 +587,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.8.4"; 
+        const VERSAO_CODIGO = "1.8.5"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -1368,14 +1368,15 @@
                 if (t.bank) { let nomeCurto = padronizarNomeBanco(t.bank); iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} ${nomeCurto}`; } 
                 else { badgeText = '💵 Entrada'; }
             } else {
-                if (t.method === 'credito') { 
-                    iconHtml = getBankLogo(t.cardOrigin || '');
-                    let cartaoInfo = t.cardOrigin ? `${iconHtml} ${t.cardOrigin}` : '💳 Crédito';
-                    let parcelamento = t.installmentsTotal > 1 ? ` (${t.installmentsNum}/${t.installmentsTotal})` : '';
+                if (t.method === 'credito') {
+                    // Sem repetir dados/badge do cartão se já está agrupado por cartão
+                    let parcelamento = t.installmentsTotal > 1 ? `(${t.installmentsNum}/${t.installmentsTotal})` : '';
                     if (t.bank) {
                         let nomeCurto = padronizarNomeBanco(t.bank); let iconBank = getBankLogo(nomeCurto);
-                        badgeText = `${cartaoInfo}${parcelamento} • Pago via ${iconBank} ${nomeCurto}`;
-                    } else { badgeText = `${cartaoInfo}${parcelamento} • Fatura Pendente`; }
+                        badgeText = `${parcelamento ? parcelamento + ' • ' : ''}Pago via ${iconBank} ${nomeCurto}`;
+                    } else { 
+                        badgeText = parcelamento ? `Parcela ${parcelamento}` : ''; 
+                    }
                 } else if (t.method === 'conta') {
                     if (t.bank) { let nomeCurto = padronizarNomeBanco(t.bank); iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} ${nomeCurto}`; } 
                     else { badgeText = '📄 Conta a Pagar'; }
@@ -1385,11 +1386,13 @@
                 }
             }
 
+            let badgeHtml = badgeText ? `<span class="method-badge">${badgeText}</span>` : '';
+
             return `
                 <div class="item-details">
                     <h4>${isTransf ? 'Transferência entre Contas' : t.description}</h4>
                     <span>Data: ${formatDate(t.date)}</span>
-                    <span class="method-badge">${badgeText}</span>
+                    ${badgeHtml}
                 </div>
                 <div class="item-right">
                     <span class="item-value" style="color: ${isTransf ? '#ffb86c' : ''}">${formatCurrency(t.amount)}</span>
