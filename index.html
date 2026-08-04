@@ -587,7 +587,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.8.2"; 
+        const VERSAO_CODIGO = "1.8.3"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -612,11 +612,9 @@
             return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '_').replace(/^_+|_+$/g, '');
         }
 
-        // Padroniza o nome do banco para evitar contas duplicadas ou antigas com números no saldo real
         function padronizarNomeBanco(nome) {
             if (!nome) return '';
             let limpo = nome.trim();
-            // Remove prefixos numéricos antigos ex: "1 - Banco do Brasil" vira "Banco do Brasil"
             limpo = limpo.replace(/^\d+\s*[-–]\s*/, '');
             return limpo;
         }
@@ -722,7 +720,6 @@
             });
         }
 
-        // --- SISTEMA INTELIGENTE DE ÍCONES DA WEB ---
         function getBankLogo(bankName) {
             if(!bankName) return '🏦 ';
             const nameToMatch = padronizarNomeBanco(bankName).toLowerCase();
@@ -759,7 +756,6 @@
             return '🏦 '; 
         }
 
-        // --- CONTROLE DOS DROPDOWNS CUSTOMIZADOS ---
         function atualizarSelectsDinamicos() {
             buildCustomSelect('bank-origin', listaContas, 'Selecione a conta de origem');
             buildCustomSelect('bank-destination', listaContas, 'Selecione a conta de destino');
@@ -831,7 +827,6 @@
             } else { wrapper.querySelector('.custom-select-content').innerHTML = `<span style="color:var(--text-secondary)">${placeholder}</span>`; }
         }
 
-        // --- GERENCIADOR DE CONTAS E CARTÕES (UI) ---
         window.abrirGerenciador = function() {
             const modal = document.getElementById('manager-modal-overlay');
             if (modal) modal.style.display = 'flex';
@@ -1335,7 +1330,6 @@
                 } else { if (t.type === 'receber') pendingIncome += t.amount; else pendingExpense += t.amount; }
             });
 
-            // Filtra o carrossel para remover bancos que tenham saldo exatamente zero e nenhuma movimentação ativa
             const saldoRealAtual = realIncome - realExpense; const saldoPrevistoGlobal = saldoRealAtual + pendingIncome - pendingExpense;
             atualizarTextoSeMudou(realBalanceEl, formatCurrency(saldoRealAtual)); atualizarTextoSeMudou(balanceEl, formatCurrency(saldoPrevistoGlobal));
             atualizarTextoSeMudou(incomeEl, formatCurrency(pendingIncome)); atualizarTextoSeMudou(expenseEl, formatCurrency(pendingExpense));
@@ -1448,16 +1442,24 @@
                         const subGroupId = groupId + '_sub_' + sanitizarChaveNode(subKey); const isSubCollapsed = !!estadoColapsoGrupos[subGroupId];
                         let logoHtml = getBankLogo(subKey); let botaoPagarFaturaHtml = '';
 
+                        // Cálculo do total e quantidade para subgrupos de Cartão de Crédito na aba Pendentes
+                        let infoFaturaHtml = '';
+                        const itensSubgrupo = subGroupObj[subKey];
+                        if (currentTab === 'pending' && groupKey === 'Cartão de Crédito') {
+                            const qtdItens = itensSubgrupo.length;
+                            const valorTotalFatura = itensSubgrupo.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+                            infoFaturaHtml = `<span style="font-size:0.75rem; color:var(--warning); font-weight:normal; margin-left:8px;">(${qtdItens} item${qtdItens > 1 ? 's' : ''} • ${formatCurrency(valorTotalFatura)})</span>`;
+                        }
+
                         if (currentTab === 'pending') {
                             if (groupKey === 'Cartão de Crédito') botaoPagarFaturaHtml = `<button class="group-action-btn" onclick="event.stopPropagation(); confirmarFaturaOuGrupo('card', '${subKey}')">✓ Pagar Fatura</button>`;
                             else if (groupKey === 'Contas e Boletos') botaoPagarFaturaHtml = `<button class="group-action-btn" onclick="event.stopPropagation(); confirmarFaturaOuGrupo('conta', '${subKey}')">✓ Pagar Contas</button>`;
                         }
 
-                        contentHtml += `<div class="subgroup-header" onclick="toggleSubGroupCollapse('${subGroupId}')"><span style="display:flex; align-items:center;">${logoHtml} <span style="margin-left:6px;">${subKey}</span></span><div style="display:flex; align-items:center; gap:8px;">${botaoPagarFaturaHtml}<span>${isSubCollapsed ? '➕' : '➖'}</span></div></div>`;
+                        contentHtml += `<div class="subgroup-header" onclick="toggleSubGroupCollapse('${subGroupId}')"><span style="display:flex; align-items:center; flex-wrap:wrap;">${logoHtml} <span style="margin-left:6px;">${subKey}</span>${infoFaturaHtml}</span><div style="display:flex; align-items:center; gap:8px;">${botaoPagarFaturaHtml}<span>${isSubCollapsed ? '➕' : '➖'}</span></div></div>`;
                         contentHtml += `<div class="subgroup-content-wrapper transaction-list" style="display: ${isSubCollapsed ? 'none' : 'flex'};">`;
                         
-                        // ORDENAÇÃO: Do mais recente para o mais antigo (topo para a base)
-                        subGroupObj[subKey].sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => { 
+                        itensSubgrupo.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => { 
                             contentHtml += `<div class="transaction-item">${montarHtmlDoItem(t)}</div>`; 
                         });
                         contentHtml += `</div>`;
@@ -1466,7 +1468,6 @@
 
                 if (directItems.length > 0) {
                     contentHtml += `<div class="transaction-list">`;
-                    // ORDENAÇÃO: Do mais recente para o mais antigo (topo para a base)
                     directItems.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => { 
                         contentHtml += `<div class="transaction-item">${montarHtmlDoItem(t)}</div>`; 
                     });
