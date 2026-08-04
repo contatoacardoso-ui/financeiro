@@ -587,7 +587,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.8.5"; 
+        const VERSAO_CODIGO = "1.8.6"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -1369,13 +1369,10 @@
                 else { badgeText = '💵 Entrada'; }
             } else {
                 if (t.method === 'credito') {
-                    // Sem repetir dados/badge do cartão se já está agrupado por cartão
-                    let parcelamento = t.installmentsTotal > 1 ? `(${t.installmentsNum}/${t.installmentsTotal})` : '';
+                    // Sem exibir o termo "Parcela" ou redundâncias desnecessárias nos detalhes
                     if (t.bank) {
                         let nomeCurto = padronizarNomeBanco(t.bank); let iconBank = getBankLogo(nomeCurto);
-                        badgeText = `${parcelamento ? parcelamento + ' • ' : ''}Pago via ${iconBank} ${nomeCurto}`;
-                    } else { 
-                        badgeText = parcelamento ? `Parcela ${parcelamento}` : ''; 
+                        badgeText = `Pago via ${iconBank} ${nomeCurto}`;
                     }
                 } else if (t.method === 'conta') {
                     if (t.bank) { let nomeCurto = padronizarNomeBanco(t.bank); iconHtml = getBankLogo(nomeCurto); badgeText = `${iconHtml} ${nomeCurto}`; } 
@@ -1450,7 +1447,8 @@
                         if (currentTab === 'pending' && groupKey === 'Cartão de Crédito') {
                             const qtdItens = itensSubgrupo.length;
                             const valorTotalFatura = itensSubgrupo.reduce((acc, curr) => acc + (curr.amount || 0), 0);
-                            infoFaturaHtml = `<span style="font-size:0.7rem; color:var(--warning); font-weight:normal; margin-left:6px;">(${qtdItens} item${qtdItens > 1 ? 's' : ''} • ${formatCurrency(valorTotalFatura)})</span>`;
+                            // Espaço adicionado e "items" corrigido para "itens"
+                            infoFaturaHtml = `<span style="font-size:0.7rem; color:var(--warning); font-weight:normal; margin-left:12px;">(${qtdItens} ite${qtdItens > 1 ? 'ns' : 'm'} • ${formatCurrency(valorTotalFatura)})</span>`;
                         }
 
                         if (currentTab === 'pending') {
