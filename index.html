@@ -205,11 +205,15 @@
 
         .transaction-list { display: flex; flex-direction: column; gap: 8px; }
         
-        /* Layout otimizado para garantir que o título do item NUNCA quebre linha (uma única linha contínua) */
-        .transaction-item { background-color: var(--card-bg); border: 1px solid var(--border); padding: 10px 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-        .item-details { display: flex; flex-direction: column; min-width: 0; flex: 1; }
-        .item-details h4 { font-size: 0.88rem; margin-bottom: 3px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .item-meta-row { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* Layout com Título na 1ª Linha e Metadados/Valor/Ações na 2ª Linha */
+        .transaction-item { background-color: var(--card-bg); border: 1px solid var(--border); padding: 10px 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 8px; }
+        
+        .item-title-row { width: 100%; }
+        .item-title-row h4 { font-size: 0.9rem; font-weight: 600; word-break: break-word; overflow-wrap: break-word; }
+
+        .item-bottom-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 6px; }
+        
+        .item-meta-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1; min-width: 0; }
         .item-meta-row span, .item-meta-row .method-badge { font-size: 0.7rem; color: var(--text-secondary); display: inline-block; white-space: nowrap; }
         .item-meta-row .method-badge { background-color: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); }
         
@@ -592,7 +596,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.9.0"; 
+        const VERSAO_CODIGO = "1.9.1"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -1390,19 +1394,21 @@
             let badgeHtml = badgeText ? `<span class="method-badge">${badgeText}</span>` : '';
 
             return `
-                <div class="item-details">
+                <div class="item-title-row">
                     <h4>${isTransf ? 'Transferência entre Contas' : t.description}</h4>
+                </div>
+                <div class="item-bottom-row">
                     <div class="item-meta-row">
                         <span>${formatDate(t.date)}</span>
                         ${badgeHtml}
                     </div>
-                </div>
-                <div class="item-right">
-                    <span class="item-value" style="color: ${isTransf ? '#ffb86c' : ''}">${formatCurrency(t.amount)}</span>
-                    <div class="item-actions-group">
-                        ${!isTransf ? `<button class="action-btn edit-btn" onclick="editTransaction('${t.id}')">✏️</button>` : ''}
-                        <button class="action-btn delete-btn" onclick="deleteTransaction('${t.id}')">×</button>
-                        ${(!t.done && !isTransf) ? `<button class="action-btn confirm-btn" onclick="confirmTransaction('${t.id}')">✓</button>` : ''}
+                    <div class="item-right">
+                        <span class="item-value" style="color: ${isTransf ? '#ffb86c' : ''}">${formatCurrency(t.amount)}</span>
+                        <div class="item-actions-group">
+                            ${!isTransf ? `<button class="action-btn edit-btn" onclick="editTransaction('${t.id}')">✏️</button>` : ''}
+                            <button class="action-btn delete-btn" onclick="deleteTransaction('${t.id}')">×</button>
+                            ${(!t.done && !isTransf) ? `<button class="action-btn confirm-btn" onclick="confirmTransaction('${t.id}')">✓</button>` : ''}
+                        </div>
                     </div>
                 </div>
             `;
@@ -1592,7 +1598,7 @@
             if (canvasExp) {
                 const dadosPizzaSaidas = consolidarDadosParaPizza(agrupaSaidasDesc, 4);
                 if (chartExpensesPieInstance) chartExpensesPieInstance.destroy();
-                chartExpensesPieInstance = new Chart(canvasExp.getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(dadosPizzaSaidas).length ? Object.keys(dadosPizzaSaidas) : ['Nenhuma'], datasets: [{ data: Object.values(dadosPizzaSaidas).length ? Object.values(dadosPizzaSaidas) : [1], backgroundColor: paletaCoresPizza, borderWidth: 2, borderColor: '#1d1d22', hoverOffset: 4 }] }, options: { ...commonChartOptions, cutout: '60%' } });
+                chartExpensesPieInstance = new Chart(canvasExp.getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(dadosPizzaSaidas).length ? Object.keys(dadosPizzaSaidas) : [1], backgroundColor: paletaCoresPizza, borderWidth: 2, borderColor: '#1d1d22', hoverOffset: 4 }] }, options: { ...commonChartOptions, cutout: '60%' } });
             }
 
             const detailedIncList = document.getElementById('detailed-incomes-list');
@@ -1676,7 +1682,7 @@
                         }
                     }
                 }
-            } catch(e) { showToast("Erro ao processar.", "error"); }
+            } catch(e) { showToast("Error ao processar.", "error"); }
         };
     </script>
 </body>
