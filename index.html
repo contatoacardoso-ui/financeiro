@@ -596,7 +596,7 @@
             appId: "1:727786772341:web:b0590d1da3b6e26ffb653c"
         };
 
-        const VERSAO_CODIGO = "1.9.1"; 
+        const VERSAO_CODIGO = "1.9.2"; 
         const SENHA_PADRAO_NOVOS_PERFIS = "12345";
         const NO_MASTER_ORIGINAL = "lancamentos_uXgPdnTq3HFIi19mjp9EZwquTUyukZ76PdrldkNM";
         
@@ -1598,7 +1598,7 @@
             if (canvasExp) {
                 const dadosPizzaSaidas = consolidarDadosParaPizza(agrupaSaidasDesc, 4);
                 if (chartExpensesPieInstance) chartExpensesPieInstance.destroy();
-                chartExpensesPieInstance = new Chart(canvasExp.getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(dadosPizzaSaidas).length ? Object.keys(dadosPizzaSaidas) : [1], backgroundColor: paletaCoresPizza, borderWidth: 2, borderColor: '#1d1d22', hoverOffset: 4 }] }, options: { ...commonChartOptions, cutout: '60%' } });
+                chartExpensesPieInstance = new Chart(canvasExp.getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(dadosPizzaSaidas).length ? Object.keys(dadosPizzaSaidas) : ['Nenhuma'], datasets: [{ data: Object.values(dadosPizzaSaidas).length ? Object.values(dadosPizzaSaidas) : [1], backgroundColor: paletaCoresPizza, borderWidth: 2, borderColor: '#1d1d22', hoverOffset: 4 }] }, options: { ...commonChartOptions, cutout: '60%' } });
             }
 
             const detailedIncList = document.getElementById('detailed-incomes-list');
@@ -1682,8 +1682,8 @@
                         }
                     }
                 }
-            } catch(e) { showToast("Error ao processar.", "error"); }
-        };
+            } catch(e) { showToast("Erro ao processar.", "error"); }
+        }
     </script>
 </body>
 </html>
